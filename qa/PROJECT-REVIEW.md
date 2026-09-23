@@ -3,6 +3,8 @@
 *Review date: 2026-07-02 · Reviewed at v1.8.1 · 24 skills / 24 prompts*
 
 > **Status (2026-07-02):** ✅ **P0 and P1 complete.** A1–A3, B1 (P0) and A4, C1, D1, B2 (P1) are implemented — framework count standardized to 23 and enforced by a new consistency test, `package.json` version aligned, `Data & Sources` provenance header added, functional client-side search shipped, and a docs link-checker wired into CI. Test suite now 337 passing. P2/backlog items remain open.
+>
+> **Follow-up (2026-09-23):** the next round of proposals — new skills (ETF, earnings-preview, thesis-tracker, tax-lens, learning-coach), skill-contract enforcement, new Learning lessons, and missing scripts — lives in [doc/IMPROVEMENT-ROADMAP.md](../doc/IMPROVEMENT-ROADMAP.md) ([繁體中文](../doc/IMPROVEMENT-ROADMAP-zh-TW.md)).
 
 A structured review of the InvestSkill project with prioritized, actionable improvement ideas. Findings are grounded in the current codebase; each carries a rough effort/impact estimate and, where useful, file references.
 
