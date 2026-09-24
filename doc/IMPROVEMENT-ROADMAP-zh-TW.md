@@ -1,6 +1,6 @@
 # InvestSkill — 改進路線圖
 
-*審查日期：2026-09-23 · 審查版本 v1.11.0 · 27 個技能目錄 / 26 個對外宣稱的分析框架 · 389 項測試通過 · 69 個網站頁面 · **進度見 §0**（最後更新 2026-09-24）*
+*審查日期：2026-09-23 · 審查版本 v1.11.0 · 27 個技能目錄 / 26 個對外宣稱的分析框架 · 389 項測試通過 · 69 個網站頁面 · **進度見 §0**（最後更新 2026-09-24，PR #27）*
 
 > **範圍。** 從兩個角度對 InvestSkill 進行產品審查：作為美股投資人的**投資工具**，以及作為**學習金融知識的途徑**。本文提出新的 LLM 技能、既有技能的強化、網站內容，以及缺少的腳本，並列出審查過程中發現的一致性問題。僅為建議 — 本 PR 未修改任何技能、提示詞或網站頁面。
 >
@@ -19,15 +19,15 @@
 | 1 | 修正過時的數量並歸檔歷史文件（§7） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | §7 每一列都已修正；`COUNT_DOCS` 擴充至 FAQ / PLATFORM-COMPATIBILITY / CONTRIBUTING 與「N skills」聲明（§6.9）；四份文件移至 `doc/archive/`；`TODO.md` 改為精選前五 |
 | 2 | 強制執行技能契約並加上測試（§4.1、§6.3） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | `Data & Sources` 表頭 24/24 · 資料驗證 24/24 · 論點失效條件 24/24（所有分析技能；輸出工具、別名、meta 技能除外）。`scripts/check-skill-contract.js` 已接進 `npm test`。`--lang zh-TW` 與 JSON 頁尾仍待辦 → `TODO.md` #5 |
 | 3 | 重新分類 3 個轉址技能為別名；宣稱誠實的數量（§4.2） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 採選項 (b)：**24 個框架 + 3 個別名 + 1 個輸出工具**。單一真實來源 `scripts/lib/skill-registry.js`，由測試、安裝測試與網站建置共同引用；`skills.html` 上有獨立的「Aliases」分類 |
-| 4 | `etf-analysis`（§3.1） | ⬜ 未開始 | — | `TODO.md` #1 |
-| 5 | `earnings-preview`（§3.1） | ⬜ 未開始 | — | `TODO.md` #2 |
+| 4 | `etf-analysis`（§3.1） | ✅ 完成 | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | ETF 適配分數；成本、追蹤差異、流動性、集中度／傾斜、與使用者持股的重疊、配息紀錄、結構警示、ETF vs. 前五大成分股比較、UCITS 備註 |
+| 5 | `earnings-preview`（§3.1） | ✅ 完成 | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | 共識 vs. 耳語、8 季超預期／漲跌表、隱含 vs. 實際波動、價格已反映什麼、KPI、三情境矩陣與部位規則；財報設定分數 |
 | 6 | `thesis-tracker`（§3.1） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 開立 / `--update` / `--review` / `--close` 四種模式、存檔契約、INTACT / WEAKENED / BROKEN 判定規則、論點健康分數；以 `new-skill.js` 腳手架建立 |
-| 7 | `tax-lens`（§3.1） | ⬜ 未開始 | — | `TODO.md` #4 |
-| 8 | `learning-coach`（§3.1） | ⬜ 未開始 | — | |
+| 7 | `tax-lens`（§3.1） | ✅ 完成 | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | 交易／部位／投組三種模式 + `--non-us`（W-8BEN、預扣稅與協定、資本利得處理與例外、6 萬美元遺產稅免稅額、UCITS 比較）；強制非稅務建議關卡；稅務效率分數 |
+| 8 | `learning-coach`（§3.1） | ✅ 完成 | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | 解說／`--quiz` 模式、`--level`、`--lang zh-TW`；解說卡、蘇格拉底式提問梯、常見誤讀；訊號區塊沿用被解說的分析 |
 | 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js`（§6.1、§6.2） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | prompts 現在由 SKILL.md **產生**（`--check` 在 `npm test` 中）；腳手架一次把技能接進 11 個檔案。注意：重新產生後，先前手工精簡的 prompts 被 SKILL.md 全文取代 |
 | 10 | `scripts/eval-skills.js`（§6.4） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 以 `EVAL_CMD` 環境變數選擇啟用；樣本 `data/fixtures/ZEPH.md`（虛構公司）；硬性檢查透過共用解析器 `scripts/lib/signal-block.js`（§6.11），算術檢查為建議性；輸出 `qa/eval_YYYYMMDD.md` |
 
-一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查。§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
+一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查（PR #26）；`risk-stress-test` — 第一層的第六個技能、不在十大之列 — 於 [PR #27](https://github.com/yennanliu/InvestSkill/pull/27)。**§3.1 第一層六個技能全部出貨。**§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
 
 ---
 

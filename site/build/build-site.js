@@ -1033,8 +1033,8 @@ const SKILL_CATEGORIES = [
   { title: 'Core Stock Analysis', skills: ['stock-eval','technical-analysis','stock-valuation','economics-analysis'] },
   { title: 'Financial Reports',   skills: ['financial-report-analyst','10k-digest','earnings-call-analysis'] },
   { title: 'Market Monitoring',   skills: ['insider-trading','institutional-ownership','dividend-analysis','short-interest'] },
-  { title: 'Advanced Research',   skills: ['competitor-analysis','industry-map','options-analysis','portfolio-review','sector-analysis','stock-screener','catalyst-calendar','bear-case','position-ladder','thesis-tracker'] },
-  { title: 'Meta & Output',       skills: ['full-report','report-generator','chart-master','result-validator'] },
+  { title: 'Advanced Research',   skills: ['competitor-analysis','industry-map','options-analysis','portfolio-review','sector-analysis','stock-screener','catalyst-calendar','bear-case','position-ladder','thesis-tracker','etf-analysis','earnings-preview','tax-lens','risk-stress-test'] },
+  { title: 'Meta & Output',       skills: ['full-report','report-generator','chart-master','result-validator','learning-coach'] },
   // Redirect stubs kept for backwards compatibility — installed, but not counted as frameworks.
   { title: 'Aliases (redirects)', skills: ['fundamental-analysis','dcf-valuation','research-bundle'] },
 ];

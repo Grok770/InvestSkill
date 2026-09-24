@@ -46,7 +46,7 @@ These two files must stay in sync. The `prompts/` version is what Cursor, Gemini
 
 ### Signal Block Requirement
 
-Every SKILL.md and every `prompts/*.md` must end with a standardized Investment Signal Block using box-drawing characters (UTF-8). Tests validate this.
+Every SKILL.md and every `prompts/*.md` must close with the standardized Investment Signal section: the box-drawn block (UTF-8 box-drawing characters), followed only by the Score Guide / Confidence / Horizon lines, an optional one-paragraph mapping note, and the `**Disclaimer:**` line. Nothing else may follow the block. `check-skill-contract.js` and Test 5/7 validate the block's presence; the closing order is a convention every skill follows.
 
 ## Adding a New Skill (12-step process)
 
@@ -121,7 +121,7 @@ Choosing the version number and *when* to cut the release both matter — don't 
 
 ## Framework Count Rule
 
-The **advertised framework count** = number of skills in `plugins/us-stock-analysis/skills/` **minus output-only tools** (`report-generator`) **minus alias/redirect stubs** (`fundamental-analysis`, `dcf-valuation`, `research-bundle`). It is currently **24 analysis frameworks** (28 skill directories − 1 output tool − 3 aliases). The classification lives in one place — `scripts/lib/skill-registry.js` (`OUTPUT_TOOLS`, `ALIAS_SKILLS`, `META_SKILLS`) — and is imported by `test-skills.js`, `test-install.js`, `check-skill-contract.js`, and `site/build/build-site.js`. The alias list is mirrored in `install.sh`'s `case` block (the install tests check parity).
+The **advertised framework count** = number of skills in `plugins/us-stock-analysis/skills/` **minus output-only tools** (`report-generator`) **minus alias/redirect stubs** (`fundamental-analysis`, `dcf-valuation`, `research-bundle`). It is currently **29 analysis frameworks** (33 skill directories − 1 output tool − 3 aliases). The classification lives in one place — `scripts/lib/skill-registry.js` (`OUTPUT_TOOLS`, `ALIAS_SKILLS`, `META_SKILLS`) — and is imported by `test-skills.js`, `test-install.js`, `check-skill-contract.js`, and `site/build/build-site.js`. The alias list is mirrored in `install.sh`'s `case` block (the install tests check parity).
 
 - Keep this number consistent across `README.md`, `README-zh-TW.md`, `site/content/CHOOSE-A-SKILL(-zh-TW).md`, `site/content/COOKBOOK(-zh-TW).md`, and `plugin.json`'s description.
 - `site/build/build-site.js` derives it automatically (`FRAMEWORK_COUNT`) — never hardcode a count there.
@@ -132,7 +132,7 @@ The **advertised framework count** = number of skills in `plugins/us-stock-analy
 ## Current State
 
 - **Version**: 1.11.0 (plugin.json = marketplace.json = package.json)
-- **Skills**: 28 directories in `plugins/us-stock-analysis/skills/` (auto-discovered)
-- **Advertised frameworks**: 24 analysis frameworks (28 − `report-generator` − 3 aliases)
-- **Prompts**: 28 universal files in `prompts/` — **generated** from SKILL.md by `scripts/sync-prompts.js` (never hand-edit them; `--check` runs in `npm test`)
+- **Skills**: 33 directories in `plugins/us-stock-analysis/skills/` (auto-discovered)
+- **Advertised frameworks**: 29 analysis frameworks (33 − `report-generator` − 3 aliases)
+- **Prompts**: 33 universal files in `prompts/` — **generated** from SKILL.md by `scripts/sync-prompts.js` (never hand-edit them; `--check` runs in `npm test`)
 - **Node**: ≥18.0.0 required

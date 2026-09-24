@@ -1,6 +1,6 @@
 # InvestSkill — Improvement Roadmap
 
-*Review date: 2026-09-23 · Reviewed at v1.11.0 · 27 skill directories / 26 advertised frameworks · 389 tests passing · 69 built site pages · **Progress tracked in §0** (last updated 2026-09-24)*
+*Review date: 2026-09-23 · Reviewed at v1.11.0 · 27 skill directories / 26 advertised frameworks · 389 tests passing · 69 built site pages · **Progress tracked in §0** (last updated 2026-09-24, PR #27)*
 
 > **Scope.** A product review of InvestSkill from two angles: as an **investment tool** for US-stock investors, and as a **way to learn finance**. It proposes new LLM skills, enhancements to existing skills, website content, and missing scripts, and lists the consistency issues found along the way. Recommendations only — no skill, prompt, or site page was changed in this PR.
 >
@@ -19,15 +19,15 @@ Status of the ten headline recommendations in §2. Update this table in the PR t
 | 1 | Fix stale counts & retire historical docs (§7) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Every §7 row fixed; `COUNT_DOCS` extended to FAQ / PLATFORM-COMPATIBILITY / CONTRIBUTING and "N skills" claims (§6.9); four docs moved to `doc/archive/`; `TODO.md` is now a curated top-5 |
 | 2 | Enforce the skill contract with a test (§4.1, §6.3) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | `Data & Sources` header 24/24 · Data Verification 24/24 · Thesis Invalidation 24/24 (all analysis skills; output tool, aliases, meta exempt). `scripts/check-skill-contract.js` in `npm test`. `--lang zh-TW` and the JSON footer remain open → `TODO.md` #5 |
 | 3 | Reclassify the 3 redirect skills as aliases; honest count (§4.2) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Option (b): **24 frameworks + 3 aliases + 1 output tool**. Single source of truth `scripts/lib/skill-registry.js`, imported by tests, installer tests, and the site build; own "Aliases" category on `skills.html` |
-| 4 | `etf-analysis` (§3.1) | ⬜ Open | — | `TODO.md` #1 |
-| 5 | `earnings-preview` (§3.1) | ⬜ Open | — | `TODO.md` #2 |
+| 4 | `etf-analysis` (§3.1) | ✅ Done | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | ETF Fitness Score; cost, tracking difference, liquidity, concentration/tilt, overlap with the user's holdings, distribution history, structure warnings, ETF-vs-top-5 comparison, UCITS note |
+| 5 | `earnings-preview` (§3.1) | ✅ Done | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | Consensus vs. whisper, 8-quarter beat/move table, implied vs. realized move, what's priced in, KPIs, three-scenario grid with position rules; Earnings Setup Score |
 | 6 | `thesis-tracker` (§3.1) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Open / `--update` / `--review` / `--close` modes, saved-file contract, INTACT / WEAKENED / BROKEN rules, Thesis Health Score; scaffolded with `new-skill.js` |
-| 7 | `tax-lens` (§3.1) | ⬜ Open | — | `TODO.md` #4 |
-| 8 | `learning-coach` (§3.1) | ⬜ Open | — | |
+| 7 | `tax-lens` (§3.1) | ✅ Done | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | Trade / Position / Portfolio modes + `--non-us` (W-8BEN, withholding & treaty, capital-gains treatment with exceptions, $60k estate exemption, UCITS comparison); hard not-tax-advice gate; Tax Efficiency Score |
+| 8 | `learning-coach` (§3.1) | ✅ Done | [PR #27](https://github.com/yennanliu/InvestSkill/pull/27) | Explain / `--quiz` modes, `--level`, `--lang zh-TW`; explanation cards, Socratic ladder, common misreadings; mirrors the analysed signal |
 | 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js` (§6.1, §6.2) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Prompts are now **generated** from SKILL.md (`--check` in `npm test`); the scaffolder wires a skill into 11 files. Note: regeneration replaced the hand-condensed prompts with the full SKILL.md text |
 | 10 | `scripts/eval-skills.js` (§6.4) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Opt-in via `EVAL_CMD`; fixture `data/fixtures/ZEPH.md` (fictional company); hard checks via the shared parser `scripts/lib/signal-block.js` (§6.11), arithmetic checks advisory; writes `qa/eval_YYYYMMDD.md` |
 
-Also shipped alongside: §6.9 (extend `COUNT_DOCS`), §6.11 (`scripts/lib/signal-block.js`), the `result-validator` contract check from §4.4. Still open from the P0/P1 rows of §8: §4.3 (`full-report` runs every framework), `--lang zh-TW` everywhere, the JSON footer, the zh Skill Reference index (§5.6).
+Also shipped alongside: §6.9 (extend `COUNT_DOCS`), §6.11 (`scripts/lib/signal-block.js`), the `result-validator` contract check from §4.4 (PR #26); `risk-stress-test` — the sixth Tier 1 skill, not in the top 10 — in [PR #27](https://github.com/yennanliu/InvestSkill/pull/27). **All six Tier 1 skills (§3.1) are shipped.** Still open from the P0/P1 rows of §8: §4.3 (`full-report` runs every framework), `--lang zh-TW` everywhere, the JSON footer, the zh Skill Reference index (§5.6).
 
 ---
 
