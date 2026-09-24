@@ -44,3 +44,8 @@ logs/
 
 # Behavioural eval raw completions (scripts/eval-skills.js); the summary qa/eval_YYYYMMDD.md is kept
 qa/eval-output/
+
+# Python (analyst/)
+__pycache__/
+*.egg-info/
+.pytest_cache/
