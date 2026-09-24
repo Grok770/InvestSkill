@@ -6,7 +6,7 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
@@ -15,7 +15,25 @@ Never silently substitute training-data estimates for current prices. When in do
 
 ---
 
-You are an expert financial analyst. Analyze US market sectors and identify sector rotation opportunities based on economic cycles and macro conditions.
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
+
+---
+
+Analyze US market sectors and identify sector rotation opportunities based on economic cycles.
 
 ## Sector Overview
 
@@ -34,47 +52,36 @@ Analyze the 11 S&P 500 sectors:
 
 ## Analysis Framework
 
-### 1. Sector Performance
-- Relative performance vs. S&P 500
-- Historical performance trends
-- Momentum and trend strength
-- Volatility analysis
+1. **Sector Performance**
+   - Relative performance vs. S&P 500
+   - Historical performance trends
+   - Momentum and trend strength
+   - Volatility analysis
 
-### 2. Economic Cycle Positioning
+2. **Economic Cycle Positioning**
+   - Early cycle: Financials, Technology, Industrials
+   - Mid cycle: Industrials, Materials, Energy
+   - Late cycle: Energy, Consumer Staples, Healthcare
+   - Recession: Utilities, Consumer Staples, Healthcare
 
-| Cycle Phase | Outperforming Sectors |
-|---|---|
-| Early Cycle | Financials, Technology, Industrials |
-| Mid Cycle | Industrials, Materials, Energy |
-| Late Cycle | Energy, Consumer Staples, Healthcare |
-| Recession | Utilities, Consumer Staples, Healthcare |
+3. **Fundamental Metrics**
+   - Sector valuation (P/E, P/B vs. historical)
+   - Earnings growth forecasts
+   - Profit margin trends
+   - Revenue growth outlook
 
-- Identify current economic cycle phase
-- Determine which sectors are early vs. late cycle relative to current positioning
-- Assess rotation timing signals
+4. **Macro Drivers**
+   - Interest rate sensitivity
+   - Commodity price exposure
+   - Economic growth correlation
+   - Currency impact
+   - Regulatory environment
 
-### 3. Fundamental Metrics
-- Sector valuation (P/E, P/B vs. historical averages and ranges)
-- Earnings growth forecasts
-- Profit margin trends
-- Revenue growth outlook
-
-### 4. Macro Drivers
-
-| Macro Factor | Most Sensitive Sectors |
-|---|---|
-| Rising rates | Utilities and REITs (negative); Financials (positive) |
-| Falling rates | Utilities, REITs, and Tech (positive) |
-| Rising oil | Energy (positive); Consumer Discretionary (negative) |
-| Strong USD | Multinationals/Tech exporters (negative); Domestics (positive) |
-| GDP acceleration | Cyclicals: Industrials, Materials, Consumer Discretionary |
-| Recession risk | Defensives: Utilities, Consumer Staples, Healthcare |
-
-### 5. Technical Picture
-- Sector ETF chart patterns
-- Relative strength analysis vs. SPX (RS ratio trends)
-- Support/resistance levels
-- Volume trends and accumulation/distribution patterns
+5. **Technical Picture**
+   - Sector ETF chart patterns
+   - Relative strength analysis
+   - Support/resistance levels
+   - Volume trends
 
 ## Sector Rotation Strategy
 
@@ -83,6 +90,13 @@ Analyze the 11 S&P 500 sectors:
 - Assess rotation timing signals
 - Evaluate defensive vs. cyclical positioning
 - Consider factor tilts (value, growth, quality)
+
+## Top Holdings Analysis
+
+- Identify sector leaders and laggards
+- Analyze top 5-10 stocks per sector
+- Evaluate sector concentration risks
+- Find emerging opportunities
 
 ---
 
@@ -334,32 +348,6 @@ Each sector carries idiosyncratic risks beyond broad market beta. Always assess 
 
 ---
 
-## Sector Scoring Framework
-
-Score each sector 1–10 across four dimensions:
-
-```
-Sector                  Momentum    Fundamentals    Macro Tailwind    Technicals    Composite
-Information Technology  [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Healthcare              [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Financials              [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Consumer Discretionary  [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Communication Services  [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Industrials             [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Consumer Staples        [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Energy                  [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Utilities               [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Real Estate             [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-Materials               [1-10]      [1-10]          [1-10]            [1-10]        [avg]
-```
-
-Sector composite interpretation:
-- 8.0–10.0: Strong overweight — all dimensions favorable
-- 6.0–7.9: Moderate overweight — mostly positive signals
-- 4.0–5.9: Neutral weight — mixed signals
-- 2.0–3.9: Underweight — mostly negative signals
-- 0.0–1.9: Avoid — strong negative signals
-
 ## Sector ETF Reference
 
 | Sector | SPDR ETF | Alternative |
@@ -379,20 +367,21 @@ Sector composite interpretation:
 ## Output
 
 Provide sector analysis with:
-- Current sector rankings and momentum scores
-- Economic cycle assessment and phase identification
-- Sector rotation recommendations (overweight/underweight/neutral)
-- Top stock picks within favored sectors (2-3 per sector)
-- Sectors to underweight/avoid with rationale
+- Current sector rankings and momentum
+- Economic cycle assessment
+- Sector rotation recommendations
+- Top stock picks within favored sectors
+- Sectors to underweight/avoid
 - Risk considerations by sector
 - Expected catalysts and timeframes
 - Implementation strategy (ETFs vs. individual stocks)
 
 Keep recommendations aligned with macro outlook and risk management principles.
 
-## Signal Output
+## Standard Signal Output
 
-End every analysis with:
+All analysis concludes with this standardized block:
+
 ```
 ## Thesis Invalidation
 
@@ -427,8 +416,8 @@ After delivering the analysis signal, specify what would reverse it:
 ╚══════════════════════════════════════════════╝
 ```
 
-Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
-Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
-Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+**Score Guide**: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
+**Confidence**: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
+**Horizon**: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
 
 **Disclaimer:** Educational analysis only. Not financial advice.

@@ -12,17 +12,44 @@ Before running the digest, confirm the filing details:
 
 ---
 
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
+
+---
+
 Produce a clean, structured markdown document that distills a company's 10-K annual report into an abstract, per-section summaries, a digest of key metrics, and full source references. Designed for quick comprehension — not trading signals. Output language is selectable: English or Traditional Chinese (繁體中文).
 
 ## How to Use
 
-Provide input in any of these ways:
+```
+# Analyze by ticker (fetches latest 10-K)
+10k-digest AAPL
 
-- **By ticker**: `AAPL` — fetches the latest 10-K from SEC EDGAR
-- **With fiscal year**: `MSFT FY2024`
-- **Pasted text**: paste 10-K sections directly into the prompt
-- **Language flag**: add `--lang zh-TW` to output in Traditional Chinese (繁體中文)
-- **File output**: add `--output <filename>.md` to save the digest as a markdown file
+# Paste 10-K text directly
+10k-digest [paste 10-K sections here]
+
+# Specify fiscal year
+10k-digest MSFT FY2024
+
+# Output in Traditional Chinese
+10k-digest NVDA --lang zh-TW
+
+# Save output to file
+10k-digest GOOGL --output googl-10k-digest.md
+```
 
 ---
 
@@ -282,3 +309,5 @@ After delivering the digest, note what would make this document stale:
 Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
 Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+
+**Disclaimer:** Educational analysis only. Not financial advice.

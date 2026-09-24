@@ -6,12 +6,30 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+
+---
+
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
 
 ---
 
@@ -234,7 +252,7 @@ A ladder is only legitimate on a name still worth owning. Without this gate, dis
 | ATR as % of price | 1.5–5% — enough movement to fill rungs | < 1% — rungs never fill; > 8% — spacing must widen materially |
 | Recent behavior | Range-bound, repeated tests of support | One-directional, gap-driven |
 
-**Ladder Suitability Score (0–10)** — the headline number of this analysis:
+**Ladder Suitability Score (0–10)** — the skill's headline number:
 
 | Component | Points | What earns full marks |
 |-----------|--------|----------------------|
@@ -310,20 +328,23 @@ The middle row is the honest cost of the strategy: **the lower average cost was 
 
 ### Format 1: Manage an existing position
 ```text
-I hold 20 shares of AVGO at $128, now $122. Target 60–100 shares — build the ladder,
-the trim/re-add cycle, and the total-return comparison.
+User: position-ladder AVGO — I hold 20 shares at $128, now $122. Target 60–100 shares.
+
+The assistant builds the ladder, the trim/re-add cycle, and the total-return comparison.
 ```
 
 ### Format 2: Plan a new position from scratch
 ```text
-New MSFT position, max 5% of a $200k portfolio, ETF-style autopilot — derive the ceiling
-from the concentration cap and lay out the rungs.
+User: position-ladder MSFT — new position, max 5% of a $200k portfolio, ETF-style autopilot.
+
+The assistant derives the ceiling from the concentration cap and lays out the rungs.
 ```
 
 ### Format 3: Pasted holdings, multiple positions
 ```text
-Here are my holdings: [paste]. Score each position's Ladder Suitability and produce a plan
-only for those that pass the gate.
+User: position-ladder — here are my holdings: [paste]. Which of these should I be laddering?
+
+The assistant scores each position's Ladder Suitability and produces a plan only for those that pass the gate.
 ```
 
 ---
@@ -355,9 +376,9 @@ Round share counts to whole shares (or state that fractional shares are assumed)
 
 ## Signal Output
 
-This analysis measures **execution suitability, not price direction** — so state the mapping explicitly. The Ladder Suitability Score drives the block: a high score means staged accumulation inside the band is appropriate and the plan should be executed as modeled; a low score means the thesis, regime, or concentration test failed and the correct action is to stop adding. `Action: BUY` here means "continue laddering within the stated cap" — never "buy without limit." `Action: SELL` means the gate failed, not that a short is warranted. Read the direction of the underlying stock from `stock-eval` or `bear-case`, not from this block.
+This skill measures **execution suitability, not price direction** — so state the mapping explicitly. The Ladder Suitability Score drives the block: a high score means staged accumulation inside the band is appropriate and the plan should be executed as modeled; a low score means the thesis, regime, or concentration test failed and the correct action is to stop adding. `Action: BUY` here means "continue laddering within the stated cap" — never "buy without limit." `Action: SELL` means the gate failed, not that a short is warranted. Read the direction of the underlying stock from `stock-eval` or `bear-case`, not from this block.
 
-End every analysis with:
+All analysis concludes with this standardized block:
 
 ```
 ## Thesis Invalidation
@@ -398,6 +419,6 @@ Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–
 Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
 
-**Note:** The Score above is the Ladder Suitability Score, mapped onto the standard scale for cross-skill comparability. It rates *how appropriate staged accumulation is right now* — not how attractive the stock is. Pair it with a balanced stock evaluation for the directional view.
+**Note:** The Score above is the Ladder Suitability Score, mapped onto the standard scale for cross-skill comparability. It rates *how appropriate staged accumulation is right now* — not how attractive the stock is. Pair it with `stock-eval` for the directional view.
 
 **Disclaimer:** Educational analysis only. Not financial advice. All price levels and share counts are scenario models under stated assumptions, not trade instructions.

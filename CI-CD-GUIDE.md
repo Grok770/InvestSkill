@@ -42,7 +42,7 @@ Checks:
 **Triggers**: Every push and PR
 
 Tests:
-- ✅ All 18 skills are registered
+- ✅ Every skill directory has a SKILL.md and a matching prompt
 - ✅ Prompt files are valid
 - ✅ Output formats match standards
 - ✅ Signal blocks are properly formatted

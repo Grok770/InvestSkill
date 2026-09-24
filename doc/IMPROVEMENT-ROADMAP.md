@@ -1,12 +1,33 @@
 # InvestSkill — Improvement Roadmap
 
-*Review date: 2026-09-23 · Reviewed at v1.11.0 · 27 skill directories / 26 advertised frameworks · 389 tests passing · 69 built site pages*
+*Review date: 2026-09-23 · Reviewed at v1.11.0 · 27 skill directories / 26 advertised frameworks · 389 tests passing · 69 built site pages · **Progress tracked in §0** (last updated 2026-09-24)*
 
 > **Scope.** A product review of InvestSkill from two angles: as an **investment tool** for US-stock investors, and as a **way to learn finance**. It proposes new LLM skills, enhancements to existing skills, website content, and missing scripts, and lists the consistency issues found along the way. Recommendations only — no skill, prompt, or site page was changed in this PR.
 >
 > 繁體中文版：[IMPROVEMENT-ROADMAP-zh-TW.md](IMPROVEMENT-ROADMAP-zh-TW.md)
 >
 > This document complements the two earlier reviews — [qa/PROJECT-REVIEW.md](../qa/PROJECT-REVIEW.md) (2026-07-02, structure & consistency) and [SITE-ENRICHMENT-REVIEW.md](SITE-ENRICHMENT-REVIEW.md) (2026-06-15, site content). Most of their P0/P1 items have shipped (glossary, concepts, skill picker, per-skill pages, search, link checker, count tests, Learning curriculum). This one picks up where they left off.
+
+---
+
+## 0. Progress
+
+Status of the ten headline recommendations in §2. Update this table in the PR that ships each item.
+
+| # | Recommendation | Status | Shipped in | Notes |
+|---|----------------|--------|------------|-------|
+| 1 | Fix stale counts & retire historical docs (§7) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Every §7 row fixed; `COUNT_DOCS` extended to FAQ / PLATFORM-COMPATIBILITY / CONTRIBUTING and "N skills" claims (§6.9); four docs moved to `doc/archive/`; `TODO.md` is now a curated top-5 |
+| 2 | Enforce the skill contract with a test (§4.1, §6.3) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | `Data & Sources` header 24/24 · Data Verification 24/24 · Thesis Invalidation 24/24 (all analysis skills; output tool, aliases, meta exempt). `scripts/check-skill-contract.js` in `npm test`. `--lang zh-TW` and the JSON footer remain open → `TODO.md` #5 |
+| 3 | Reclassify the 3 redirect skills as aliases; honest count (§4.2) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Option (b): **24 frameworks + 3 aliases + 1 output tool**. Single source of truth `scripts/lib/skill-registry.js`, imported by tests, installer tests, and the site build; own "Aliases" category on `skills.html` |
+| 4 | `etf-analysis` (§3.1) | ⬜ Open | — | `TODO.md` #1 |
+| 5 | `earnings-preview` (§3.1) | ⬜ Open | — | `TODO.md` #2 |
+| 6 | `thesis-tracker` (§3.1) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Open / `--update` / `--review` / `--close` modes, saved-file contract, INTACT / WEAKENED / BROKEN rules, Thesis Health Score; scaffolded with `new-skill.js` |
+| 7 | `tax-lens` (§3.1) | ⬜ Open | — | `TODO.md` #4 |
+| 8 | `learning-coach` (§3.1) | ⬜ Open | — | |
+| 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js` (§6.1, §6.2) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Prompts are now **generated** from SKILL.md (`--check` in `npm test`); the scaffolder wires a skill into 11 files. Note: regeneration replaced the hand-condensed prompts with the full SKILL.md text |
+| 10 | `scripts/eval-skills.js` (§6.4) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Opt-in via `EVAL_CMD`; fixture `data/fixtures/ZEPH.md` (fictional company); hard checks via the shared parser `scripts/lib/signal-block.js` (§6.11), arithmetic checks advisory; writes `qa/eval_YYYYMMDD.md` |
+
+Also shipped alongside: §6.9 (extend `COUNT_DOCS`), §6.11 (`scripts/lib/signal-block.js`), the `result-validator` contract check from §4.4. Still open from the P0/P1 rows of §8: §4.3 (`full-report` runs every framework), `--lang zh-TW` everywhere, the JSON footer, the zh Skill Reference index (§5.6).
 
 ---
 
@@ -58,7 +79,7 @@ Effort: **S** < 1 day · **M** 1–3 days · **L** 1+ week (includes both file f
 | `etf-analysis` | **ETF Fitness Score 0–10**: expense ratio vs. category, tracking difference, AUM / ADV / bid-ask, top-10 weight & holdings concentration, sector/factor/country tilt, **overlap % with the user's other holdings**, distribution yield & capital-gains-distribution history, structure warnings (leveraged, inverse, synthetic, ETN), "ETF vs. buying the top 5 stocks" comparison | Ticker(s), optional current holdings | `portfolio-review`, `sector-analysis`, `stock-screener` | M |
 | `earnings-preview` | Consensus revenue/EPS/guidance and the **whisper gap**; last-8-quarter beat rate and post-print move distribution; options-implied move vs. realized; **what's priced in** (implied growth at current price); KPIs to watch; 3-scenario grid (beat-and-raise / beat-and-lower / miss) with expected reaction and position-management rule | Ticker, earnings date, optional transcript of prior quarter | `earnings-call-analysis` (after), `options-analysis`, `catalyst-calendar` | M |
 | `thesis-tracker` | A saved thesis file `output/thesis/<TICKER>.md`: one-paragraph thesis, 3–5 **KPIs with thresholds**, invalidation triggers (imported from each skill's Thesis Invalidation section), catalyst list, pre-mortem, decision log. `--update` re-reads it against new data and returns **INTACT / WEAKENED / BROKEN** with the specific line that changed | Ticker + prior analyses, or an existing thesis file | every single-ticker skill; `position-ladder`, `bear-case` | M |
-| `tax-lens` | US tax mechanics for a position or portfolio: short- vs. long-term treatment, **wash-sale window check**, qualified vs. ordinary dividends (holding-period test), tax-lot selection (specific-ID vs. FIFO), tax-loss-harvesting pairs, account placement (taxable vs. IRA/401k), estimated annual tax drag. **`--non-us` module**: W-8BEN, 30 % dividend withholding (or treaty rate), no US capital-gains tax for non-resident aliens, US estate-tax exposure on US-situs assets above the NRA exemption, Irish-domiciled UCITS alternatives. Hard "not tax advice — confirm with a professional" gate | Holdings with lots/dates, or a proposed trade | `position-ladder`, `portfolio-review`, `dividend-analysis`, `etf-analysis` | M |
+| `tax-lens` | US tax mechanics for a position or portfolio: short- vs. long-term treatment, **wash-sale window check**, qualified vs. ordinary dividends (holding-period test), tax-lot selection (specific-ID vs. FIFO), tax-loss-harvesting pairs, account placement (taxable vs. IRA/401k), estimated annual tax drag. **`--non-us` module**: W-8BEN, 30 % dividend withholding (or treaty rate), US capital gains generally not taxed for non-resident aliens (the fewer-than-183-days rule; effectively connected income and other exceptions apply), US estate-tax exposure on US-situs assets above the NRA exemption, Irish-domiciled UCITS alternatives. Hard "not tax advice — confirm with a professional" gate | Holdings with lots/dates, or a proposed trade | `position-ladder`, `portfolio-review`, `dividend-analysis`, `etf-analysis` | M |
 | `risk-stress-test` | Portfolio / position risk report: beta-weighted exposure, **historical scenario replay** (2008 GFC, Mar-2020, 2022 rate shock, 2025 tariff shock), parametric VaR / CVaR at 95/99 %, max-drawdown estimate, correlation-spike scenario, rate / USD / oil sensitivity, liquidity (days to exit at 20 % ADV). Risk Budget Score 0–10 | Holdings + weights | `portfolio-review`, `economics-analysis`, `position-ladder` | M |
 | `learning-coach` | Takes **any InvestSkill output** and explains it as a mentor would: each metric in plain words, why it matters, the good/bad range, the lesson that teaches it; then 3–5 Socratic questions and a "what would change your mind?" prompt. `--level beginner/intermediate` · `--lang zh-TW` · `--quiz` mode drills a Learning lesson | Pasted analysis, or a lesson name | `result-validator`, the whole Learning track | S–M |
 
@@ -206,26 +227,26 @@ Static client-side JavaScript keeps the "nothing runs, nothing phones home" prom
 
 ## 6. Missing scripts & tooling
 
-| # | Script | Purpose | Effort |
-|---|--------|---------|--------|
-| 6.1 | `scripts/sync-prompts.js` | **Generate** `prompts/<name>.md` from `SKILL.md`: strip frontmatter, rewrite `/us-stock-analysis:x` → `x`, apply an allow-list of platform phrases. `--check` mode for CI. Today sync is verified only by file existence and a 0.3×–2× token ratio | M |
-| 6.2 | `scripts/new-skill.js <name>` | Scaffold both files from a template that already contains the contract sections, add the skill to `SKILL_CATEGORIES`, insert placeholder rows in both `CHOOSE-A-SKILL` files, add a CHANGELOG Unreleased line, then run the tests. Collapses the 12-step manual process | M |
-| 6.3 | `scripts/check-skill-contract.js` | Lint every analysis skill for: Data Verification gate, Data & Sources header, Thesis Invalidation, signal block, disclaimer, `--lang` paragraph, JSON footer. Allow-list for meta/output skills. Wire into `npm test` | S |
-| 6.4 | `scripts/eval-skills.js` | **Opt-in behavioural eval** (`EVAL_CMD` env, e.g. `claude -p`). Fixtures in `data/fixtures/<TICKER>.md` with pasted financials; run each skill; assert the JSON footer parses, Data & Sources is present, and arithmetic reconciles (FCF = OCF − capex, signal ↔ score band). Write `qa/eval_YYYYMMDD.md`. Consider `claude plugin eval` as the runner | L |
-| 6.5 | `scripts/check-glossary-coverage.js` | Extract metric terms from skills (a curated regex list); every term must have an entry in both `GLOSSARY.md` and `GLOSSARY-zh-TW.md` | S |
-| 6.6 | `scripts/check-zh-parity.js` | Every `site/content/X.md` has `X-zh-TW.md`; heading counts within tolerance; warn when EN was modified after zh (git log) | S |
-| 6.7 | `scripts/check-demo-freshness.js` | Parse as-of dates in demos and Cookbook live runs; warn past 90 days; feed the §5.5 banner | S |
+| # | Script | Purpose | Effort | Status |
+|---|--------|---------|--------|--------|
+| 6.1 | `scripts/sync-prompts.js` | **Generate** `prompts/<name>.md` from `SKILL.md`: strip frontmatter, rewrite `/us-stock-analysis:x` → `x`, apply an allow-list of platform phrases. `--check` mode for CI. Today sync is verified only by file existence and a 0.3×–2× token ratio | M | ✅ PR #26 |
+| 6.2 | `scripts/new-skill.js <name>` | Scaffold both files from a template that already contains the contract sections, add the skill to `SKILL_CATEGORIES`, insert placeholder rows in both `CHOOSE-A-SKILL` files, add a CHANGELOG Unreleased line, then run the tests. Collapses the 12-step manual process | M | ✅ PR #26 |
+| 6.3 | `scripts/check-skill-contract.js` | Lint every analysis skill for: Data Verification gate, Data & Sources header, Thesis Invalidation, signal block, disclaimer, `--lang` paragraph, JSON footer. Allow-list for meta/output skills. Wire into `npm test` | S | ✅ PR #26 |
+| 6.4 | `scripts/eval-skills.js` | **Opt-in behavioural eval** (`EVAL_CMD` env, e.g. `claude -p`). Fixtures in `data/fixtures/<TICKER>.md` with pasted financials; run each skill; assert the JSON footer parses, Data & Sources is present, and arithmetic reconciles (FCF = OCF − capex, signal ↔ score band). Write `qa/eval_YYYYMMDD.md`. Consider `claude plugin eval` as the runner | L | ✅ PR #26 |
+| 6.5 | `scripts/check-glossary-coverage.js` | Extract metric terms from skills (a curated regex list); every term must have an entry in both `GLOSSARY.md` and `GLOSSARY-zh-TW.md` | S | ⬜ |
+| 6.6 | `scripts/check-zh-parity.js` | Every `site/content/X.md` has `X-zh-TW.md`; heading counts within tolerance; warn when EN was modified after zh (git log) | S | ⬜ |
+| 6.7 | `scripts/check-demo-freshness.js` | Parse as-of dates in demos and Cookbook live runs; warn past 90 days; feed the §5.5 banner | S | ⬜ |
 | 6.8 | `scripts/fetch-edgar.js <TICKER> [10-K\|10-Q\|8-K\|DEF14A\|4]` | Keyless helper: resolve CIK, download the latest filing into `data/`, honouring SEC's User-Agent and rate rules. Optional, outside the plugin — a concrete "bring your own data" path | M |
-| 6.9 | Extend `COUNT_DOCS` | Add `FAQ.md`, `PLATFORM-COMPATIBILITY.md`, `CONTRIBUTING.md`, and the README test-count lines — or archive the stale docs (§7) | S |
-| 6.10 | `scripts/build-cheatsheet.js` | Render the printable cheat sheet from the Glossary and signal-score bands so it never drifts | S |
-| 6.11 | `scripts/lib/signal-block.js` | One shared parser for the signal block / JSON footer used by 6.3, 6.4, `site-review.js`, and the site checker | S |
-| 6.12 | `scripts/gen-current-state.js` | Regenerate the "Current State" block in `CLAUDE.md` from the filesystem (open item A3) | S |
+| 6.9 | Extend `COUNT_DOCS` | Add `FAQ.md`, `PLATFORM-COMPATIBILITY.md`, `CONTRIBUTING.md`, and the README test-count lines — or archive the stale docs (§7) | S | ✅ PR #26 |
+| 6.10 | `scripts/build-cheatsheet.js` | Render the printable cheat sheet from the Glossary and signal-score bands so it never drifts | S | ⬜ |
+| 6.11 | `scripts/lib/signal-block.js` | One shared parser for the signal block / JSON footer used by 6.3, 6.4, `site-review.js`, and the site checker | S | ✅ PR #26 |
+| 6.12 | `scripts/gen-current-state.js` | Regenerate the "Current State" block in `CLAUDE.md` from the filesystem (open item A3) | S | ⬜ |
 
 ---
 
 ## 7. Consistency issues found during this review
 
-All verified against the working tree at v1.11.0. Suitable for one patch release (**1.11.1**).
+All verified against the working tree at v1.11.0. **All rows below were fixed in [PR #26](https://github.com/yennanliu/InvestSkill/pull/26).**
 
 | File | Line | Says | Should say |
 |------|------|------|------------|

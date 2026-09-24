@@ -70,7 +70,7 @@ claude
 /plugin list
 ```
 
-You should see `us-stock-analysis` in the list with 27 available skills.
+You should see `us-stock-analysis` in the list with 28 available skills (24 analysis frameworks, 3 aliases, and the `report-generator` output tool).
 
 ### Quick Test
 
@@ -152,7 +152,7 @@ plugins/us-stock-analysis/skills/
 ├── financial-report-analyst/SKILL.md
 ├── chart-master/SKILL.md           ← v1.6.0
 ├── full-report/SKILL.md            ← v1.6.0
-└── ... (27 skills total)
+└── ... (28 skills total)
 ```
 
 ### The Signal Block
@@ -2063,11 +2063,36 @@ Real-world investor scenarios showing how to combine multiple skills.
 total-return comparison — in a strong rally the trim leg *costs* you money, and the
 plan says so in dollars.
 
+### Workflow H — Write the Thesis Down, Then Check It
+
+**Scenario:** You've done the work (Workflow E or G) and opened a position. Three months from now you want to know whether the *reason* you bought still holds — not how you feel about the price.
+
+```bash
+# Step 1: Open the thesis file while the analysis is fresh
+/us-stock-analysis:thesis-tracker NVDA — bought at $118 on 2026-05-30; thesis: data-center
+demand compounds for two more years and the market is pricing a one-off cycle
+# Paste the stock-eval and bear-case outputs. Returns: a sharpened one-paragraph thesis,
+# 3–5 KPIs with thresholds, triggers imported from bear-case's Thesis-Killers, the catalyst
+# list, a pre-mortem, and output/thesis/NVDA.md with status INTACT and a next-check date
+
+# Step 2: After the next print, re-check it against the new numbers
+/us-stock-analysis:thesis-tracker NVDA --update
+# Paste the 10-Q highlights. Returns one status line first —
+#   NVDA · WEAKENED · 2026-08-29 — Gross margin 68.1% (was 75.5%) breached the ≥ 70% threshold
+# — then the KPI table (old → new), which triggers fired, and a new decision-log row
+
+# Step 3: Let the status drive the position skill, not the other way round
+/us-stock-analysis:position-ladder NVDA
+# WEAKENED = hold, no adding, check sooner. BROKEN = the reason to own it is gone.
+```
+
+**Why bother:** the file is the only defence against the two classic errors — averaging down on a broken story and selling a working one on a bad week. Closed files feed the post-trade review.
+
 ---
 
 ## 5. Cross-AI Usage
 
-InvestSkill works with any AI assistant. The `prompts/` directory contains all 26 analysis frameworks as standalone files.
+InvestSkill works with any AI assistant. The `prompts/` directory contains all 24 analysis frameworks (plus 3 aliases and the report-generator output tool) as standalone files.
 
 ### Gemini CLI
 

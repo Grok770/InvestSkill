@@ -381,7 +381,7 @@ Generate standalone HTML file with the following structure:
                 </div>
                 <div class="hero-meta-item">
                     <span class="hero-meta-label">Analyst</span>
-                    <span class="hero-meta-value">Claude Investment Analysis</span>
+                    <span class="hero-meta-value">InvestSkill Investment Analysis</span>
                 </div>
                 <div class="hero-meta-item">
                     <span class="hero-meta-label">Price at Report</span>
@@ -544,7 +544,7 @@ Generate standalone HTML file with the following structure:
                 Consult a licensed financial advisor before making investment decisions.
             </div>
             <div class="footer-brand">
-                InvestSkill<br>Claude Investment Analysis
+                InvestSkill<br>Investment Analysis
             </div>
         </div>
 
@@ -736,7 +736,7 @@ const { chromium } = require('playwright');
 **Example 1: Fundamental Analysis Report**
 ```
 User: /fundamental-analysis AAPL
-[Claude generates analysis]
+[Assistant generates analysis]
 
 User: /report-generator --type comprehensive --format html
 [Claude generates HTML report with embedded fundamental analysis and charts]
@@ -831,3 +831,26 @@ Design notes:
 - Large ghost watermark text (`.signal-watermark`) reinforces the verdict at a glance
 
 For multi-skill bundle reports (like /research-bundle), show a composite signal summary at the top of the report with individual skill scores in a row of `.signal-stat` items inside a single `.signal-box`.
+
+---
+
+When this skill generates or embeds a signal in an HTML report, the signal block MUST follow this standardized format:
+
+```
+╔══════════════════════════════════════════════╗
+║              INVESTMENT SIGNAL               ║
+╠══════════════════════════════════════════════╣
+║ Signal:      BULLISH / NEUTRAL / BEARISH     ║
+║ Confidence:  HIGH / MEDIUM / LOW             ║
+║ Horizon:     SHORT / MEDIUM / LONG-TERM      ║
+║ Score:       X.X / 10                        ║
+╠══════════════════════════════════════════════╣
+║ Action:      BUY / HOLD / SELL               ║
+║ Conviction:  STRONG / MODERATE / WEAK        ║
+╚══════════════════════════════════════════════╝
+```
+
+Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
+
+**Disclaimer:** Educational analysis only. Not financial advice.
+

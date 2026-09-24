@@ -220,7 +220,7 @@ Check that Cursor loaded rules by asking:
 What analysis frameworks are available?
 ```
 
-Cursor should mention the 26 frameworks and `.cursor/rules/invest-skill.mdc`.
+Cursor should mention the 24 frameworks and `.cursor/rules/invest-skill.mdc`.
 
 ### Rule File Check
 
@@ -405,7 +405,7 @@ Analyze trends and quality
 
 In Cursor, you can explore:
 - `.cursor/rules/invest-skill.mdc` — Rule definitions
-- `prompts/` — All 26 framework files
+- `prompts/` — All 24 framework files (+ 3 aliases, 1 output tool)
 - `PLATFORM-COMPATIBILITY.md` — Feature comparison
 
 ---

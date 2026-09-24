@@ -1,6 +1,6 @@
 # InvestSkill — GitHub Copilot Setup & Usage Guide
 
-This repository contains 26 professional investment analysis frameworks for US stock markets. When working in this workspace, Copilot automatically loads these analysis methodologies to provide institutional-quality investment analysis.
+This repository contains 24 professional investment analysis frameworks for US stock markets. When working in this workspace, Copilot automatically loads these analysis methodologies to provide institutional-quality investment analysis.
 
 ## Installation & Setup
 
@@ -21,7 +21,7 @@ GitHub Copilot automatically loads this file when you work in the InvestSkill re
 
 3. **Open Copilot Chat** (usually `Ctrl+K` or `Cmd+K`)
    - Copilot automatically loads `copilot-instructions.md`
-   - You now have access to all 26 analysis frameworks
+   - You now have access to all 24 analysis frameworks
 
 ### Verify Setup
 
@@ -34,17 +34,15 @@ If Copilot references the frameworks, setup is complete!
 
 ---
 
-## Available Analysis Frameworks (26 frameworks + 1 output tool)
+## Available Analysis Frameworks (24 frameworks + 3 aliases + 1 output tool)
 
-### Core Stock Analysis (6 frameworks)
+### Core Stock Analysis (4 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
 | Stock Evaluation | `prompts/stock-eval.md` | Comprehensive stock quality scoring |
 | Stock Valuation | `prompts/stock-valuation.md` | Multi-method valuation (DCF + comps + EV) |
-| Fundamental Analysis | `prompts/fundamental-analysis.md` | Deep financial statement dive |
 | Technical Analysis | `prompts/technical-analysis.md` | Chart patterns and indicators |
-| DCF Valuation | `prompts/dcf-valuation.md` | Intrinsic value modeling |
 | Economics Analysis | `prompts/economics-analysis.md` | Macro outlook and recession risk |
 
 ### Financial Report Analysis (3 frameworks)
@@ -64,7 +62,7 @@ If Copilot references the frameworks, setup is complete!
 | Dividend Analysis | `prompts/dividend-analysis.md` | Dividend safety and sustainability |
 | Short Interest | `prompts/short-interest.md` | Squeeze potential and bearish thesis |
 
-### Advanced Analysis (9 frameworks)
+### Advanced Analysis (10 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
@@ -77,12 +75,12 @@ If Copilot references the frameworks, setup is complete!
 | Catalyst Calendar | `prompts/catalyst-calendar.md` | Forward-looking 90-day event calendar, impact scoring |
 | Bear Case | `prompts/bear-case.md` | One-sided short thesis, downside target, counterevidence to a bull thesis |
 | Position Ladder | `prompts/position-ladder.md` | Staged entry ladder, share-count floor/ceiling, trim/re-add cost-basis cycle, wash-sale flags |
+| Thesis Tracker | `prompts/thesis-tracker.md` | Write, save, and re-check an investment thesis — KPIs with thresholds, invalidation triggers, catalysts, a pre-mortem, and a decision log; `--update` re-reads the saved file against new data and returns INTACT / WEAKENED / BROKEN |
 
-### Full Research Bundle (2 frameworks)
+### Full Report (1 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
-| Research Bundle | `prompts/research-bundle.md` | Comprehensive multi-framework analysis |
 | Full Report (HTML) | `prompts/full-report.md` | Runs all modules and saves a standalone HTML report |
 
 ### Meta-Analysis & Visualization (3 frameworks)
@@ -92,6 +90,17 @@ If Copilot references the frameworks, setup is complete!
 | Result Validator | `prompts/result-validator.md` | Validate any analysis + confidence score (0–100) |
 | Chart Master | `prompts/chart-master.md` | Generate Mermaid/ASCII/HTML charts from financial data |
 | Report Generator | `prompts/report-generator.md` | Export analysis as a professional HTML/PDF report |
+
+### Aliases (3 redirects — installed, not counted as frameworks)
+
+These stubs remain so old references keep working; each points at the framework that absorbed it.
+
+| Framework | File | Redirects to |
+|-----------|------|--------------|
+| Fundamental Analysis | `prompts/fundamental-analysis.md` | `prompts/stock-eval.md` |
+| DCF Valuation | `prompts/dcf-valuation.md` | `prompts/stock-valuation.md` |
+| Research Bundle | `prompts/research-bundle.md` | `prompts/full-report.md` |
+
 
 ---
 
@@ -130,7 +139,7 @@ Reference specific prompt files for precise methodology:
 Use the framework in prompts/stock-valuation.md to analyze AAPL
 
 # Fundamental deep dive
-Apply prompts/fundamental-analysis.md to Microsoft's financials
+Apply prompts/stock-eval.md to Microsoft's financials
 
 # Technical analysis
 Reference prompts/technical-analysis.md for Tesla chart patterns
@@ -176,7 +185,7 @@ TSLA: 10%
 Compare AAPL and MSFT using the stock-valuation framework
 
 # Multiple stocks in one analysis
-Analyze AAPL, MSFT, and GOOGL using the research-bundle framework
+Analyze AAPL, MSFT, and GOOGL using the full-report framework
 
 # Sector comparison
 Compare valuations across tech stocks (AAPL, MSFT, NVDA, GOOGL, META)
@@ -217,13 +226,13 @@ Which sectors should I rotate into? Use the sector-analysis framework
 
 ```
 # Comprehensive analysis (all frameworks combined)
-Provide a complete investment analysis on Apple using the research-bundle framework
+Provide a complete investment analysis on Apple using the full-report framework
 
 # Quick version
-Quick analysis on Microsoft using the research-bundle framework
+Quick analysis on Microsoft using the full-report framework
 
 # Multi-stock comparison
-Compare AAPL, MSFT, and GOOGL comprehensively using the research-bundle framework
+Compare AAPL, MSFT, and GOOGL comprehensively using the full-report framework
 ```
 
 ### Follow-Up Questions
@@ -343,7 +352,7 @@ What's the valuation in the:
 
 ```
 InvestSkill/
-├── prompts/                    # 26 analysis frameworks
+├── prompts/                    # 24 analysis frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -366,6 +375,7 @@ InvestSkill/
 │   ├── research-bundle.md
 │   ├── result-validator.md
 │   ├── chart-master.md
+│   ├── thesis-tracker.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/                    # Claude Code plugin (optional)
 ├── .github/copilot-instructions.md  # This file (auto-loaded)
@@ -391,7 +401,7 @@ Use the framework in prompts/stock-valuation.md to analyze AAPL
 
 ```
 # Ask Copilot for more depth:
-Analyze AAPL using prompts/fundamental-analysis.md with:
+Analyze AAPL using prompts/stock-eval.md with:
 - Detailed balance sheet analysis
 - Cash flow quality assessment
 - Working capital trends
@@ -413,7 +423,7 @@ Use the stock-eval framework for MSFT, but format as:
 
 ## Project Overview
 
-- **26 Institutional-Quality Frameworks** — all tested and validated
+- **24 Institutional-Quality Frameworks** — all tested and validated (plus 3 aliases and 1 output tool)
 - **Works with Copilot Chat** — integrated into VS Code and JetBrains IDEs
 - **Universal Prompts** — also work with Gemini CLI, Cursor, and any AI tool
 - **Educational Focus** — for learning institutional analysis methods
@@ -424,7 +434,7 @@ Use the stock-eval framework for MSFT, but format as:
 ## Additional Resources
 
 - **README.md** — Complete setup guide for all platforms (Claude Code, Gemini, Cursor)
-- **prompts/** — All 26 analysis framework files
+- **prompts/** — All 24 analysis framework files (+ 3 aliases, 1 output tool)
 - **plugins/** — Claude Code plugin integration (optional)
 - **GitHub Issues** — Report problems or request features
 

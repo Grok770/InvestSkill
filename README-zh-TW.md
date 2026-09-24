@@ -4,7 +4,7 @@
 
 ### 美股市場專業投資分析工具
 
-**26 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
+**24 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
 
 **無需 API 金鑰 · 無需訂閱 · 完全免費**
 
@@ -22,7 +22,7 @@
 
 ## 🎯 什麼是 InvestSkill？
 
-InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 26 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
+InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 24 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
 
 **不用註冊，也不用付費。** 沒有 API 金鑰、沒有資料商訂閱、不必設定帳單——你只要用手上已有的 AI 助理（免費方案或本機模型都可以），InvestSkill 本身就只是 markdown 提示詞。詳見 [無需 API 金鑰，完全免費](#-無需-api-金鑰完全免費)。
 
@@ -41,12 +41,13 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
   <tr>
     <td width="50%">
 
-### ✨ 26 個專業框架
-- 6 個核心分析框架
+### ✨ 24 個專業框架
+- 4 個核心分析框架
 - 3 個財務報告分析
 - 4 個市場監控工具
-- 9 個進階研究工具
-- 5 個自動化元技能與輸出（含 report-generator 輸出工具）
+- 10 個進階研究工具
+- 3 個自動化元技能，加上 report-generator 輸出工具
+- 另有 3 個別名（轉址至吸收它們的技能，不計入框架數）
 
     </td>
     <td width="50%">
@@ -187,16 +188,22 @@ gemini
 
 ---
 
-## 📋 26 個框架總覽
+## 📋 24 個框架總覽
 
 | 類別 | 框架 | 用途 |
 |------|------|------|
-| **核心分析** (6) | stock-eval · fundamental-analysis · technical-analysis · economics-analysis · dcf-valuation · stock-valuation | 全方位股票評估 |
+| **核心分析** (4) | stock-eval · technical-analysis · economics-analysis · stock-valuation | 全方位股票評估 |
 | **財務報告** (3) | financial-report-analyst · 10k-digest · earnings-call-analysis | 深度文件分析 |
 | **市場監控** (4) | insider-trading · institutional-ownership · dividend-analysis · short-interest | 活動與情緒追蹤 |
-| **進階分析** (9) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** · **position-ladder** | 專項研究角度 |
-| **元技能與輸出** (5) | research-bundle · full-report · report-generator · chart-master · result-validator | 自動化與綜合輸出 |
+| **進階分析** (10) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** · **position-ladder** · **thesis-tracker** | 專項研究角度 |
+| **元技能與輸出** (3 + 1 輸出工具) | full-report · chart-master · result-validator · report-generator（輸出工具，不計入框架） | 自動化與綜合輸出 |
+| **別名** (3，不計入框架) | fundamental-analysis → stock-eval · dcf-valuation → stock-valuation · research-bundle → full-report | 舊名稱仍可用，會轉址到吸收它的技能 |
 
+> **Unreleased（下一版）新功能：**
+> - `thesis-tracker`（論點追蹤）— 把一份分析變成「與未來自己的契約」：一段可被證偽的論點、3–5 個附門檻的 KPI、失效觸發條件（從各技能的「論點失效條件」與 `bear-case` 的論點反證匯入）、催化劑日期、事前驗屍與決策日誌，存成 `output/thesis/<TICKER>.md`；`--update` 以新資料重新檢查並回傳 **INTACT / WEAKENED / BROKEN** 與具體改變的那一行
+> - `fundamental-analysis`、`dcf-valuation`、`research-bundle` 重新歸類為**別名**（轉址存根）：仍可安裝與使用，但不再計入框架數（24 個框架 + 3 個別名 + 1 個輸出工具）
+> - 每個分析技能都必須輸出 `Data & Sources` 表頭、資料驗證關卡與論點失效條件，由 `scripts/check-skill-contract.js` 在 `npm test` 中強制執行
+>
 > **v1.11.0 新功能：**
 > - `position-ladder`（分批建倉與降成本）— 單一持股的執行計畫：先控倉（設定持股下限／上限與集中度上限），再分批布局（依 ATR／百分比／支撐位設定加碼階梯），並在股價高於平均成本時賣出成本最高的批次、低於平均成本時再買回，於區間內循環降低整體成本。內含稅務批次選擇（FIFO vs. 指定批次）、洗售規則（wash sale）警示、總報酬 vs. 買進持有的誠實對照，以及「論點破損就停止加碼」的出場閘門
 >
@@ -248,7 +255,7 @@ gemini
 <summary><b>🔍 深度財報分析</b></summary>
 
 ```bash
-/us-stock-analysis:fundamental-analysis TICKER --visual
+/us-stock-analysis:stock-eval TICKER --visual
 /us-stock-analysis:earnings-call-analysis TICKER
 [貼上電話會議記錄]
 → 管理層語調、業績指引、風險與機會
@@ -352,8 +359,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ### 工作流程 2：完整盡職調查
 ```bash
 # 完整機構級分析
-/stock-eval AAPL
-/fundamental-analysis AAPL --visual
+/stock-eval AAPL --visual
 /technical-analysis AAPL --chart
 /stock-valuation AAPL --methods all
 /competitor-analysis AAPL --moat
@@ -364,7 +370,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ### 工作流程 3：財報季研究
 ```bash
 # 30 分鐘財報研究流程
-/fundamental-analysis TICKER --visual  # 財報前基準線
+/stock-eval TICKER --visual  # 財報前基準線
 /earnings-call-analysis TICKER [貼上電話會議記錄]  # 財報後分析
 /technical-analysis TICKER --chart  # 技術面設置
 /options-analysis TICKER --earnings  # 波動率預期
@@ -383,7 +389,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 
 | 功能 | InvestSkill | 通用 AI |
 |------|------------|---------|
-| **26 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
+| **24 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
 | **信號區塊** | ✅ 標準化格式 | ❌ 格式不一致 |
 | **全平台支援** | ✅ 原生支援 | ❌ 需要變通方案 |
 | **零 API 費用** | ✅ 免費 | ❌ 需付費 API |
@@ -396,10 +402,10 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ## 📊 專案狀態
 
 **目前版本：** 1.11.0
-**技能框架：** 26 個
-**通用提示詞：** 27 個
+**技能框架：** 24 個（另有 3 個別名、1 個輸出工具）
+**通用提示詞：** 28 個
 **支援平台：** 6 個
-**測試數量：** 294+ 個（全數通過）✅
+**測試：** 全數通過 ✅（結構、提示詞同步、技能契約、數量一致性、安裝腳本）
 
 ---
 

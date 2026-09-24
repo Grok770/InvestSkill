@@ -1,6 +1,6 @@
 # InvestSkill — Gemini CLI Setup & Usage Guide
 
-This project contains professional investment analysis prompt frameworks for US stock markets. When you run Gemini CLI in this directory, all 26 analysis frameworks are automatically available.
+This project contains professional investment analysis prompt frameworks for US stock markets. When you run Gemini CLI in this directory, all 24 analysis frameworks are automatically available.
 
 ## Installation & Setup
 
@@ -14,7 +14,7 @@ cd /path/to/InvestSkill
 gemini
 ```
 
-**That's it!** Gemini CLI automatically loads `GEMINI.md` and gives you access to all 26 analysis frameworks in the `prompts/` directory.
+**That's it!** Gemini CLI automatically loads `GEMINI.md` and gives you access to all 24 analysis frameworks in the `prompts/` directory.
 
 ### Verify Setup
 
@@ -28,17 +28,15 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 
 ---
 
-## Available Analysis Prompts (26 frameworks + 1 output tool)
+## Available Analysis Prompts (24 frameworks + 3 aliases + 1 output tool)
 
-### Core Stock Analysis (6 skills)
+### Core Stock Analysis (4 skills)
 
 | Analysis Type               | Prompt File                            | Usage Example                              |
 |-----------------------------|----------------------------------------|--------------------------------------------|
 | Stock Evaluation            | `@prompts/stock-eval.md`               | `Evaluate AAPL using this framework`      |
 | Stock Valuation (DCF+)      | `@prompts/stock-valuation.md`          | `Analyze MSFT using all valuation methods` |
-| Fundamental Analysis        | `@prompts/fundamental-analysis.md`     | `Deep dive on NVDA fundamentals`           |
 | Technical Analysis          | `@prompts/technical-analysis.md`       | `Analyze TSLA chart patterns`              |
-| DCF Valuation               | `@prompts/dcf-valuation.md`            | `Build DCF model for GOOGL`                |
 | Economics Analysis          | `@prompts/economics-analysis.md`       | `What's the current economic outlook?`     |
 
 ### Financial Report Analysis (3 skills)
@@ -58,7 +56,7 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 | Dividend Analysis           | `@prompts/dividend-analysis.md`        | `Is JNJ dividend safe?`                    |
 | Short Interest              | `@prompts/short-interest.md`           | `What's the squeeze potential in GME?`     |
 
-### Advanced Analysis (9 skills)
+### Advanced Analysis (10 skills)
 
 | Analysis Type               | Prompt File                            | Usage Example                              |
 |-----------------------------|----------------------------------------|--------------------------------------------|
@@ -71,12 +69,12 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 | Catalyst Calendar           | `@prompts/catalyst-calendar.md`        | `What catalysts are coming for TSLA?`      |
 | Bear Case                   | `@prompts/bear-case.md`                | `Build the bear case against TSLA`         |
 | Position Ladder             | `@prompts/position-ladder.md`          | `I hold 20 AVGO at $128, now $122 — plan`  |
+| Thesis Tracker | `@prompts/thesis-tracker.md` | `Open a thesis file for NVDA` |
 
-### Full Research Bundle (2 skills)
+### Full Report (1 skills)
 
 | Analysis Type               | Prompt File                            | Usage Example                              |
 |-----------------------------|----------------------------------------|--------------------------------------------|
-| Research Bundle             | `@prompts/research-bundle.md`          | `Complete analysis on AAPL`                |
 | Full Report (HTML)          | `@prompts/full-report.md`              | `Generate full interactive report for NVDA`|
 
 ### Meta-Analysis & Visualization (3 skills)
@@ -86,6 +84,17 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 | Result Validator            | `@prompts/result-validator.md`         | `[paste analysis] Score confidence`        |
 | Chart Master                | `@prompts/chart-master.md`             | `[paste data] Generate revenue chart`      |
 | Report Generator            | `@prompts/report-generator.md`         | `[paste analysis] Export as HTML report`   |
+
+### Aliases (3 redirects — installed, not counted as frameworks)
+
+These stubs remain so old references keep working; each points at the framework that absorbed it.
+
+| Analysis Type               | Prompt File                            | Redirects to                               |
+|-----------------------------|----------------------------------------|--------------------------------------------|
+| Fundamental Analysis        | `@prompts/fundamental-analysis.md`     | `@prompts/stock-eval.md`                   |
+| DCF Valuation               | `@prompts/dcf-valuation.md`            | `@prompts/stock-valuation.md`              |
+| Research Bundle             | `@prompts/research-bundle.md`          | `@prompts/full-report.md`                  |
+
 
 ---
 
@@ -98,7 +107,7 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 > @prompts/stock-eval.md Evaluate Apple with Piotroski scoring
 
 # Fundamental analysis
-> @prompts/fundamental-analysis.md Deep analysis of Microsoft's financials
+> @prompts/stock-eval.md Deep analysis of Microsoft's financials
 
 # Technical analysis
 > @prompts/technical-analysis.md What are the key chart levels for Tesla?
@@ -125,7 +134,7 @@ AAPL FY2024 --lang zh-TW --output aapl-10k-digest.md
 What's the management tone and guidance outlook?
 
 # Upload or paste financial statements
-> @prompts/fundamental-analysis.md
+> @prompts/stock-eval.md
 [paste balance sheet and income statement]
 Analyze debt levels and cash flow quality
 ```
@@ -193,22 +202,22 @@ Generate an HTML report for AAPL
 [paste fundamental-analysis output]
 Executive summary report, HTML format
 
-# Full research bundle → HTML report
-> @prompts/research-bundle.md Complete analysis on NVDA
+# Full report → HTML report
+> @prompts/full-report.md Complete analysis on NVDA
 > @prompts/report-generator.md Convert the above into a professional HTML report
 ```
 
-### Full Research Bundle (Most Complete)
+### Full Report (Most Complete)
 
 ```
 # Single command for comprehensive analysis
-> @prompts/research-bundle.md Provide complete analysis on Apple (AAPL)
+> @prompts/full-report.md Provide complete analysis on Apple (AAPL)
 
 # Quick version (key metrics only)
-> @prompts/research-bundle.md Quick analysis of Microsoft
+> @prompts/full-report.md Quick analysis of Microsoft
 
 # Comparison mode (multiple stocks)
-> @prompts/research-bundle.md Compare AAPL, MSFT, and GOOGL
+> @prompts/full-report.md Compare AAPL, MSFT, and GOOGL
 ```
 
 ---
@@ -265,7 +274,7 @@ All analyses end with this format:
 ### 2. Paste Financial Data Directly
 ```
 # Paste balance sheet, income statement, or SEC filings
-> @prompts/fundamental-analysis.md
+> @prompts/stock-eval.md
 [paste your financial statements]
 
 # Gemini will extract and analyze the data
@@ -282,7 +291,7 @@ All analyses end with this format:
 ### 4. Provide Context
 ```
 # More specific = better results
-> @prompts/dcf-valuation.md
+> @prompts/stock-valuation.md
 > Stock: MSFT
 > Time horizon: 5 years
 > Target market growth: 15% CAGR
@@ -306,7 +315,7 @@ All analyses end with this format:
 
 ```
 InvestSkill/
-├── prompts/                    # 26 analysis frameworks
+├── prompts/                    # 24 analysis frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -329,6 +338,7 @@ InvestSkill/
 │   ├── research-bundle.md
 │   ├── result-validator.md
 │   ├── chart-master.md
+│   ├── thesis-tracker.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/                    # Claude Code plugin (optional)
 │   └── us-stock-analysis/
@@ -376,7 +386,7 @@ gemini
 ## Additional Resources
 
 - **README.md** — Complete project overview and all platforms
-- **prompts/** directory — All 26 analysis frameworks
+- **prompts/** directory — All 24 analysis frameworks
 - **plugins/** — Claude Code plugin configuration (if using Claude Code)
 - **GitHub Issues** — Report bugs or suggest improvements
 

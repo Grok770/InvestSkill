@@ -10,12 +10,30 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+
+---
+
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
 
 ---
 
@@ -177,6 +195,30 @@ For each of the bottom 3 ranked stocks, provide:
 
 ---
 
+## Thesis Invalidation
+
+A ranking is a snapshot. After the screening summary, state what would reorder it:
+
+**The Top Pick loses its rank if:**
+- Its composite falls below the #2 ticker's score on the next re-run — name the dimension most likely to slip (usually Momentum or Sentiment, which move fastest)
+- Its Valuation score was carried by a single depressed multiple that mean-reverts
+- A `bear-case` run on it surfaces a red flag none of the five dimensions weight (accounting quality, governance, customer concentration)
+
+**The Avoid list is wrong if:**
+- A name was penalized for a one-off (impairment, litigation charge, guidance reset) that the next quarter normalizes
+- Momentum was measured across a market-wide drawdown rather than a stock-specific one
+
+**The Market Bias flips if:**
+- The average composite crosses 6.0 or 4.0 — check whether one outlier dragged it, not the universe
+
+**Re-run this screen when:**
+- [ ] Any screened ticker reports earnings
+- [ ] The universe changes (add/remove a ticker — the ranking is relative)
+- [ ] 30 days have elapsed (momentum and sentiment decay fastest)
+- [ ] The sector or factor regime shifts (`economics-analysis` / `sector-analysis`)
+
+---
+
 ## Standard Signal Output (Multi-Stock)
 
 End every screening session with this standardized block reflecting the overall health of the screened universe:
@@ -197,3 +239,5 @@ End every screening session with this standardized block reflecting the overall 
 Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
 Market Bias: derived from the average composite score of the screened universe. BULLISH if avg ≥ 6.0, NEUTRAL if 4.0–5.9, BEARISH if < 4.0.
 Best Sector: the GICS sector with the highest average composite score across all screened tickers in that sector.
+
+**Disclaimer:** Educational analysis only. Not financial advice.

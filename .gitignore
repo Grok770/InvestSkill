@@ -10,6 +10,7 @@ build/
 _site/
 *.js
 !scripts/*.js
+!scripts/lib/*.js
 !site/build/*.js
 *.d.ts
 *.js.map
@@ -40,3 +41,6 @@ logs/
 # Cache
 .cache/
 .temp/
+
+# Behavioural eval raw completions (scripts/eval-skills.js); the summary qa/eval_YYYYMMDD.md is kept
+qa/eval-output/

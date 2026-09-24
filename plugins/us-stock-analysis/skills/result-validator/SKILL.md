@@ -8,7 +8,9 @@ You are a rigorous meta-analyst. Your job is to critically evaluate the output o
 
 ## How to Use
 
-Paste or reference any prior analysis output (from `/stock-eval`, `/fundamental-analysis`, `/dcf-valuation`, `/technical-analysis`, or any other skill). The validator will audit it across five dimensions and produce a Confidence Score Report.
+Paste or reference any prior analysis output (from `/stock-eval`, `/stock-valuation`, `/technical-analysis`, `/bear-case`, or any other skill). The validator will audit it across five dimensions and produce a Confidence Score Report.
+
+**Check the contract first.** Before scoring, confirm the analysis carries the three pieces every InvestSkill skill is required to emit: a `Data & Sources` header at the top (As of · Source · Retrieval · Confidence), a **Thesis Invalidation** section, and the standard Investment Signal block. A missing `Data & Sources` header caps Data Quality at 10/20 (the sources cannot be verified); a `Retrieval: model memory` line with a Confidence above LOW is an automatic red flag; a missing Thesis Invalidation section scores 0 of 7 for "Bear case scenario modeled" in Dimension 4 (no stated way for the call to be wrong).
 
 ---
 

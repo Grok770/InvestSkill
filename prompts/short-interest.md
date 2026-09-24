@@ -6,7 +6,7 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
@@ -15,16 +15,37 @@ Never silently substitute training-data estimates for current prices. When in do
 
 ---
 
-You are an expert financial analyst. Conduct comprehensive analysis of short selling activity, squeeze potential, cost-of-borrow dynamics, and bearish positioning signals for US-listed stocks. Combine FINRA short interest data, options market signals, and technical context to assess directional risk.
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
+
+---
+
+Comprehensive analysis of short selling activity, squeeze potential, cost-of-borrow dynamics, and bearish positioning signals for US-listed stocks. Combines FINRA short interest data, options market signals, and technical context to assess directional risk.
 
 ## Analysis Framework
 
 ### 1. Short Interest Overview
 
+Measure the current level and trend of bearish positioning:
+
 **Core Short Interest Metrics**
 - **Short interest (shares)**: Total number of shares sold short and not yet covered or closed
-- **Short float %**: Short shares / Total float (shares available for public trading) — more actionable metric
-- **Short interest as % of shares outstanding**: Short shares / Total shares outstanding
+- **Short float %**: Short shares / Total float (shares available for public trading)
+- **Short interest as % of shares outstanding**: Short shares / Total shares outstanding (includes locked-up insider shares)
+- Float % is the more actionable metric — tighter supply amplifies squeeze dynamics
 
 **Short Float % Thresholds**
 ```
@@ -39,7 +60,8 @@ Short Float %     Interpretation
 
 **Days to Cover (Short Interest Ratio)**
 - Formula: Short interest (shares) / Average daily trading volume
-- Represents how many trading days it would take all shorts to cover at normal volume
+- Represents: how many trading days it would take all shorts to cover at normal volume
+- Also called: Short Interest Ratio (SIR)
 
 ```
 DTC Range         Interpretation
@@ -52,6 +74,7 @@ DTC Range         Interpretation
 ```
 
 **Change in Short Interest Trend**
+- Compare last 4 reporting periods (approximately 2 months)
 - Increasing short interest: bears building positions, growing conviction against stock
 - Decreasing short interest: short covering, thesis deterioration, or squeeze in progress
 - Spike in short interest: new negative catalyst or activist short report
@@ -64,7 +87,7 @@ DTC Range         Interpretation
 Assign points based on the following conditions:
 - Short float > 20%: +3 points (high short interest is the core prerequisite)
 - Days to Cover > 10: +2 points (exit difficulty creates forced buying)
-- Recent positive catalyst: +2 points (earnings beat, product launch, FDA approval)
+- Recent positive catalyst (earnings beat, product launch, partnership, FDA approval): +2 points
 - Strong price momentum (price above 50-day moving average): +1 point
 - Limited share supply (small float < 50 million shares): +1 point
 - High borrow rate (annualized cost > 5%): +1 point (shorts paying carrying cost = time pressure)
@@ -82,13 +105,13 @@ Squeeze Score     Probability Assessment
 
 All three must be present simultaneously:
 1. **High short interest**: Float% > 15% AND DTC > 7 days (supply-demand imbalance)
-2. **Catalyst or forced covering trigger**: positive news, options expiration, index inclusion, or institutional accumulation
-3. **Limited downside floor**: fundamental support or strong technical support level that prevents shorts from adding
+2. **Catalyst or forced covering trigger**: positive news, options expiration forcing hedging, index inclusion, or institutional accumulation
+3. **Limited downside floor**: fundamental support (valuation floor, asset value) or strong technical support level that prevents shorts from adding
 
 **Historical Squeeze Pattern Reference**
 - GameStop (GME) January 2021: 140% short float + retail coordination + options gamma cascade
-- Volkswagen (VW) October 2008: Porsche cornered supply; DTC extreme
-- Common precursors: borrow rate spikes sharply before price spike; DTC > 10 sustained for weeks; options call OI builds in OTM strikes
+- Volkswagen (VW) October 2008: Porsche cornered supply, DTC extreme, short float near 13% of total shares outstanding
+- Common precursors: borrow rate spikes sharply before price spike, DTC > 10 sustained for weeks, options call OI builds in OTM strikes
 - Key lesson: squeezes are self-reinforcing — covering buying creates price increase which triggers more covering
 
 ### 3. Borrow Rate and Cost of Short
@@ -104,60 +127,76 @@ Annualized Rate    Classification    Interpretation
 ```
 
 **Borrow Rate Impact Analysis**
-- At 20% annualized borrow rate: shorts pay ~20 cents per $1 of position per year
+- At 20% annualized borrow rate: a short position costs shorts approximately 20 cents per $1 of position per year
 - High borrow rates create urgency to cover — especially if stock trades sideways or up
+- Borrow availability changes: easy to borrow → hard to borrow transition signals supply tightening
 - **Recall risk**: Prime brokers can recall shares on loan with short notice, forcing mandatory covering
 - Borrow rate spike (rapid increase in 1-2 weeks) is a leading indicator of pending squeeze
 
+**Implications of Borrow Dynamics**
+- High borrow cost + high short interest = unstable equilibrium
+- Time works against short sellers in high-borrow-rate environments
+- Tracking borrow rate trend over 30-60 days is more valuable than single-point reading
+
 ### 4. Bearish Thesis Evaluation
 
+Understand why short sellers are positioned against the company:
+
 **Common Short Thesis Categories**
-- **Accounting concerns**: Revenue recognition irregularities, off-balance-sheet liabilities (Hindenburg, Muddy Waters methodologies)
+- **Accounting concerns**: Revenue recognition irregularities, off-balance-sheet liabilities, undisclosed related-party transactions (Hindenburg Research, Muddy Waters Research methodologies)
 - **Business model deterioration**: Loss of competitive advantage, customer churn, unit economics breakdown
 - **Competition threats**: New entrant disrupting market, margin compression from rivals
 - **Regulatory or legal risk**: Pending investigations, product liability, antitrust exposure
-- **Valuation excess**: Momentum short — stock priced for perfection (SPAC shorts, meme stocks)
+- **Valuation excess**: Momentum short — stock priced for perfection with no margin of safety (SPAC shorts, meme stocks)
 - **Structural decline**: Industry secular headwinds, obsolescence risk, debt spiral
 
 **Short Seller Credibility Assessment**
 - Known activist short sellers (Hindenburg, Citron, Muddy Waters, Gotham City): publish detailed reports, track record publicly known
-- Hedge fund shorts (13F disclosures): often fundamental/valuation-based
+- Hedge fund shorts (13F disclosures): disclosed quarterly, often fundamental/valuation-based
 - Anonymous internet posts: low credibility, but sometimes contain legitimate leads
+- Evaluate track record: success rate of prior short thesis for identified short seller
 
 **Counterarguments to Short Thesis**
 - What data would disprove the bearish case?
 - Has management addressed the concerns publicly?
+- Are there independent analysts or auditors refuting the claims?
 - Is there a fundamental value floor (book value, sum-of-parts) that limits downside?
 - Has the stock already priced in the worst-case scenario?
 
 ### 5. Options Market Signal Integration
 
+Read options positioning as a forward-looking indicator of expected moves:
+
 **Put/Call Ratio Analysis**
 - Put/Call open interest ratio > 1.5: heavy hedging or speculative bearish bet
 - Put/Call volume ratio spike: institutional protection buying (precedes downside)
+- Call/Put ratio spike: aggressive bullish buying or short hedge activity
 - Compare current ratio vs. 30/60/90-day average to identify anomalies
 
 **Implied Volatility Skew**
 - **Negative skew (normal for stocks)**: OTM put IV > OTM call IV — market pricing asymmetric downside
-- **Skew steepening**: increasing fear of downside
+- **Skew steepening**: increasing fear of downside, shorts adding OTM put protection
 - **Skew flattening or reversal**: call buying exceeds put buying — squeeze setup or bullish catalyst anticipated
+- Track 25-delta put IV minus 25-delta call IV as skew measure
 
 **Large Options Activity Signals**
 - Large OTM put purchases (protective hedges from longs or speculative shorts)
 - Heavy OTM call buying near key resistance: anticipation of short squeeze catalyst
+- Gamma exposure at strikes: dealer hedging requirements create mechanical price pressure at specific levels
 - Unusual options activity 1-5 days before price move: informed positioning
 
 ### 6. Technical Analysis of Short Positions
 
 **Short Seller Cost Basis Estimation**
 - Average price of shares shorted (based on short interest trend vs. stock price timeline)
-- Are shorts currently at a profit (stock below average short price) or a loss?
+- Are shorts currently at a profit (stock below average short price) or a loss (stock above)?
 - Underwater shorts = trapped shorts = higher squeeze probability as losses mount
 
 **Key Price Levels for Short Positioning**
 - Resistance zones where shorts typically initiate positions
 - Prior failed breakout levels (shorts cluster above failed resistance)
 - 52-week high: shorts often add above if they believe stock is overvalued
+- Volume-weighted average price of recent short interest build
 
 **Short Covering Patterns in Price Action**
 - Sharp V-reversal on elevated volume with no obvious news: forced covering
@@ -165,42 +204,95 @@ Annualized Rate    Classification    Interpretation
 - Failure to break below support despite negative sentiment: shorts losing control
 - Morning spike followed by day-long grind higher: staggered covering through session
 
+**Support Levels Affecting Covering Triggers**
+- Key technical support: breakdown below = shorts add, hold = shorts must cover
+- 200-day moving average: institutional reference level where shorts reconsider
+- Prior consolidation zones: base building = shorts squeezed out on breakout
+
 ### 7. Reporting Schedule and Data Lag
 
 **FINRA Short Interest Reporting Calendar**
-- Reported as of the 15th and last business day of each month
+- Short interest is reported as of the 15th and last business day of each month
 - Data published approximately 4-5 business days after the settlement date
 - Result: up to a 2-week data lag between actual positioning and publicly available data
+- Critical caveat: short interest data reflects past positioning, not current
+
+**Exchange-Reported Short Interest**
+- NYSE and NASDAQ publish their own short interest data on similar schedules
+- Cross-reference exchange data with FINRA for completeness
+- Real-time short volume (vs. short interest) available daily from FINRA and exchanges
 
 **Using Short Volume Data for Fresher Signal**
-- Daily short volume (FINRA Rule 4560): not equal to short interest
-- Short volume / total volume ratio > 50% sustained over multiple days: active selling pressure
+- Daily short volume (available same day via FINRA Rule 4560): not equal to short interest
+- Short volume / total volume ratio: measures daily bearish activity direction
+- Short volume ratio > 50% sustained over multiple days: active selling pressure
+- Limitation: covers only on-exchange transactions, misses OTC activity
 
 ### 8. Risk Considerations
 
 **Risks for Short Sellers**
 - Unlimited loss potential: no cap on how high a stock can rise
 - Borrow recall: prime broker can force position closure on short notice
-- Dividend obligation: short sellers must pay dividends on borrowed shares
-- SSR rule: short sale restriction triggers when stock falls 10% in a day
+- Dividend obligation: short sellers must pay dividends to the shares they borrowed
+- Regulatory restrictions: short sale restriction (SSR) rule triggers when stock falls 10% in a day, restricting short sales
+- Crowded short: many shorts in same name = all exit simultaneously on negative news = violent squeeze
+
+**Risks for Long Traders Playing Squeeze**
+- Crowded momentum trade: late entrants face no new buyers once squeeze exhausts
+- Fundamental deterioration: short thesis may be correct — stock declines post-squeeze
+- Entry timing risk: squeezes can reverse violently once covering is complete
+- Borrow constraints: difficulty exiting short at target because all brokers pulling borrow simultaneously
+- Regulatory risk: market manipulation scrutiny for coordinated squeeze activity
 
 **Position Sizing Guidelines**
-- Short squeeze plays: high risk/high reward; 1-3% of portfolio maximum
+- Short squeeze plays: high risk/high reward, size accordingly (1-3% of portfolio maximum)
 - Risk is binary: squeeze fully materializes or fundamental thesis plays out
 - Define exit criteria before entry — both upside target and stop-loss level
 
-## Data Sources
+### 9. Data Sources
 
+**Short Interest Data**
 - **FINRA Short Interest Data**: finra.org/investors/short-sale-volume-data (official, free, twice-monthly)
+- **NYSE Short Interest Reports**: NYSE-listed stocks, semi-monthly
+- **NASDAQ Short Interest Reports**: NASDAQ-listed stocks, semi-monthly
+- **Shortvolume.com**: Free daily short volume data by ticker
+
+**Screeners and Analytics**
 - **Finviz**: Short float % in stock screener (sortable, free)
 - **Market Chameleon**: Short interest trend charts, borrow rate tracking
-- **Iborrowdesk.com**: Free near-real-time borrow rate data
-- **S3 Partners**: Professional-grade short analytics (premium)
+- **Iborrowdesk.com**: Free near-real-time borrow rate data from Interactive Brokers and TD Ameritrade
+
+**Premium Short Data**
+- **S3 Partners**: Professional-grade short analytics, real-time borrow rates, predictive short interest
+- **Interactive Brokers Stock Loan Availability**: Borrow rate and availability for account holders
 - **Bloomberg Terminal**: SRFD function for comprehensive short interest data
+
+## Input Formats
+
+### Format 1: Single Stock Analysis
+```
+User: short-interest GME
+
+The assistant retrieves current short float, DTC, borrow rate, and computes Squeeze Score
+```
+
+### Format 2: Squeeze Potential Scan
+```
+User: short-interest --scan squeeze-potential
+
+The assistant screens for stocks meeting high Squeeze Score criteria (short float >20%, DTC >10, catalyst present)
+```
+
+### Format 3: Sector Short Analysis
+```
+User: short-interest --sector technology
+
+The assistant identifies most shorted technology stocks and evaluates comparative squeeze potential
+```
 
 ## Output
 
-Provide a comprehensive short interest analysis report with:
+Provide a comprehensive short interest analysis report with the following sections:
 
 ### 1. Short Interest Summary
 ```
@@ -228,7 +320,7 @@ Squeeze Probability: Low / Moderate / High / Very High / Extreme
 ```
 
 ### 3. Short Thesis Summary
-- Primary bear thesis (1-3 sentence summary)
+- Primary bear thesis (1-3 sentence summary of why shorts are positioned here)
 - Source of short thesis (activist report, valuation, fundamental deterioration)
 - Short seller credibility assessment
 
@@ -239,13 +331,13 @@ Squeeze Probability: Low / Moderate / High / Very High / Extreme
 
 ### 5. Options Market Context
 - Put/Call ratio vs. 30-day average
-- IV skew assessment
+- IV skew assessment (steep put skew vs. flat)
 - Any unusual options activity flagged
 
 ### 6. Technical Setup
-- Stock above or below 50/200-day moving average?
+- Is stock above or below 50/200-day moving average?
 - Key support and resistance levels
-- Price action consistent with squeeze initiation or continued decline?
+- Is price action consistent with squeeze initiation or continued decline?
 
 ### 7. Risk/Reward Assessment
 - For long (squeeze play): upside target, stop-loss, probability-weighted expected return
@@ -255,10 +347,12 @@ Squeeze Probability: Low / Moderate / High / Very High / Extreme
 - Short interest change threshold that would upgrade or downgrade squeeze probability
 - Catalyst calendar (earnings date, product event, regulatory decision)
 - Borrow rate level that signals imminent covering pressure
+- Price level that would technically confirm squeeze initiation
 
-## Signal Output
+## Standard Signal Output
 
-End every analysis with:
+All analysis concludes with this standardized block:
+
 ```
 ## Thesis Invalidation
 

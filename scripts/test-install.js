@@ -71,7 +71,8 @@ const SKILLS_DIR = path.join(ROOT, 'plugins/us-stock-analysis/skills');
 
 // report-generator is an output tool, not an analysis framework — the installer
 // reports one less than the number of prompt files it copies.
-const OUTPUT_ONLY = ['report-generator'];
+const registry = require('./lib/skill-registry');
+const OUTPUT_ONLY = [...registry.OUTPUT_TOOLS];
 
 const script = readFile(INSTALL_SH);
 if (script === null) {
@@ -86,7 +87,9 @@ const promptNames = fs.readdirSync(PROMPTS_DIR)
 const skillDirs = fs.readdirSync(SKILLS_DIR)
   .filter(d => fs.statSync(path.join(SKILLS_DIR, d)).isDirectory())
   .sort();
-const ADVERTISED = promptNames.filter(n => !OUTPUT_ONLY.includes(n)).length;
+// Advertised frameworks = prompts − output tools − alias/redirect stubs (see skill-registry.js)
+const ADVERTISED = registry.frameworkCount(promptNames);
+const ALIAS_COUNT = promptNames.filter(n => registry.ALIAS_SKILLS.includes(n)).length;
 
 // ─── Test 1: Script Shape ───────────────────────────────────────────────────
 
@@ -504,7 +507,7 @@ section('7. Behaviour — Framework Payload');
       `install.sh — missing prompt(s): ${missing.join(', ')}`);
 
     check(new RegExp(`^\\s*✓?\\s*${ADVERTISED} analysis frameworks`, 'm').test(r.stdout),
-      `install.sh — reports ${ADVERTISED} analysis frameworks (excludes report-generator)`,
+      `install.sh — reports ${ADVERTISED} analysis frameworks (excludes ${ALIAS_COUNT} aliases + report-generator)`,
       `install.sh — did not report ${ADVERTISED} frameworks. stdout: ${r.stdout.slice(0, 300)}`);
 
     const sample = readFile(path.join(promptsPath, 'stock-eval.md')) || '';

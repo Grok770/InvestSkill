@@ -32,6 +32,36 @@ COMPOSITE SCORE          100%      X.X / 10
 
 ---
 
+## 5-Phase Research Framework (reference)
+
+The original research-bundle framework — now executed automatically by `full-report`:
+
+**Phase 1 — Business Foundation** (competitor-analysis, sector-analysis)
+Assess economic moat width (Wide/Narrow/None), Porter's Five Forces, market share trajectory, and sector rotation positioning. Score: business quality 0–10.
+
+**Phase 2 — Valuation** (dcf-valuation, stock-valuation)
+DCF intrinsic value across 3 scenarios + comparable company multiples (EV/EBITDA, P/E, P/S). Probability-weighted composite IV. Upside/downside to fair value.
+
+**Phase 3 — Market Signals** (insider-trading, institutional-ownership, earnings-call-analysis)
+Net insider sentiment (Form 4 last 90 days), institutional accumulation/distribution (13F delta), management tone and guidance delta from last earnings call.
+
+**Phase 4 — Technical Setup** (technical-analysis)
+MA stack (30/60/90/200/365d), RSI, MACD, Ichimoku, multi-timeframe confluence. Entry price, target, stop-loss, R:R ratio. Timing signal for position entry.
+
+**Phase 5 — Risk & Options** (short-interest, options-analysis, economics-analysis)
+Short squeeze score, IV rank, put/call ratio skew, macro regime (yield curve, recession probability). Risk-adjusted position sizing.
+
+## Conflict Resolution Rules
+
+When skills disagree, apply these priority overrides:
+- Technical **SELL** + Fundamental **BUY** → **HOLD** (wait for technical confirmation)
+- Insider **BUY** + Short Interest extreme (>20%) → **CAUTION** (investigate divergence)
+- DCF **undervalued 30%+** + Technical **BULLISH** → **STRONG BUY** (conviction upgrade)
+- Macro **recession >60%** → override all bullish signals → **REDUCE/AVOID**
+- 3+ skills unanimous → allow confidence upgrade (MEDIUM → HIGH)
+
+---
+
 ## Depth Modes in full-report
 
 - **`--depth quick`** (5 modules): stock-eval, technical-analysis, dcf-valuation, insider-trading, earnings-call-analysis

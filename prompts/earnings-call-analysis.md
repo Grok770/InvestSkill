@@ -6,7 +6,7 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
@@ -15,7 +15,25 @@ Never silently substitute training-data estimates for current prices. When in do
 
 ---
 
-You are an expert financial analyst. Conduct comprehensive analysis of earnings call transcripts to extract investment insights, management sentiment, strategic themes, and potential red flags.
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
+
+---
+
+Comprehensive analysis of earnings call transcripts to extract investment insights, management sentiment, strategic themes, and potential red flags.
 
 ## Analysis Framework
 
@@ -29,6 +47,8 @@ Extract and synthesize:
 - **Market-Moving Statements**: Comments likely to impact stock price
 
 ### 2. Management Tone Assessment
+
+Analyze management's communication style and confidence:
 
 **Confidence Indicators**
 - Use of definitive language ("will", "committed", "confident")
@@ -49,6 +69,8 @@ Extract and synthesize:
 - Reduced transparency or detail vs. prior quarters
 
 ### 3. Key Themes Extraction
+
+Identify and categorize main topics discussed:
 
 **Strategic Initiatives**
 - New product launches or market expansion
@@ -78,6 +100,8 @@ Extract and synthesize:
 
 ### 4. Financial Guidance Analysis
 
+Compare and analyze forward-looking statements:
+
 **Guidance Components**
 - Revenue guidance: Range, growth rate, key assumptions
 - Earnings guidance: EPS range, margin expectations
@@ -98,10 +122,12 @@ Extract and synthesize:
 
 ### 5. Q&A Session Analysis
 
+Evaluate analyst questions and management responses:
+
 **Question Themes** (by frequency)
-1. Most frequently asked topics
-2. Second most common questions
-3. Emerging concerns
+1. [Most frequently asked topics]
+2. [Second most common questions]
+3. [Emerging concerns]
 
 **Management Response Quality**
 - Direct and substantive vs. evasive
@@ -122,6 +148,8 @@ Extract and synthesize:
 
 ### 6. Quarter-over-Quarter Comparison
 
+Compare with previous earnings calls (if available):
+
 **Messaging Consistency**
 - Changed narratives or priorities
 - Previously emphasized themes now downplayed
@@ -138,6 +166,8 @@ Extract and synthesize:
 - Patterns of over-promising or sandbagging
 
 ### 7. Red Flags & Warning Signs
+
+Identify potential concerns:
 
 **Financial Red Flags**
 - Missed guidance for consecutive quarters
@@ -168,6 +198,8 @@ Extract and synthesize:
 
 ### 8. Investment Implications
 
+Synthesize analysis into actionable insights:
+
 **Overall Assessment**
 - Bullish / Neutral / Bearish sentiment justified by evidence
 - Confidence level in management's strategy and execution
@@ -185,82 +217,201 @@ Extract and synthesize:
 - Multiple expansion/contraction considerations
 - Fair value reassessment based on new information
 
+**Recommended Action**
+- Buy / Hold / Sell recommendation with rationale
+- Price target adjustment (if applicable)
+- Position sizing considerations
+- Time horizon for thesis to play out
+
 ## Data Sources
 
-- **SEC EDGAR 8-K Filings**: Official transcripts (Item 2.02 — Results of Operations)
-- **Company Investor Relations**: Webcasts, slides, and supplemental materials
-- **Seeking Alpha**: Free transcript archive — `seekingalpha.com/symbol/[TICKER]/earnings/transcripts`
-- **AlphaSense, Bloomberg Terminal, FactSet**: Premium transcript services
+Reference the following sources when analyzing earnings calls:
+
+### Primary Sources
+- **SEC EDGAR 8-K Filings**: Official transcripts filed within 4 days of call
+  - Search: https://www.sec.gov/edgar/searchedgar/companysearch.html
+  - Look for: Item 2.02 (Results of Operations and Financial Condition)
+
+- **Company Investor Relations**: Live webcasts and archived recordings
+  - Typically at: [company-website.com]/investors/earnings
+  - May include slides and supplemental materials
+
+### Transcript Services
+- **Seeking Alpha**: Free transcript archive with searchable database
+  - Format: https://seekingalpha.com/symbol/[TICKER]/earnings/transcripts
+
+- **AlphaSense**: Premium transcript service with AI search (paid)
+- **Bloomberg Terminal**: Real-time transcripts and historical archive (paid)
+- **FactSet**: Transcript archive with analytics (paid)
+
+### Supplementary Information
+- **Earnings Press Release**: Published before call, contains prepared financial results
+- **Investor Presentation Slides**: Visual aids referenced during call
+- **10-Q/10-K Filings**: Detailed financials for context
+- **Prior Quarter Calls**: For comparison and trend analysis
 
 ## Input Formats
 
+Accept earnings call data in the following formats:
+
 ### Format 1: Transcript Text
-Paste the full transcript text including Corporate Participants, Prepared Remarks, and Q&A Session.
+```
+Paste the full transcript text from the earnings call, including:
+- Corporate Participants section
+- Prepared Remarks
+- Q&A Session
+- Forward-Looking Statements disclaimer (if present)
+```
 
 ### Format 2: Transcript URL
-Provide URL to transcript (Seeking Alpha, Company IR page, SEC EDGAR filing link).
+```
+Provide URL to transcript:
+- Seeking Alpha URL
+- Company IR page URL
+- SEC EDGAR filing link
+```
 
-### Format 3: Call Details
+### Format 3: Call Details for Manual Analysis
 ```
 Company: [Name]
 Ticker: [SYMBOL]
 Quarter: Q[1-4] [YEAR]
 Call Date: [MM/DD/YYYY]
-Key Questions to Focus On: [Specific aspects to analyze]
+
+Key Questions to Focus On:
+- [Specific aspects to analyze]
 ```
-
-## Analysis Best Practices
-
-1. **Read the Entire Transcript**: Q&A often reveals more than prepared remarks
-2. **Compare to Prior Calls**: Context is critical for identifying changes
-3. **Cross-Reference with Financials**: Verify claims against actual 10-Q/10-K data
-4. **Watch for Language Patterns**: Hedging, definitiveness, evasiveness
-5. **Note What's NOT Said**: Absence of previously discussed topics is meaningful
-
-### Common Pitfalls to Avoid
-1. **Over-Optimism Bias**: Management is inherently promotional
-2. **Recency Bias**: One quarter doesn't make a trend
-3. **Cherry-Picking**: Consider full context, not just favorable quotes
-4. **Ignoring Tone**: What's said matters, but HOW it's said matters more
-5. **Missing Red Flags**: Defensiveness and evasion are important signals
 
 ## Output
 
 Provide comprehensive earnings call analysis report with:
 
 ### 1. Call Metadata
-Company name/ticker, quarter/fiscal year, call date, participating executives, transcript source.
+- Company name and ticker
+- Quarter and fiscal year
+- Call date and time
+- Participating executives
+- Transcript source
 
-### 2. Executive Summary
-Overall assessment and sentiment; key takeaways (3-5 bullet points); investment implication.
+### 2. Executive Summary (1-2 paragraphs)
+- Overall assessment and sentiment
+- Key takeaways (3-5 bullet points)
+- Investment implication (Buy/Hold/Sell)
 
 ### 3. Management Tone Rating
-Confidence Level, Transparency rating, notable tone characteristics, supporting quotes.
+- Confidence Level: High / Medium / Low
+- Transparency: Excellent / Good / Fair / Poor
+- Notable tone characteristics
+- Supporting evidence (quotes)
 
 ### 4. Key Themes (Ranked by Importance)
-For each theme: description, management's stance, supporting quotes, investment relevance.
+For each theme:
+- Description
+- Management's stance
+- Supporting quotes
+- Investment relevance
 
 ### 5. Guidance Analysis
-Detailed guidance breakdown, changes from prior guidance, comparison to consensus, credibility assessment.
+- Detailed guidance breakdown
+- Changes from prior guidance
+- Comparison to consensus estimates
+- Credibility assessment
 
 ### 6. Q&A Insights
-Top 5 analyst questions, quality of management responses, new information revealed, questions deflected.
+- Top 5 analyst questions
+- Quality of management responses
+- New information revealed
+- Questions avoided or deflected
 
 ### 7. Red Flags & Concerns
-Identified warning signs, severity assessment, historical context, recommended monitoring items.
+- Identified warning signs (if any)
+- Severity assessment
+- Historical context
+- Recommended monitoring items
 
 ### 8. Quarter-over-Quarter Changes
-Messaging shifts, tone differences, strategic pivots, performance vs. prior commitments.
+- Messaging shifts
+- Tone differences
+- Strategic pivots
+- Performance vs. prior commitments
 
 ### 9. Investment Recommendation
-Overall sentiment, confidence level, key investment drivers, key risks, suggested action with rationale, time horizon.
+- Overall sentiment: Bullish / Neutral / Bearish
+- Confidence level: High / Medium / Low
+- Key investment drivers (bullish case)
+- Key risks (bearish case)
+- Suggested action with rationale
+- Time horizon
 
 ### 10. Notable Quotes
-5-10 most significant quotes from management with context.
+5-10 most significant quotes from management with context
 
-## Signal Output
+## Analysis Guidelines
 
-End every analysis with:
+### Best Practices
+
+1. **Read the Entire Transcript**: Don't rely only on prepared remarks; Q&A often reveals more
+2. **Compare to Prior Calls**: Context is critical for identifying changes
+3. **Cross-Reference with Financials**: Verify claims against actual 10-Q/10-K data
+4. **Watch for Language Patterns**: Hedging, definitiveness, evasiveness
+5. **Note What's NOT Said**: Absence of previously discussed topics is meaningful
+6. **Consider the Audience**: Different messages for different analyst types
+
+### Common Pitfalls to Avoid
+
+1. **Over-Optimism Bias**: Management is inherently promotional
+2. **Recency Bias**: One quarter doesn't make a trend
+3. **Cherry-Picking**: Consider full context, not just favorable quotes
+4. **Ignoring Tone**: What's said matters, but HOW it's said matters more
+5. **Missing Red Flags**: Defensiveness and evasion are important signals
+
+### Analyst Question Interpretation
+
+- **If analysts ask about guidance**: They may expect a beat or miss
+- **If questions focus on one issue**: It's likely a consensus concern
+- **If analysts challenge management**: Credibility may be in question
+- **If questions are softball**: Either results are stellar or relationships are managed
+
+## Usage Examples
+
+### Example 1: Basic Transcript Analysis
+```
+User: earnings-call-analysis AAPL
+
+[Paste transcript text or provide URL]
+
+The assistant analyzes the transcript and provides comprehensive report with all sections
+```
+
+### Example 2: Focused Analysis
+```
+User: earnings-call-analysis TSLA --focus "production guidance,margin outlook"
+
+[Provide transcript]
+
+The assistant emphasizes analysis of specified topics while still covering full call
+```
+
+### Example 3: Comparative Analysis
+```
+User: earnings-call-analysis NVDA --compare Q3-2024
+
+[Provide current quarter transcript]
+
+The assistant compares with prior quarter (Q3 2024) to highlight changes and trends
+```
+
+## Integration Notes
+
+- Can be used standalone or in conjunction with fundamental-analysis
+- Output can be fed to report-generator for HTML/PDF export
+- Particularly valuable around earnings season (Jan, Apr, Jul, Oct)
+- Best used within 1-2 days of earnings release while market is digesting information
+
+## Standard Signal Output
+
+All analysis concludes with this standardized block:
+
 ```
 ## Thesis Invalidation
 
@@ -295,8 +446,8 @@ After delivering the analysis signal, specify what would reverse it:
 ╚══════════════════════════════════════════════╝
 ```
 
-Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
-Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
-Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+**Score Guide**: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
+**Confidence**: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
+**Horizon**: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
 
 **Disclaimer:** Educational analysis only. Not financial advice.

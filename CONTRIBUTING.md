@@ -14,7 +14,7 @@ Be respectful, inclusive, and professional. We're building a community for inves
 
 Found an issue? Help us fix it.
 
-**[Open a Bug Report →](https://github.com/yennanliu/InvestSkill/issues/new?template=bug_report.md)**
+**[Open a Bug Report →](https://github.com/yennanliu/InvestSkill/issues/new)**
 
 Include:
 - Platform (Claude Code, Cursor, Gemini CLI, etc.)
@@ -278,7 +278,7 @@ Reviewers will provide feedback, or approve and merge.
 | **[ADDING-NEW-SKILLS.md](ADDING-NEW-SKILLS.md)** | Complete contributor guide |
 | **[FAQ.md](FAQ.md)** | Common questions & answers |
 | **[CHANGELOG.md](CHANGELOG.md)** | Version history |
-| **[DEPLOYMENT-STATUS.md](DEPLOYMENT-STATUS.md)** | Current platform status |
+| **[doc/archive/DEPLOYMENT-STATUS.md](doc/archive/DEPLOYMENT-STATUS.md)** | Historical platform status (archived) |
 
 ---
 

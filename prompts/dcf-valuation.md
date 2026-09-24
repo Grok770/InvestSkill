@@ -1,6 +1,6 @@
 # DCF Valuation
 
-> **This skill has been merged into `stock-valuation`.** Use the `stock-valuation` prompt for comprehensive valuation including full DCF modeling, WACC decomposition, 3-scenario sensitivity analysis, and comparable company analysis.
+> **This skill has been merged into `stock-valuation`.** Use `stock-valuation` for comprehensive valuation including full DCF modeling, WACC decomposition, 3-scenario sensitivity analysis, and comparable company analysis.
 
 ---
 
@@ -61,9 +61,10 @@ Rule: Never set g > WACC. Flag if TV > 80% of total Enterprise Value.
 
 ---
 
-## Signal Output
+## Standard Signal Output
 
-End every analysis with:
+All analysis concludes with this standardized block:
+
 ```
 ## Thesis Invalidation
 

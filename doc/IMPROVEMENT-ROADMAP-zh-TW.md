@@ -1,12 +1,33 @@
 # InvestSkill — 改進路線圖
 
-*審查日期：2026-09-23 · 審查版本 v1.11.0 · 27 個技能目錄 / 26 個對外宣稱的分析框架 · 389 項測試通過 · 69 個網站頁面*
+*審查日期：2026-09-23 · 審查版本 v1.11.0 · 27 個技能目錄 / 26 個對外宣稱的分析框架 · 389 項測試通過 · 69 個網站頁面 · **進度見 §0**（最後更新 2026-09-24）*
 
 > **範圍。** 從兩個角度對 InvestSkill 進行產品審查：作為美股投資人的**投資工具**，以及作為**學習金融知識的途徑**。本文提出新的 LLM 技能、既有技能的強化、網站內容，以及缺少的腳本，並列出審查過程中發現的一致性問題。僅為建議 — 本 PR 未修改任何技能、提示詞或網站頁面。
 >
 > English version: [IMPROVEMENT-ROADMAP.md](IMPROVEMENT-ROADMAP.md)
 >
 > 本文延續先前兩份審查 — [qa/PROJECT-REVIEW.md](../qa/PROJECT-REVIEW.md)（2026-07-02，結構與一致性）與 [SITE-ENRICHMENT-REVIEW.md](SITE-ENRICHMENT-REVIEW.md)（2026-06-15，網站內容）。它們的 P0/P1 項目多數已完成（術語表、概念、選擇技能、每技能頁面、搜尋、連結檢查、數量測試、學習課程）。本文從它們停下的地方接續。
+
+---
+
+## 0. 進度追蹤
+
+§2 十大建議的執行狀態。每個項目出貨時，在該 PR 中更新此表。
+
+| # | 建議 | 狀態 | 出貨 PR | 備註 |
+|---|------|------|---------|------|
+| 1 | 修正過時的數量並歸檔歷史文件（§7） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | §7 每一列都已修正；`COUNT_DOCS` 擴充至 FAQ / PLATFORM-COMPATIBILITY / CONTRIBUTING 與「N skills」聲明（§6.9）；四份文件移至 `doc/archive/`；`TODO.md` 改為精選前五 |
+| 2 | 強制執行技能契約並加上測試（§4.1、§6.3） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | `Data & Sources` 表頭 24/24 · 資料驗證 24/24 · 論點失效條件 24/24（所有分析技能；輸出工具、別名、meta 技能除外）。`scripts/check-skill-contract.js` 已接進 `npm test`。`--lang zh-TW` 與 JSON 頁尾仍待辦 → `TODO.md` #5 |
+| 3 | 重新分類 3 個轉址技能為別名；宣稱誠實的數量（§4.2） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 採選項 (b)：**24 個框架 + 3 個別名 + 1 個輸出工具**。單一真實來源 `scripts/lib/skill-registry.js`，由測試、安裝測試與網站建置共同引用；`skills.html` 上有獨立的「Aliases」分類 |
+| 4 | `etf-analysis`（§3.1） | ⬜ 未開始 | — | `TODO.md` #1 |
+| 5 | `earnings-preview`（§3.1） | ⬜ 未開始 | — | `TODO.md` #2 |
+| 6 | `thesis-tracker`（§3.1） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 開立 / `--update` / `--review` / `--close` 四種模式、存檔契約、INTACT / WEAKENED / BROKEN 判定規則、論點健康分數；以 `new-skill.js` 腳手架建立 |
+| 7 | `tax-lens`（§3.1） | ⬜ 未開始 | — | `TODO.md` #4 |
+| 8 | `learning-coach`（§3.1） | ⬜ 未開始 | — | |
+| 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js`（§6.1、§6.2） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | prompts 現在由 SKILL.md **產生**（`--check` 在 `npm test` 中）；腳手架一次把技能接進 11 個檔案。注意：重新產生後，先前手工精簡的 prompts 被 SKILL.md 全文取代 |
+| 10 | `scripts/eval-skills.js`（§6.4） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 以 `EVAL_CMD` 環境變數選擇啟用；樣本 `data/fixtures/ZEPH.md`（虛構公司）；硬性檢查透過共用解析器 `scripts/lib/signal-block.js`（§6.11），算術檢查為建議性；輸出 `qa/eval_YYYYMMDD.md` |
+
+一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查。§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
 
 ---
 
@@ -206,26 +227,26 @@ KPI         | 指標 | 門檻 | 最新值 | 日期 | ✓/✗
 
 ## 6. 缺少的腳本與工具
 
-| # | 腳本 | 目的 | 工作量 |
-|---|------|------|--------|
-| 6.1 | `scripts/sync-prompts.js` | 由 `SKILL.md` **產生** `prompts/<name>.md`：去除 frontmatter、將 `/us-stock-analysis:x` 改寫為 `x`、套用平台用語允許清單。`--check` 模式供 CI 使用。今天同步只以檔案存在與 0.3×–2× 的 token 比例驗證 | M |
-| 6.2 | `scripts/new-skill.js <name>` | 以已含契約章節的範本腳手架兩個檔案、將技能加入 `SKILL_CATEGORIES`、在兩份 `CHOOSE-A-SKILL` 插入佔位列、加上 CHANGELOG Unreleased 一行，然後跑測試。把 12 步手動流程壓縮成一步 | M |
-| 6.3 | `scripts/check-skill-contract.js` | 對每個分析技能檢查：資料驗證關卡、Data & Sources 表頭、論點失效條件、訊號區塊、免責聲明、`--lang` 段落、JSON 頁尾。meta/輸出型技能列入允許清單。接進 `npm test` | S |
-| 6.4 | `scripts/eval-skills.js` | **可選的行為評測**（`EVAL_CMD` 環境變數，例如 `claude -p`）。樣本放在 `data/fixtures/<TICKER>.md`，內含貼上的財務數據；執行每個技能；斷言 JSON 頁尾可解析、Data & Sources 存在、算術一致（FCF = OCF − capex、訊號 ↔ 分數區間）。輸出 `qa/eval_YYYYMMDD.md`。可考慮以 `claude plugin eval` 作為執行器 | L |
-| 6.5 | `scripts/check-glossary-coverage.js` | 從技能擷取指標術語（精選的正規表達式清單）；每個術語都必須在 `GLOSSARY.md` 與 `GLOSSARY-zh-TW.md` 中有條目 | S |
-| 6.6 | `scripts/check-zh-parity.js` | 每個 `site/content/X.md` 都有 `X-zh-TW.md`；標題數量在容許範圍內；英文在繁中之後被修改時警告（git log） | S |
-| 6.7 | `scripts/check-demo-freshness.js` | 解析示範與操作手冊實際執行中的資料日期；超過 90 天警告；供 §5.5 的橫幅使用 | S |
+| # | 腳本 | 目的 | 工作量 | 狀態 |
+|---|------|------|--------|------|
+| 6.1 | `scripts/sync-prompts.js` | 由 `SKILL.md` **產生** `prompts/<name>.md`：去除 frontmatter、將 `/us-stock-analysis:x` 改寫為 `x`、套用平台用語允許清單。`--check` 模式供 CI 使用。今天同步只以檔案存在與 0.3×–2× 的 token 比例驗證 | M | ✅ PR #26 |
+| 6.2 | `scripts/new-skill.js <name>` | 以已含契約章節的範本腳手架兩個檔案、將技能加入 `SKILL_CATEGORIES`、在兩份 `CHOOSE-A-SKILL` 插入佔位列、加上 CHANGELOG Unreleased 一行，然後跑測試。把 12 步手動流程壓縮成一步 | M | ✅ PR #26 |
+| 6.3 | `scripts/check-skill-contract.js` | 對每個分析技能檢查：資料驗證關卡、Data & Sources 表頭、論點失效條件、訊號區塊、免責聲明、`--lang` 段落、JSON 頁尾。meta/輸出型技能列入允許清單。接進 `npm test` | S | ✅ PR #26 |
+| 6.4 | `scripts/eval-skills.js` | **可選的行為評測**（`EVAL_CMD` 環境變數，例如 `claude -p`）。樣本放在 `data/fixtures/<TICKER>.md`，內含貼上的財務數據；執行每個技能；斷言 JSON 頁尾可解析、Data & Sources 存在、算術一致（FCF = OCF − capex、訊號 ↔ 分數區間）。輸出 `qa/eval_YYYYMMDD.md`。可考慮以 `claude plugin eval` 作為執行器 | L | ✅ PR #26 |
+| 6.5 | `scripts/check-glossary-coverage.js` | 從技能擷取指標術語（精選的正規表達式清單）；每個術語都必須在 `GLOSSARY.md` 與 `GLOSSARY-zh-TW.md` 中有條目 | S | ⬜ |
+| 6.6 | `scripts/check-zh-parity.js` | 每個 `site/content/X.md` 都有 `X-zh-TW.md`；標題數量在容許範圍內；英文在繁中之後被修改時警告（git log） | S | ⬜ |
+| 6.7 | `scripts/check-demo-freshness.js` | 解析示範與操作手冊實際執行中的資料日期；超過 90 天警告；供 §5.5 的橫幅使用 | S | ⬜ |
 | 6.8 | `scripts/fetch-edgar.js <TICKER> [10-K\|10-Q\|8-K\|DEF14A\|4]` | 無金鑰的輔助工具：解析 CIK、把最新申報文件下載到 `data/`，遵守 SEC 的 User-Agent 與頻率規則。可選、位於外掛之外 — 一條具體的「自備資料」路徑 | M |
-| 6.9 | 擴充 `COUNT_DOCS` | 加入 `FAQ.md`、`PLATFORM-COMPATIBILITY.md`、`CONTRIBUTING.md` 與 README 的測試數量行 — 或歸檔過時文件（§7） | S |
-| 6.10 | `scripts/build-cheatsheet.js` | 由術語表與訊號分數區間產生可列印速查表，使其永不漂移 | S |
-| 6.11 | `scripts/lib/signal-block.js` | 供 6.3、6.4、`site-review.js` 與網站檢查器共用的訊號區塊 / JSON 頁尾解析器 | S |
-| 6.12 | `scripts/gen-current-state.js` | 從檔案系統重新產生 `CLAUDE.md` 的「Current State」區塊（未完成的 A3 項目） | S |
+| 6.9 | 擴充 `COUNT_DOCS` | 加入 `FAQ.md`、`PLATFORM-COMPATIBILITY.md`、`CONTRIBUTING.md` 與 README 的測試數量行 — 或歸檔過時文件（§7） | S | ✅ PR #26 |
+| 6.10 | `scripts/build-cheatsheet.js` | 由術語表與訊號分數區間產生可列印速查表，使其永不漂移 | S | ⬜ |
+| 6.11 | `scripts/lib/signal-block.js` | 供 6.3、6.4、`site-review.js` 與網站檢查器共用的訊號區塊 / JSON 頁尾解析器 | S | ✅ PR #26 |
+| 6.12 | `scripts/gen-current-state.js` | 從檔案系統重新產生 `CLAUDE.md` 的「Current State」區塊（未完成的 A3 項目） | S | ⬜ |
 
 ---
 
 ## 7. 本次審查發現的一致性問題
 
-全部已對照 v1.11.0 的工作樹驗證。適合一次 patch 發佈（**1.11.1**）。
+全部已對照 v1.11.0 的工作樹驗證。適合一次 patch 發佈（**1.11.1**）。 **下表所有項目皆已在 [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) 中修正。**
 
 | 檔案 | 行 | 現在寫的 | 應該寫的 |
 |------|----|----------|----------|

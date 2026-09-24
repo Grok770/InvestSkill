@@ -253,6 +253,28 @@ Before rendering the final report, verify:
 
 ---
 
+## Thesis Invalidation
+
+The composite thesis is only as good as its weakest well-weighted module. After the final synthesis, state what would reverse the composite call:
+
+**If the composite is BULLISH — thesis breaks if:**
+- Any module weighted ≥ 15% flips from BULLISH to BEARISH at the next re-run (name the module and the metric that would flip it)
+- The `bear-case` module's Thesis-Killers are *not* refuted — a bull composite that cannot answer its own red-team is not bullish, it is unexamined
+- Price rises far enough that the valuation modules' fair-value range is exceeded while the fundamental modules are unchanged (multiple expansion doing all the work)
+
+**If the composite is BEARISH — thesis breaks if:**
+- The specific deterioration that drove the low-scoring modules reverses (margins re-expand, guidance is raised, insider selling stops)
+- Valuation falls below the bear-case downside target with fundamentals stable (the bad news is priced)
+- Two or more independent modules (e.g. `insider-trading` + `institutional-ownership`) turn positive together
+
+**Re-run this report when:**
+- [ ] Next earnings release (every module's inputs change)
+- [ ] Price moves ±15% from the level in the `Data & Sources` header
+- [ ] Any single module's signal flips
+- [ ] 90 days have elapsed
+
+---
+
 ## Output Format
 
 End with the standard signal block after the final synthesis section:

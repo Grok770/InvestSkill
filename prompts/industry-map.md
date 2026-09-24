@@ -6,12 +6,30 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+
+---
+
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
 
 ---
 
@@ -27,7 +45,7 @@ A value chain is a **directed graph**: nodes are the layers of production (raw m
 2. **Chokepoints** — the layer(s) with the fewest credible suppliers capture disproportionate value. Following the chain reveals bottleneck monopolies (e.g. EUV lithography, leading-edge foundry) that are the real toll-collectors of a theme.
 3. **Value migration** — the profit pool is not fixed. It shifts down (or up) the chain over time as scarcity moves. Mapping the chain lets you form a thesis about *where the money goes next* — the "picks-and-shovels" and second-order plays.
 
-This complements — and does not duplicate — the other frameworks. Competitor analysis studies one company's moat *horizontally* against its direct peers; sector analysis ranks the 11 GICS sectors for rotation. This skill maps a theme or product *vertically*, cutting **across** sectors, to show the whole flow. Output feeds naturally into competitor analysis (pick a node, study its moat), stock screening (rank the tickers at one layer), and charting / report generation (render the graph).
+This complements — and does not duplicate — the existing skills. `competitor-analysis` studies one company's moat *horizontally* against its direct peers; `sector-analysis` ranks the 11 GICS sectors for rotation. This skill maps a theme or product *vertically*, cutting **across** sectors, to show the whole flow. Output feeds naturally into `competitor-analysis` (pick a node, study its moat), `stock-screener` (rank the tickers at one layer), and `chart-master` / `report-generator` (render the graph).
 
 ---
 
@@ -70,7 +88,7 @@ Clarify what is being mapped. The input is usually one of three things:
 | Input type | Example | What to map |
 |---|---|---|
 | **A theme / product** | "AI compute", "electric vehicles", "GLP-1 drugs" | The full chain end-to-end |
-| **A single ticker** | NVDA | The chain around it, then locate it |
+| **A single ticker** | `NVDA` | The chain around it, then locate it |
 | **A layer** | "memory", "foundry" | That layer + its immediate up/downstream neighbors |
 
 Confirm the boundaries: where does the chain start (how far upstream — mined ore? refined wafer?) and where does it end (the paying end user)? State the scope explicitly at the top of the output so the graph is bounded and legible.
@@ -79,7 +97,7 @@ Confirm the boundaries: where does the chain start (how far upstream — mined o
 
 ## 3. Step 2 — Build the Chain Map (the graph)
 
-Produce the directed graph. **Default to a Mermaid `flowchart`** (renders in Claude, Cursor, Gemini, GitHub, and the site); fall back to ASCII when Mermaid is unavailable. Hand off to a charting step for a richer HTML render or for a report export.
+Produce the directed graph. **Default to a Mermaid `flowchart`** (renders in Claude, Cursor, Gemini, GitHub, and the site); fall back to ASCII when Mermaid is unavailable. Hand off to `chart-master` for a richer HTML render or for a `report-generator` export.
 
 **Mermaid flowchart (primary output):**
 
@@ -199,7 +217,7 @@ Squeezed         [tickers]               Caught between strong up/down      Avoi
 Optionality      [tickers]               Cheap exposure if value migrates   Speculative
 ```
 
-Flag the **non-obvious** node — the second-order supplier the market under-covers because it isn't a pure-play on the theme. Hand the shortlist to `stock-screener` to rank, to `competitor-analysis` to check each name's moat, or to `bear-case` to stress-test the consensus winner.
+Flag the **non-obvious** node — the second-order supplier the market under-covers because it isn't a pure-play on the theme. Hand the shortlist to `stock-screener` to rank, or `competitor-analysis` to check each name's moat, or `bear-case` to stress-test the consensus winner.
 
 ---
 
@@ -213,21 +231,30 @@ Reading the map above:
 
 ---
 
-## 10. How to Invoke
+## 10. Input Formats
 
-Provide a theme, a ticker, or a layer, and (optionally) a focus:
+```
+# Map a full theme end-to-end
+industry-map "AI compute"
 
-- **Map a full theme end-to-end** — "Map the AI compute supply chain."
-- **Map the chain around a ticker, then locate it** — "Where does NVDA sit in its value chain, upstream to downstream?"
-- **Focus on one layer + its neighbors** — "Map the semiconductor chain, focused on the memory layer."
-- **Emphasize where value migrates next** — "Map the EV value chain and tell me where the profit pool moves next."
-- **Emit a chart-ready graph spec** — "Map the GLP-1 drug supply chain and give me a diagram for a report."
+# Map the chain around a ticker, then locate it
+industry-map NVDA
+
+# Focus on one layer + its neighbors
+industry-map semiconductors --layer memory
+
+# Emphasize where value migrates next
+industry-map "electric vehicles" --focus value-migration
+
+# Emit chart-ready graph spec for a report
+industry-map "GLP-1 drugs" --visual
+```
 
 ---
 
 ## 11. Visualization Support
 
-When a visual is requested, provide graph specs ready for a charting / report-generation step:
+When `--visual` is used, provide graph specs ready for `chart-master` / `report-generator`:
 
 ### Chain Graph
 **Chart type**: Directed graph (Mermaid `flowchart LR` primary, ASCII fallback, graphviz/HTML for rich export). Nodes = layers with representative tickers; edges = supplier→customer flow.
@@ -259,7 +286,7 @@ Provide an industry-map report with:
 - Value-Pool & Margin Migration (now → next, with the confirming trigger)
 - Concentration & Supply-Chain Risk
 - Investment Ideas by layer (core / 2nd-order / avoid)
-- Investment Implications and how this feeds `competitor-analysis` / `stock-screener` / `bear-case` work
+- Investment Implications and how this feeds `competitor-analysis` / `stock-screener` / `bear-case`
 
 ## Standard Signal Output
 

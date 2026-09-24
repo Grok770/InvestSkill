@@ -303,9 +303,10 @@ function testDocumentation() {
     if (!fs.existsSync(faqPath)) throw new Error('FAQ.md not found');
   });
 
-  test('DEPLOYMENT-STATUS.md exists', () => {
-    const statusPath = path.join(ROOT, 'DEPLOYMENT-STATUS.md');
-    if (!fs.existsSync(statusPath)) throw new Error('DEPLOYMENT-STATUS.md not found');
+  test('TODO.md exists and links the roadmap', () => {
+    const todoPath = path.join(ROOT, 'TODO.md');
+    if (!fs.existsSync(todoPath)) throw new Error('TODO.md not found');
+    if (!fs.readFileSync(todoPath, 'utf8').includes('doc/IMPROVEMENT-ROADMAP.md')) throw new Error('TODO.md does not link doc/IMPROVEMENT-ROADMAP.md');
   });
 }
 
