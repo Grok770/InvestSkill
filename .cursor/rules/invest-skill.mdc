@@ -120,7 +120,7 @@ These stubs remain so old references keep working; each points at the framework 
 
 ### Verify a Report Before You Trust It
 
-```
+```text
 # Claim-level fact-check with citations — paste the report and its sources
 @prompts/fact-check.md [paste the report + the 10-K excerpt / IR release] Verify every number and add sources
 

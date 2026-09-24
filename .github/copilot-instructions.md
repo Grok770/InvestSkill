@@ -114,7 +114,7 @@ These stubs remain so old references keep working; each points at the framework 
 
 ### Verify a Report Before You Trust It
 
-```
+```text
 # Claim-level fact-check with citations — paste the report and its sources
 Verify every number in this report against the attached 10-K and add citations, using prompts/fact-check.md
 

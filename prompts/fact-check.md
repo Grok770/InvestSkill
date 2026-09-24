@@ -175,7 +175,7 @@ The headline number measures **how much of the report is demonstrably true**, no
 | Source quality | 15% | All Tier 1, specific locations | Mostly secondary or user-supplied only |
 | Freshness | 10% | Every as-of date matches the report's claim and is < 90 days old for market data | Stale figures presented as current |
 
-**Hard caps** (state any that fires): a signal-driving `⚠️` **or `🔁 disagrees`** with delta > 5% → **max 4.0** · more than half the claims `❓` → **max 5.0** · the report's own `Data & Sources` header overstates its retrieval or confidence → **max 6.0** · **any fabricated or unopenable citation found in the report → 0.0**.
+**Hard caps** (state any that fires): a signal-driving `⚠️` **or `🔁 disagrees`** with delta > 5% → **max 4.0** · more than half the claims `❓` → **max 5.0** · the report's own `Data & Sources` header overstates its retrieval or confidence → **max 6.0** · **any fabricated or unopenable citation found in the report → 0.0**. Always print a `Caps fired:` line under the score (`none`, or the list) so a capped 4.0 is never mistaken for an earned 4.0 — **a report whose score was capped by a signal-driving mismatch is a failed verification regardless of the number.**
 
 Map onto the standard bands: **≥ 6.0** the report's inputs are sound (BULLISH on the *report*) · **4.0–5.9** usable with the listed corrections (NEUTRAL) · **< 4.0** do not rely on it — re-run the analysis with verified inputs (BEARISH). Hand the score and the ledger to `result-validator`, whose Data Quality dimension should not exceed what this score supports.
 
@@ -184,7 +184,7 @@ Map onto the standard bands: **≥ 6.0** the report's inputs are sound (BULLISH 
 ## 4. Output Format
 
 1. `Data & Sources` header — the sources *used to verify*, with retrieval path
-2. **Verification summary** — one line: `N claims · V verified · R recomputed (r agree) · M mismatch · U unverifiable · S stale · Verification Score X.X`
+2. **Verification summary** — one line: `N claims · V verified · R recomputed (r agree) · M mismatch · U unverifiable · S stale · Verification Score X.X · Caps fired: none | <list>`
 3. **Signal-driving claims first** — the 3–5 that matter, each with verdict, source, and delta
 4. **Claim ledger** — the full table from Phase 1 with verdict, source tier, location, as-of
 5. **Mismatches in detail** — original · source value · delta · likely cause · what the corrected figure does to the report's conclusion
@@ -252,8 +252,8 @@ After delivering the analysis signal, specify what would reverse it:
 
 This skill does **not** form a view on the stock. `Score` is always the **Verification Score**, and `Confidence` is capped at the tier it supports (≥ 8.0 HIGH · 6.0–7.9 MEDIUM · < 6.0 LOW). The other fields depend on the outcome:
 
-- **Verification passed** (Score ≥ 4.0, no cap-to-zero): Signal, Horizon, Action, and Conviction **mirror the verified report's own**, and a line under the box states `Mirrors the report's signal — quoted, not re-derived`. If a signal-driving claim mismatched by more than 5%, add `Signal not supported at stated confidence — re-run the analysis with verified inputs`.
-- **Verification failed** (Score < 4.0, or a fabricated citation → 0): the box does **not** carry the report's Signal or Action forward — an unsupported BUY must not survive into the verification result. Fill `Signal: NEUTRAL · Action: HOLD · Conviction: WEAK · Confidence: LOW`, and under the box write `Verification failed — the report's own signal (BULLISH / BUY, quoted) is not supported by its inputs; do not act on it`.
+- **Verification passed** (Score ≥ 4.0 **and no signal-driving cap fired** — `Caps fired: none`, or only the coverage / header caps): Signal, Horizon, Action, and Conviction **mirror the verified report's own**, and a line under the box states `Mirrors the report's signal — quoted, not re-derived`. If a signal-driving claim mismatched by more than 5%, add `Signal not supported at stated confidence — re-run the analysis with verified inputs`.
+- **Verification failed** (Score < 4.0, **or** the signal-driving mismatch cap fired — even if the capped score reads exactly 4.0 — or a fabricated citation → 0): the box does **not** carry the report's Signal or Action forward — an unsupported BUY must not survive into the verification result. Fill `Signal: NEUTRAL · Action: HOLD · Conviction: WEAK · Confidence: LOW`, and under the box write `Verification failed — the report's own signal (BULLISH / BUY, quoted) is not supported by its inputs; do not act on it`.
 - For a report with no signal block, fill Signal / Action / Conviction with `n/a`.
 
 All analysis concludes with this standardized block:
