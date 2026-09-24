@@ -32,7 +32,7 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
   <span class="home-card-icon">🎓</span>
   <div class="home-card-body">
     <div class="home-card-title">投資新手？從學習指南開始</div>
-    <p>六堂課的實戰指南，用白話講清楚每一項技能背後的概念——從讀懂資產負債表、為一門生意估值，到持有一個投資組合。提供繁體中文與英文，不需財金背景。</p>
+    <p>十三堂課的實戰指南，提供繁體中文與英文：第一部用白話講清楚每一項技能背後的概念——讀懂資產負債表、為一門生意估值、持有一個投資組合；第二部是實務基礎——帳戶與下單、ETF 核心、稅（含非美國投資人）、財報季，以及保護計畫的心理學。不需財金背景。</p>
     <p><a class="home-card-cta" href="https://yennanliu.github.io/InvestSkill/learning-zh-tw.html">開始學習 →</a></p>
   </div>
 </div>

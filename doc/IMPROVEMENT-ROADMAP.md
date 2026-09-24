@@ -27,7 +27,7 @@ Status of the ten headline recommendations in §2. Update this table in the PR t
 | 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js` (§6.1, §6.2) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Prompts are now **generated** from SKILL.md (`--check` in `npm test`); the scaffolder wires a skill into 11 files. Note: regeneration replaced the hand-condensed prompts with the full SKILL.md text |
 | 10 | `scripts/eval-skills.js` (§6.4) | ✅ Done | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | Opt-in via `EVAL_CMD`; fixture `data/fixtures/ZEPH.md` (fictional company); hard checks via the shared parser `scripts/lib/signal-block.js` (§6.11), arithmetic checks advisory; writes `qa/eval_YYYYMMDD.md` |
 
-Also shipped alongside: §6.9 (extend `COUNT_DOCS`), §6.11 (`scripts/lib/signal-block.js`), the `result-validator` contract check from §4.4 (PR #26); `risk-stress-test` — the sixth Tier 1 skill, not in the top 10 — in [PR #27](https://github.com/yennanliu/InvestSkill/pull/27). **All six Tier 1 skills (§3.1) are shipped.** Added outside the roadmap: `fact-check` — claim-level verification with citations, the missing half of the trust story next to `result-validator` — in [PR #28](https://github.com/yennanliu/InvestSkill/pull/28). Still open from the P0/P1 rows of §8: §4.3 (`full-report` runs every framework), `--lang zh-TW` everywhere, the JSON footer, the zh Skill Reference index (§5.6).
+Also shipped alongside: §6.9 (extend `COUNT_DOCS`), §6.11 (`scripts/lib/signal-block.js`), the `result-validator` contract check from §4.4 (PR #26); `risk-stress-test` — the sixth Tier 1 skill, not in the top 10 — in [PR #27](https://github.com/yennanliu/InvestSkill/pull/27). **All six Tier 1 skills (§3.1) are shipped.** Added outside the roadmap: `fact-check` — claim-level verification with citations, the missing half of the trust story next to `result-validator` — in [PR #28](https://github.com/yennanliu/InvestSkill/pull/28); the Learning track's Part II (Lessons 9–13, the "No" case study, +32 glossary terms) in [PR #29](https://github.com/yennanliu/InvestSkill/pull/29) after the [Learning gap review](LEARNING-GAP-REVIEW.md). Still open from the P0/P1 rows of §8: §4.3 (`full-report` runs every framework), `--lang zh-TW` everywhere, the JSON footer, the zh Skill Reference index (§5.6).
 
 ---
 
@@ -186,16 +186,20 @@ Add the six missing frameworks (`bear-case` is the most important omission — a
 | 10 | **Taxes & Account Types** | Short vs. long-term, wash sale, qualified dividends, TLH, taxable vs. IRA/401k; **a non-US-investor section** (W-8BEN, withholding, estate tax, UCITS) | `tax-lens`, `position-ladder` |
 | 11 | **Earnings Season, Explained** | The quarterly cycle, consensus and guidance, "beat and drop", implied move, how to read a press release and an 8-K | `earnings-preview`, `earnings-call-analysis` |
 | 12 | **Psychology & Process** | Deeper than Lesson 6's section: disposition effect, anchoring, FOMO, pre-mortems, checklists, journaling, process vs. outcome | `trade-postmortem`, `thesis-tracker` |
+
+> **Status (2026-09-24, [PR #29](https://github.com/yennanliu/InvestSkill/pull/29)):** Lessons 9 (ETFs), 10 (Taxes, with the non-US section), 11 (Earnings Season) and 12 (Psychology) shipped — numbered **10–13** on the site because a *Before Your First Trade* lesson (accounts, brokers, order types, IPS) was added as Lesson 9. Macro & Fed and Options lessons remain open. See [LEARNING-GAP-REVIEW.md](LEARNING-GAP-REVIEW.md).
 | 13 | **Macro & the Fed Cycle** | Rates, yield curve, inflation, the dollar, how regimes rotate sectors | `economics-analysis`, `sector-analysis` |
 | 14 | **Options for Stock Investors** | Covered calls, protective puts, what IV tells a stockholder, why not to sell naked | `options-analysis` |
 
 ### 5.2 Case studies
 
-- **A losing or "pass" case.** Both Learning capstones (Apple, AMD) end in a buy. Add a bilingual case where the loop ends in **no** — the Cookbook already has two candidates (PFE value trap, UPST no-trade) that only exist in English inside §3.
+- **A losing or "pass" case.** Both Learning capstones (Apple, AMD) end in a buy. Add a bilingual case where the loop ends in **no** — the Cookbook already has two candidates (PFE value trap, UPST no-trade) that only exist in English inside §3. ✅ *Shipped in PR #29 as* Case Study: When the Answer Is No.
 - **A thesis-break case.** Buy → KPI breaks → sell discipline actually executed, with the `thesis-tracker` file shown before and after.
 - **An ETF-core portfolio for a first $10k**, using `investment-policy` → `etf-analysis` → `portfolio-review`.
 
 ### 5.3 Glossary gaps (44 → ~70 terms)
+
+> **Status:** 44 → 76 terms in PR #29 (the ETF, tax, earnings, risk, and psychology terms below plus order types, T+1, IPS). Still missing: Beneish M-Score, accrual ratio, SBC, GAAP vs. non-GAAP, Form 4 / 13F / 8-K, yield curve, VIX, put/call ratio, ATR, MACD, goodwill, operating leverage, reverse DCF, Rule of 40, lock-up, dual-class.
 
 Terms the skills emit today with no entry in either language: Beneish M-Score · accrual ratio · stock-based compensation (SBC) · GAAP vs. non-GAAP · wash sale · ex-dividend date · qualified dividend · Form 4 · 13F · 8-K · yield curve / inversion · VIX · put/call ratio · ATR · MACD · drawdown / max drawdown · Sortino ratio · goodwill & impairment · operating leverage (DOL) · reverse DCF · Rule of 40 · guidance · consensus · expense ratio · tracking difference · W-8BEN / withholding tax · lock-up · dual-class. Script §6.5 keeps this list from regrowing.
 

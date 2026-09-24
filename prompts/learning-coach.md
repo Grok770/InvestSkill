@@ -56,7 +56,7 @@ Pairs with: every analysis skill (as input), `result-validator` (when the reader
 | Mode | Invocation | What it does |
 |------|------------|--------------|
 | **Explain** (default) | paste any InvestSkill output, optionally `--level beginner \| intermediate` and `--lang zh-TW` | Explanation card per metric → how the pieces connect → common misreadings → Socratic ladder → "what would change your mind?" |
-| **Quiz** | `--quiz <lesson>` where lesson ∈ Foundations · Statements · Quality · Valuation · Market · Portfolio · Playbook · Case AMD | Five questions on one Learning lesson (recall · calculation · judgment), answers hidden under an **Answers** heading, one line on what to re-read |
+| **Quiz** | `--quiz <lesson>` where lesson ∈ Foundations · Statements · Quality · Valuation · Market · Portfolio · Playbook · Case AMD · Setup (Before Your First Trade) · ETFs · Taxes · Earnings Season · Psychology · Case Pass (When the Answer Is No) | Five questions on one Learning lesson (recall · calculation · judgment), answers hidden under an **Answers** heading, one line on what to re-read |
 
 Flags:
 - `--level beginner` (default) — no term is used before it is defined in one sentence; analogies allowed; at most one formula per card.

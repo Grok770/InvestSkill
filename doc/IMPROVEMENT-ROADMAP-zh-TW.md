@@ -27,7 +27,7 @@
 | 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js`（§6.1、§6.2） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | prompts 現在由 SKILL.md **產生**（`--check` 在 `npm test` 中）；腳手架一次把技能接進 11 個檔案。注意：重新產生後，先前手工精簡的 prompts 被 SKILL.md 全文取代 |
 | 10 | `scripts/eval-skills.js`（§6.4） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 以 `EVAL_CMD` 環境變數選擇啟用；樣本 `data/fixtures/ZEPH.md`（虛構公司）；硬性檢查透過共用解析器 `scripts/lib/signal-block.js`（§6.11），算術檢查為建議性；輸出 `qa/eval_YYYYMMDD.md` |
 
-一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查（PR #26）；`risk-stress-test` — 第一層的第六個技能、不在十大之列 — 於 [PR #27](https://github.com/yennanliu/InvestSkill/pull/27)。**§3.1 第一層六個技能全部出貨。** 路線圖之外新增：`fact-check`——逐條陳述層級的查核與引用，補上 `result-validator` 旁缺少的另一半信任機制——於 [PR #28](https://github.com/yennanliu/InvestSkill/pull/28)。§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
+一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查（PR #26）；`risk-stress-test` — 第一層的第六個技能、不在十大之列 — 於 [PR #27](https://github.com/yennanliu/InvestSkill/pull/27)。**§3.1 第一層六個技能全部出貨。** 路線圖之外新增：`fact-check`——逐條陳述層級的查核與引用，補上 `result-validator` 旁缺少的另一半信任機制——於 [PR #28](https://github.com/yennanliu/InvestSkill/pull/28)；學習區第二部（第 9–13 課、「當答案是不」案例、+32 條術語）於 [PR #29](https://github.com/yennanliu/InvestSkill/pull/29)，依據[學習區缺口審查](LEARNING-GAP-REVIEW-zh-TW.md)。§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
 
 ---
 
@@ -186,6 +186,8 @@ KPI         | 指標 | 門檻 | 最新值 | 日期 | ✓/✗
 | 10 | **稅務與帳戶類型** | 短期 vs. 長期、洗售、合格股息、稅損收割、應稅 vs. IRA/401k；**非美國投資人章節**（W-8BEN、預扣稅、遺產稅、UCITS） | `tax-lens`、`position-ladder` |
 | 11 | **看懂財報季** | 季度週期、共識與財測、「超預期卻下跌」、隱含波動、如何讀新聞稿與 8-K | `earnings-preview`、`earnings-call-analysis` |
 | 12 | **心理與流程** | 比第 6 課更深：處置效應、錨定、FOMO、事前驗屍、檢查表、寫日誌、流程 vs. 結果 | `trade-postmortem`、`thesis-tracker` |
+
+> **狀態（2026-09-24，[PR #29](https://github.com/yennanliu/InvestSkill/pull/29)）：** 第 9 課（ETF）、第 10 課（稅，含非美國章節）、第 11 課（財報季）、第 12 課（心理）已出貨——網站上編為**第 10–13 課**，因為先新增了「第一筆交易之前」（帳戶、券商、下單、IPS）作為第 9 課。總經與 Fed、選擇權兩課仍待辦。見 [LEARNING-GAP-REVIEW-zh-TW.md](LEARNING-GAP-REVIEW-zh-TW.md)。
 | 13 | **總體經濟與聯準會週期** | 利率、殖利率曲線、通膨、美元、景氣階段如何輪動產業 | `economics-analysis`、`sector-analysis` |
 | 14 | **給股票投資人的選擇權** | 掩護性買權、保護性賣權、隱含波動對持股人的意義、為何不要裸賣 | `options-analysis` |
 
