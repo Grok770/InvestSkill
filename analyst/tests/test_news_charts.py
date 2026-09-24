@@ -280,3 +280,15 @@ def test_cli_chart_and_news(tmp_path, capsys):
     assert "## News outlook" in capsys.readouterr().out
     assert main(["signal", "AAPL", "--provider", "synthetic", "--no-news", "--json"]) == 0
     assert json.loads(capsys.readouterr().out)[0]["pillars"]["news"] is None
+
+
+def test_lexicon_relevance_needs_a_real_mention():
+    items = LexiconScorer().score("AAPL", [
+        _item("Klarna falls 3% as selling persists"),
+        _item("Apple beats estimates"),
+        _item("$AAPL breaks out"),
+    ], company="Apple Inc.")
+    assert [i.relevance for i in items] == [0.15, 1.0, 1.0]
+    # Short tickers must not match inside ordinary words.
+    (visa,) = LexiconScorer().score("V", [_item("Very strong quarter for retailers")], company="Visa Inc.")
+    assert visa.relevance == 0.15

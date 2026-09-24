@@ -74,6 +74,7 @@ INSTANT_CONCEPTS: dict[str, list[str]] = {
                        "LongTermDebtAndCapitalLeaseObligations"],
 }
 UNITS = {"eps_diluted": "USD/shares", "shares_diluted": "shares"}
+PER_SHARE = ("eps_diluted", "shares_diluted")  # restated by stock splits
 
 
 class EdgarClient:
@@ -161,14 +162,16 @@ def _annual(facts: dict, concepts: list[str], unit: str, flow: bool) -> pd.DataF
         df = df.assign(rank=rank)
         parts.append(df)
     if not parts:  # concept never reported: empty, but date-indexed so joins still work
-        return pd.DataFrame({"val": pd.Series(dtype=float), "filed": pd.Series(dtype="datetime64[ns]")},
+        return pd.DataFrame({"val": pd.Series(dtype=float), "filed": pd.Series(dtype="datetime64[ns]"),
+                             "source_filed": pd.Series(dtype="datetime64[ns]")},
                             index=pd.DatetimeIndex([], name="end"))
     df = pd.concat(parts)
     # Best-ranked concept per year, then the most recent filing (restatements win).
     df = df.sort_values(["end", "rank", "filed"], ascending=[True, True, False])
     first_filed = df.groupby("end")["filed"].min()
     best = df.groupby("end").first()
-    return pd.DataFrame({"val": best["val"].astype(float), "filed": first_filed})
+    return pd.DataFrame({"val": best["val"].astype(float), "filed": first_filed,
+                         "source_filed": best["filed"]})
 
 
 def annual_financials(facts: dict, years: int = 15) -> pd.DataFrame:
@@ -180,7 +183,10 @@ def annual_financials(facts: dict, years: int = 15) -> pd.DataFrame:
         raise LookupError("no annual (10-K) income data in EDGAR for this company")
     out = pd.DataFrame(index=fy_ends)
     for col, concepts in FLOW_CONCEPTS.items():
-        out[col] = _annual(facts, concepts, UNITS.get(col, "USD"), flow=True)["val"]
+        got = _annual(facts, concepts, UNITS.get(col, "USD"), flow=True)
+        out[col] = got["val"]
+        if col in PER_SHARE:
+            out[f"{col}_filed"] = got["source_filed"]  # which filing (pre/post split) it came from
     for col, concepts in INSTANT_CONCEPTS.items():
         vals = _annual(facts, concepts, "USD", flow=False)["val"]
         # Balance-sheet dates can differ from the fiscal-year end by a few days.
@@ -192,43 +198,121 @@ def annual_financials(facts: dict, years: int = 15) -> pd.DataFrame:
     return out.iloc[-years:]
 
 
+SPLIT_RATIOS = (2, 3, 4, 5, 6, 7, 8, 10, 15, 20, 1 / 2, 1 / 3, 1 / 4, 1 / 5, 1 / 8, 1 / 10, 1 / 20)
+
+
+def adjust_for_splits(fin: pd.DataFrame, splits: pd.Series | None = None) -> pd.DataFrame:
+    """Put EPS and share counts from older filings on today's share basis.
+
+    EDGAR values are as reported: a 10-K filed before a 4-for-1 split shows
+    4× the EPS and ¼ the shares of one filed after. Each shown value keeps
+    the date of the filing it came from (``<col>_filed``), so
+
+    * with a split history (date → ratio, e.g. from Yahoo), every value from
+      a filing made before a split is divided (EPS) or multiplied (shares)
+      by that split's ratio — exact;
+    * without one, a year-over-year jump in diluted shares close to a
+      standard split ratio (2, 3, 4, 7, 10, …, or a reverse split) is taken
+      as a split — a heuristic, recorded in ``df.attrs["split_notes"]``.
+    """
+    df = fin.copy()
+    notes: list[str] = []
+    if "eps_diluted" not in df or "shares_diluted" not in df:
+        return df
+    eps_filed = df.get("eps_diluted_filed", pd.Series(pd.NaT, index=df.index))
+    sh_filed = df.get("shares_diluted_filed", pd.Series(pd.NaT, index=df.index))
+    if splits is not None and len(splits):
+        for when, ratio in splits.items():
+            when = pd.Timestamp(when).tz_localize(None) if pd.Timestamp(when).tzinfo else pd.Timestamp(when)
+            if not ratio or ratio == 1:
+                continue
+            e_mask = eps_filed.notna() & (eps_filed < when)
+            s_mask = sh_filed.notna() & (sh_filed < when)
+            df.loc[e_mask, "eps_diluted"] = df.loc[e_mask, "eps_diluted"] / ratio
+            df.loc[s_mask, "shares_diluted"] = df.loc[s_mask, "shares_diluted"] * ratio
+            if e_mask.any() or s_mask.any():
+                notes.append(f"{ratio:g}-for-1 split on {when.date()} applied to earlier filings")
+    else:
+        shares = df["shares_diluted"]
+        for i in range(len(df) - 1, 0, -1):
+            prev, cur = shares.iloc[i - 1], shares.iloc[i]
+            if not (prev and cur) or pd.isna(prev) or pd.isna(cur):
+                continue
+            r = cur / prev
+            match = next((k for k in SPLIT_RATIOS if abs(r / k - 1) < 0.06), None)
+            if match is None:
+                continue
+            earlier = df.index[:i]
+            df.loc[earlier, "eps_diluted"] = df.loc[earlier, "eps_diluted"] / match
+            df.loc[earlier, "shares_diluted"] = df.loc[earlier, "shares_diluted"] * match
+            shares = df["shares_diluted"]
+            notes.append(f"inferred {match:g}-for-1 split between FY {df.index[i - 1].date()} "
+                         f"and FY {df.index[i].date()} from the share count")
+    df = df.drop(columns=[c for c in ("eps_diluted_filed", "shares_diluted_filed") if c in df])
+    df.attrs["split_notes"] = notes
+    return df
+
+
+def _freshest(facts: dict, concepts: list[str], unit: str, pick) -> tuple[pd.DataFrame, str] | None:
+    """Among ``concepts``, the one whose ``pick(df)`` rows end most recently.
+
+    Companies stop using a concept (MSFT last tagged ``Revenues`` in 2010), so
+    "first concept with any data" would silently return a decade-old figure.
+    Ties go to the earlier (preferred) concept.
+    """
+    best, best_end = None, None
+    for concept in concepts:
+        df = _entries(facts, concept, unit)
+        if df.empty:
+            continue
+        rows = pick(df)
+        if rows.empty:
+            continue
+        end = rows["end"].max()
+        if best_end is None or end > best_end:
+            best, best_end = (df, concept), end
+    return best
+
+
 def ttm_value(facts: dict, concepts: list[str], unit: str = "USD") -> tuple[float, str] | None:
     """Trailing twelve months = last FY + current YTD − prior-year YTD.
 
     Returns (value, period description) or None. Falls back to the last FY
     when no later 10-Q exists.
     """
-    for concept in concepts:
-        df = _entries(facts, concept, unit)
-        if df.empty or "days" not in df:
-            continue
-        fy = df[df["form"].isin(ANNUAL_FORMS) & df["days"].between(340, 390)]
-        if fy.empty:
-            continue
-        fy = fy.sort_values(["end", "filed"]).iloc[-1]
-        q = df[df["form"].str.startswith("10-Q")]
-        ytd = q[(q["start"] - fy["end"]).dt.days.between(0, 10) & q["days"].between(80, 290)]
-        if ytd.empty:
-            return float(fy["val"]), f"FY ended {fy['end'].date()} (10-K)"
-        cur = ytd.sort_values(["end", "filed"]).iloc[-1]
-        prior = q[((q["end"] - (cur["end"] - pd.DateOffset(years=1))).dt.days.abs() <= 10)
-                  & ((q["days"] - cur["days"]).abs() <= 15)]
-        if prior.empty:
-            return float(fy["val"]), f"FY ended {fy['end'].date()} (10-K)"
-        prior = prior.sort_values("filed").iloc[-1]
-        val = float(fy["val"] + cur["val"] - prior["val"])
-        return val, f"TTM to {cur['end'].date()} (10-K + 10-Q)"
-    return None
+    def annual(df):
+        if "days" not in df:
+            return df.iloc[0:0]
+        return df[df["form"].isin(ANNUAL_FORMS) & df["days"].between(340, 390)]
+
+    found = _freshest(facts, concepts, unit, annual)
+    if found is None:
+        return None
+    df, _concept = found
+    fy = annual(df).sort_values(["end", "filed"]).iloc[-1]
+    q = df[df["form"].str.startswith("10-Q")]
+    ytd = q[(q["start"] - fy["end"]).dt.days.between(0, 10) & q["days"].between(80, 290)]
+    if ytd.empty:
+        return float(fy["val"]), f"FY ended {fy['end'].date()} (10-K)"
+    cur = ytd.sort_values(["end", "filed"]).iloc[-1]
+    prior = q[((q["end"] - (cur["end"] - pd.DateOffset(years=1))).dt.days.abs() <= 10)
+              & ((q["days"] - cur["days"]).abs() <= 15)]
+    if prior.empty:
+        return float(fy["val"]), f"FY ended {fy['end'].date()} (10-K)"
+    prior = prior.sort_values("filed").iloc[-1]
+    val = float(fy["val"] + cur["val"] - prior["val"])
+    return val, f"TTM to {cur['end'].date()} (10-K + 10-Q)"
 
 
 def latest_instant(facts: dict, concepts: list[str], unit: str = "USD") -> tuple[float, str] | None:
-    for concept in concepts:
-        df = _entries(facts, concept, unit)
-        df = df[df["form"].isin(ANNUAL_FORMS + ("10-Q", "10-Q/A"))] if not df.empty else df
-        if not df.empty:
-            row = df.sort_values(["end", "filed"]).iloc[-1]
-            return float(row["val"]), f"as of {row['end'].date()} ({row['form']})"
-    return None
+    def filed_forms(df):
+        return df[df["form"].isin(ANNUAL_FORMS + ("10-Q", "10-Q/A"))]
+
+    found = _freshest(facts, concepts, unit, filed_forms)
+    if found is None:
+        return None
+    row = filed_forms(found[0]).sort_values(["end", "filed"]).iloc[-1]
+    return float(row["val"]), f"as of {row['end'].date()} ({row['form']})"
 
 
 def shares_outstanding(facts: dict) -> tuple[float, str] | None:
@@ -266,10 +350,36 @@ class EdgarProvider:
         return self.prices.history(ticker, years)
 
     def annual_financials(self, ticker: str, years: int = 15) -> pd.DataFrame:
-        return annual_financials(self.client.company_facts(ticker), years)
+        try:
+            fin = annual_financials(self.client.company_facts(ticker), years)
+            splits = None
+            getter = getattr(self.prices, "splits", None)
+            if getter is not None:
+                try:
+                    splits = getter(ticker)
+                except Exception:  # noqa: BLE001 - fall back to the share-count heuristic
+                    splits = None
+            return adjust_for_splits(fin, splits)
+        except LookupError:
+            # e.g. a company re-registered under a new CIK that hasn't filed a 10-K yet
+            if self.secondary is not None and hasattr(self.secondary, "annual_financials"):
+                return self.secondary.annual_financials(ticker)
+            raise
 
     def fundamentals(self, ticker: str) -> Fundamentals:
+        try:
+            return self._sec_fundamentals(ticker)
+        except LookupError as exc:
+            if self.secondary is None:
+                raise
+            # Keep the stock in the peer set on the secondary source, clearly labelled.
+            f = self.secondary.fundamentals(ticker)
+            f.sources = {k: f"{v} — SEC fallback: {exc}" for k, v in f.sources.items()}
+            return f
+
+    def _sec_fundamentals(self, ticker: str) -> Fundamentals:
         facts = self.client.company_facts(ticker)
+        fin = derive(annual_financials(facts, years=3))  # fail fast if there's no 10-K
         src: dict[str, str] = {}
 
         def ttm(col):
@@ -298,7 +408,6 @@ class EdgarProvider:
         if shares:
             src["market_cap"] = f"price × shares ({shares[1]})"
 
-        fin = derive(annual_financials(facts, years=3))
         last = fin.iloc[-1]
 
         def ratio(a, b):
@@ -349,5 +458,5 @@ def fiscal_age_days(fin: pd.DataFrame, today: date | None = None) -> int:
     return int((pd.Timestamp(today) - fin.index[-1]).days)
 
 
-__all__ = ["EdgarClient", "EdgarProvider", "annual_financials", "ttm_value",
+__all__ = ["EdgarClient", "EdgarProvider", "adjust_for_splits", "annual_financials", "ttm_value",
            "latest_instant", "shares_outstanding", "fiscal_age_days"]

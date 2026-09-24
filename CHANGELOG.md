@@ -75,6 +75,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `install.sh` — the framework count is now computed with a glob instead of `ls | grep` (shellcheck SC2010); output is unchanged.
 - `.github/workflows/site-review.yml` — stages `qa/` with `git add -A` so pruned reports are committed as deletions alongside the new report. Pruned the existing 19-report backlog down to the last 5 days.
 
+
+### Fixed
+- **`analyst/`: SEC data accuracy fixes found by running on live data (AAPL, MSFT, NVDA).**
+  - **Stale concept in trailing-12-month and latest values.** These took the *first* XBRL concept with any data, and companies retire concepts (MSFT last tagged `Revenues` in 2010). That gave MSFT a 338% gross margin and AAPL 85%. They now use the concept with the most recent report, which gives MSFT 67.9% and AAPL 48.7%.
+  - **Stock splits.** EPS and share counts from filings made before a split are now put on today's share basis. The split history comes from Yahoo, with a share-count heuristic as the fallback. Verified: AAPL FY2015 EPS $9.22 → $2.30; NVDA FY2023 $0.17; MSFT unaffected.
+  - **Re-registered companies** with no 10-K yet (XOM moved to a new CIK in 2026) fall back to Yahoo fundamentals with labelled sources instead of dropping out of the peer set.
+  - **News relevance.** Headlines that never mention the ticker or company now count 0.15, not 0.6. The ticker is matched on word boundaries, so short tickers like `V` don't match inside words.
+  - **SEC-vs-Yahoo cross-check** no longer compares fields the two sources define differently (revenue growth, ROE).
+
 ## [1.11.0] - 2026-07-27
 
 ### Added

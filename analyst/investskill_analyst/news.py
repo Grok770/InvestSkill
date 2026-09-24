@@ -328,7 +328,14 @@ class LexiconScorer:
     name = "lexicon"
 
     def score(self, ticker: str, items: list[NewsItem], company: str | None = None) -> list[NewsItem]:
-        names = {ticker.lower()} | ({company.lower().split()[0]} if company else set())
+        # Word-boundary match on the ticker/cashtag and the company's first name word, so
+        # "V" or "MA" don't match inside other words and "Apple Inc." matches "Apple".
+        terms = [re.escape(ticker.lower())]
+        if company:
+            first = re.sub(r"[^a-z0-9]", "", company.lower().split()[0])
+            if len(first) >= 3:
+                terms.append(first)
+        mention = re.compile(r"(?<![a-z0-9])\$?(?:" + "|".join(terms) + r")(?![a-z0-9])")
         for it in items:
             if it.sentiment is not None and it.event:
                 continue  # already classified (e.g. an 8-K by Item number)
@@ -338,7 +345,9 @@ class LexiconScorer:
             neg = sum(w in _NEG for w in words)
             it.sentiment = 0.0 if pos == neg else float(np.tanh((pos - neg) / 1.5))
             it.event = it.event or next((e for e, pat in _EVENT_RULES if re.search(pat, text)), "other")
-            it.relevance = it.relevance or (1.0 if any(n in text for n in names) else 0.6)
+            # Feeds return related-market stories too; an item that never names the company
+            # counts for little.
+            it.relevance = it.relevance or (1.0 if mention.search(text) else 0.15)
             it.impact = it.impact or ("high" if it.event in ("earnings", "guidance", "accounting",
                                                             "legal", "regulatory") else "medium")
             it.rationale = it.rationale or f"lexicon: {pos} positive / {neg} negative terms"

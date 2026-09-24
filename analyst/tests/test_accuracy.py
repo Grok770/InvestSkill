@@ -260,3 +260,73 @@ def test_company_history_and_cli(capsys):
     assert main(["analyze", "AAPL", "--provider", "synthetic", "--universe", "mega-tech"]) == 0
     out = capsys.readouterr().out
     assert "## Bottom line" in out and "## Data quality & sources" in out
+
+
+def test_edgar_falls_back_to_secondary_when_no_10k(tmp_path):
+    """A re-registered company (new CIK, only 10-Qs so far) stays in the peer set."""
+    only_10q = {"entityName": "NewCo", "facts": {"us-gaap": {"NetIncomeLoss": {"units": {"USD": [
+        _fy("2026-01-01", "2026-06-30", 5.0, "2026-08-01", form="10-Q", fp="Q2")]}}}}}
+
+    def fetch(url):
+        return TICKERS if url.endswith("company_tickers.json") else only_10q
+
+    class Yahoo:
+        name = "yfinance"
+
+        def fundamentals(self, t):
+            return Fundamentals(ticker=t, trailing_pe=12.0, sources={"trailing_pe": "Yahoo"})
+
+        def annual_financials(self, t):
+            return pd.DataFrame({"revenue": [1.0, 2.0]}, index=pd.to_datetime(["2024-12-31", "2025-12-31"]))
+
+    p = EdgarProvider(None, EdgarClient(cache_dir=tmp_path, fetch=fetch), fill=Yahoo())
+    f = p.fundamentals("EXMP")
+    assert f.trailing_pe == 12.0 and "SEC fallback" in f.sources["trailing_pe"]
+    assert len(p.annual_financials("EXMP")) == 2
+    with pytest.raises(LookupError):
+        EdgarProvider(None, EdgarClient(cache_dir=tmp_path, fetch=fetch)).fundamentals("EXMP")
+
+
+def test_ttm_uses_the_freshest_concept_not_the_first_listed():
+    """MSFT last tagged `Revenues` in 2010; TTM must use the concept still in use."""
+    facts = {"facts": {"us-gaap": {
+        "Revenues": {"units": {"USD": [_fy("2009-07-01", "2010-06-30", 62.0, "2010-07-30")]}},
+        "RevenueFromContractWithCustomerExcludingAssessedTax": {"units": {"USD": [
+            _fy("2024-07-01", "2025-06-30", 281.0, "2025-07-30")]}},
+    }}}
+    val, desc = ttm_value(facts, ["Revenues", "RevenueFromContractWithCustomerExcludingAssessedTax"])
+    assert val == 281.0 and "2025-06-30" in desc
+
+
+def _split_table():
+    # As reported: FY2019-2020 filed before a 4-for-1 split on 2020-08-31, later years after.
+    idx = pd.to_datetime(["2019-09-28", "2020-09-26", "2021-09-25"])
+    return pd.DataFrame({
+        "eps_diluted": [11.89, 3.28, 5.61],
+        "shares_diluted": [4.65e9, 17.5e9, 16.9e9],
+        "eps_diluted_filed": pd.to_datetime(["2019-10-31", "2020-10-30", "2021-10-29"]),
+        "shares_diluted_filed": pd.to_datetime(["2019-10-31", "2020-10-30", "2021-10-29"]),
+    }, index=idx)
+
+
+def test_adjust_for_splits_with_split_history():
+    from investskill_analyst.edgar import adjust_for_splits
+
+    out = adjust_for_splits(_split_table(), pd.Series([4.0], index=pd.to_datetime(["2020-08-31"])))
+    assert out["eps_diluted"].round(4).tolist() == [2.9725, 3.28, 5.61]
+    assert out["shares_diluted"].iloc[0] == 4.65e9 * 4
+    assert "eps_diluted_filed" not in out and out.attrs["split_notes"]
+
+
+def test_adjust_for_splits_heuristic_without_history():
+    from investskill_analyst.edgar import adjust_for_splits
+
+    # AAPL's real 4.65B → 17.5B (3.76×, buybacks shaved it below 4) is caught as 4-for-1.
+    out = adjust_for_splits(_split_table())
+    assert out["eps_diluted"].iloc[0] == pytest.approx(11.89 / 4)
+    assert "inferred 4-for-1" in out.attrs["split_notes"][0]
+    # A 1.4× share jump (say, an acquisition paid in stock) is not a split.
+    t = _split_table()
+    t.loc[t.index[0], "shares_diluted"] = 12.5e9
+    out = adjust_for_splits(t)
+    assert out["eps_diluted"].iloc[0] == 11.89 and out.attrs["split_notes"] == []

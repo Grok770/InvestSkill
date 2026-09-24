@@ -14,8 +14,11 @@ import pandas as pd
 
 from .data import Fundamentals
 
-CROSS_CHECK_FIELDS = ("trailing_pe", "price_to_book", "roe", "gross_margin",
-                      "operating_margin", "revenue_growth", "market_cap")
+# Only fields both sources define the same way. Revenue growth (Yahoo: latest
+# quarter YoY; SEC: fiscal year) and ROE (different equity averaging) legitimately
+# differ, so comparing them would only produce noise.
+CROSS_CHECK_FIELDS = ("trailing_pe", "price_to_book", "gross_margin",
+                      "operating_margin", "market_cap")
 
 
 def check_prices(df: pd.DataFrame, today: date | None = None, max_stale_days: int = 5) -> list[str]:

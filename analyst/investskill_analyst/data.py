@@ -162,6 +162,18 @@ class YFinanceProvider:
                          if v is not None and k not in ("ticker", "name", "sources")}
         return self._cache[key]  # type: ignore[return-value]
 
+    def splits(self, ticker: str) -> pd.Series:
+        """Split history: date -> ratio (4.0 = 4-for-1)."""
+        import yfinance as yf
+
+        s = yf.Ticker(ticker).splits
+        if s is None or s.empty:
+            return pd.Series(dtype=float)
+        s.index = pd.to_datetime(s.index)
+        if getattr(s.index, "tz", None) is not None:
+            s.index = s.index.tz_localize(None)
+        return s.astype(float)
+
     # Yahoo statement rows -> financials.ANNUAL_COLUMNS (about 4 fiscal years).
     _ROWS = {
         "income_stmt": {"Total Revenue": "revenue", "Gross Profit": "gross_profit",
