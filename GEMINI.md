@@ -1,6 +1,6 @@
 # InvestSkill — Gemini CLI Setup & Usage Guide
 
-This project contains professional investment analysis prompt frameworks for US stock markets. When you run Gemini CLI in this directory, all 29 analysis frameworks are automatically available.
+This project contains professional investment analysis prompt frameworks for US stock markets. When you run Gemini CLI in this directory, all 30 analysis frameworks are automatically available.
 
 ## Installation & Setup
 
@@ -14,7 +14,7 @@ cd /path/to/InvestSkill
 gemini
 ```
 
-**That's it!** Gemini CLI automatically loads `GEMINI.md` and gives you access to all 29 analysis frameworks in the `prompts/` directory.
+**That's it!** Gemini CLI automatically loads `GEMINI.md` and gives you access to all 30 analysis frameworks in the `prompts/` directory.
 
 ### Verify Setup
 
@@ -28,7 +28,7 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 
 ---
 
-## Available Analysis Prompts (29 frameworks + 3 aliases + 1 output tool)
+## Available Analysis Prompts (30 frameworks + 3 aliases + 1 output tool)
 
 ### Core Stock Analysis (4 skills)
 
@@ -81,7 +81,7 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 |-----------------------------|----------------------------------------|--------------------------------------------|
 | Full Report (HTML)          | `@prompts/full-report.md`              | `Generate full interactive report for NVDA`|
 
-### Meta-Analysis & Visualization (4 skills)
+### Meta-Analysis & Visualization (5 skills)
 
 | Analysis Type               | Prompt File                            | Usage Example                              |
 |-----------------------------|----------------------------------------|--------------------------------------------|
@@ -89,6 +89,7 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 | Chart Master                | `@prompts/chart-master.md`             | `[paste data] Generate revenue chart`      |
 | Report Generator            | `@prompts/report-generator.md`         | `[paste analysis] Export as HTML report`   |
 | Learning Coach | `@prompts/learning-coach.md` | `[paste a stock-eval output] Explain this to me` |
+| Fact Check | `@prompts/fact-check.md` | `[paste a report] Verify every number and add sources` |
 
 ### Aliases (3 redirects — installed, not counted as frameworks)
 
@@ -320,7 +321,7 @@ All analyses end with this format:
 
 ```
 InvestSkill/
-├── prompts/                    # 29 analysis frameworks (+ 3 aliases, 1 output tool)
+├── prompts/                    # 30 analysis frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -349,6 +350,7 @@ InvestSkill/
 │   ├── tax-lens.md
 │   ├── risk-stress-test.md
 │   ├── learning-coach.md
+│   ├── fact-check.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/                    # Claude Code plugin (optional)
 │   └── us-stock-analysis/
@@ -396,7 +398,7 @@ gemini
 ## Additional Resources
 
 - **README.md** — Complete project overview and all platforms
-- **prompts/** directory — All 29 analysis frameworks
+- **prompts/** directory — All 30 analysis frameworks
 - **plugins/** — Claude Code plugin configuration (if using Claude Code)
 - **GitHub Issues** — Report bugs or suggest improvements
 

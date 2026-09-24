@@ -4,7 +4,7 @@
 
 ### 美股市場專業投資分析工具
 
-**29 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
+**30 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
 
 **無需 API 金鑰 · 無需訂閱 · 完全免費**
 
@@ -22,7 +22,7 @@
 
 ## 🎯 什麼是 InvestSkill？
 
-InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 29 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
+InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 30 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
 
 **不用註冊，也不用付費。** 沒有 API 金鑰、沒有資料商訂閱、不必設定帳單——你只要用手上已有的 AI 助理（免費方案或本機模型都可以），InvestSkill 本身就只是 markdown 提示詞。詳見 [無需 API 金鑰，完全免費](#-無需-api-金鑰完全免費)。
 
@@ -41,12 +41,12 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
   <tr>
     <td width="50%">
 
-### ✨ 29 個專業框架
+### ✨ 30 個專業框架
 - 4 個核心分析框架
 - 3 個財務報告分析
 - 4 個市場監控工具
 - 14 個進階研究工具
-- 4 個自動化元技能，加上 report-generator 輸出工具
+- 5 個自動化元技能，加上 report-generator 輸出工具
 - 另有 3 個別名（轉址至吸收它們的技能，不計入框架數）
 
     </td>
@@ -188,7 +188,7 @@ gemini
 
 ---
 
-## 📋 29 個框架總覽
+## 📋 30 個框架總覽
 
 | 類別 | 框架 | 用途 |
 |------|------|------|
@@ -196,10 +196,11 @@ gemini
 | **財務報告** (3) | financial-report-analyst · 10k-digest · earnings-call-analysis | 深度文件分析 |
 | **市場監控** (4) | insider-trading · institutional-ownership · dividend-analysis · short-interest | 活動與情緒追蹤 |
 | **進階分析** (14) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** · **position-ladder** · **thesis-tracker** · **etf-analysis** · **earnings-preview** · **tax-lens** · **risk-stress-test** | 專項研究角度 |
-| **元技能與輸出** (4 + 1 輸出工具) | full-report · chart-master · result-validator · **learning-coach** · report-generator（輸出工具，不計入框架） | 自動化與綜合輸出 |
+| **元技能與輸出** (5 + 1 輸出工具) | full-report · chart-master · result-validator · **fact-check** · **learning-coach** · report-generator（輸出工具，不計入框架） | 自動化與綜合輸出 |
 | **別名** (3，不計入框架) | fundamental-analysis → stock-eval · dcf-valuation → stock-valuation · research-bundle → full-report | 舊名稱仍可用，會轉址到吸收它的技能 |
 
 > **Unreleased（下一版）新功能：**
+> - `fact-check`（事實查核）— 對任何報告做**逐條陳述層級**的查核：抽出每個數字與事實陳述、逐一對照第一手來源（SEC 申報、IR 新聞稿、FRED、發行商資料或你貼上的文件）、重算衍生數字，標示 ✅ 已查核／⚠️ 不符／❓ 無法查核／🕒 過時，並重新產出**附行內引用與參考文獻章節**的修正版報告；查核分數 0–10 供 `result-validator` 的資料品質維度使用。絕不捏造來源
 > - `etf-analysis`（ETF 分析）— ETF／指數基金盡職調查：費用率 vs. 同類、追蹤差異、流動性、持股集中度與傾斜、與你其他持股的重疊 %、配息與資本利得分配紀錄、結構警示（槓桿／反向／合成／ETN），以及「買 ETF vs. 直接買前五大成分股」比較；產出 ETF 適配分數 0–10
 > - `earnings-preview`（財報前瞻）— 財報**前**的技能：共識 vs. 耳語、過去 8 季超預期比率與財報後漲跌、選擇權隱含波動 vs. 實際波動、目前股價已反映什麼、要看的 KPI，以及三情境矩陣（超預期且上修／超預期但下修／未達預期）與每個情境的部位規則
 > - `tax-lens`（稅務視角）— 美國稅務機制：短期 vs. 長期、洗售窗口檢查、合格股息持有期間測試、批次選擇、稅損收割配對、帳戶配置、年度稅務拖累估計；`--non-us` 模組涵蓋 W-8BEN、30% 預扣稅（或協定稅率；台灣無協定）、非居民資本利得的一般處理、6 萬美元以上美國境內資產的遺產稅曝險、愛爾蘭 UCITS 替代方案。僅供教育，非稅務建議
@@ -394,7 +395,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 
 | 功能 | InvestSkill | 通用 AI |
 |------|------------|---------|
-| **29 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
+| **30 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
 | **信號區塊** | ✅ 標準化格式 | ❌ 格式不一致 |
 | **全平台支援** | ✅ 原生支援 | ❌ 需要變通方案 |
 | **零 API 費用** | ✅ 免費 | ❌ 需付費 API |
@@ -407,8 +408,8 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ## 📊 專案狀態
 
 **目前版本：** 1.11.0
-**技能框架：** 29 個（另有 3 個別名、1 個輸出工具）
-**通用提示詞：** 33 個
+**技能框架：** 30 個（另有 3 個別名、1 個輸出工具）
+**通用提示詞：** 34 個
 **支援平台：** 6 個
 **測試：** 全數通過 ✅（結構、提示詞同步、技能契約、數量一致性、安裝腳本）
 

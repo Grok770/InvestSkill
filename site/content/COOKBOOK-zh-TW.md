@@ -70,7 +70,7 @@ claude
 /plugin list
 ```
 
-確認在清單中看到 `us-stock-analysis`，並顯示 33 個可用技能（29 個分析框架、3 個別名，以及 `report-generator` 輸出工具），即表示安裝成功。
+確認在清單中看到 `us-stock-analysis`，並顯示 34 個可用技能（30 個分析框架、3 個別名，以及 `report-generator` 輸出工具），即表示安裝成功。
 
 ### 快速測試
 
@@ -152,7 +152,7 @@ plugins/us-stock-analysis/skills/
 ├── financial-report-analyst/SKILL.md
 ├── chart-master/SKILL.md           ← v1.6.0 新增
 ├── full-report/SKILL.md            ← v1.6.0 新增
-└── ...（共 33 個技能）
+└── ...（共 34 個技能）
 ```
 
 ### 標準訊號區塊
@@ -1901,9 +1901,12 @@ Samsung / Apple 設計案報導，取自 stockanalysis.com 新聞頁，2026/07/2
 # 內容包含：所有訊號區塊、互動圖表、橄欖球估值圖、板塊比較、
 #           風險矩陣、進出場策略
 
-# 閱讀後，驗證綜合輸出：
+# 閱讀後，先查核輸入，再驗證推理：
+/us-stock-analysis:fact-check
+# 貼上報告與 10-K／IR 新聞稿——每個數字對照來源查核、衍生數字重算，
+# 產出附 [n] 引用與參考文獻章節的修正版
 /us-stock-analysis:result-validator
-# 貼入綜合訊號區塊——取得信心評分，標記任何遺漏項目
+# 貼入綜合訊號區塊（與查核表）——取得信心評分，標記任何遺漏項目
 ```
 
 ---
@@ -2020,7 +2023,7 @@ Samsung / Apple 設計案報導，取自 stockanalysis.com 新聞頁，2026/07/2
 
 ## 5. 跨 AI 工具使用
 
-InvestSkill 適用於任何 AI 助手。`prompts/` 目錄包含所有 29 個分析框架（另含 3 個別名與 report-generator 輸出工具）的獨立檔案。
+InvestSkill 適用於任何 AI 助手。`prompts/` 目錄包含所有 30 個分析框架（另含 3 個別名與 report-generator 輸出工具）的獨立檔案。
 
 ### Gemini CLI
 

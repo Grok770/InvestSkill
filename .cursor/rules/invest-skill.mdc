@@ -6,7 +6,7 @@ alwaysApply: true
 
 # InvestSkill — Cursor Rules & Setup Guide
 
-This is the InvestSkill repository — a collection of 29 professional investment analysis frameworks for US stocks. These rules automatically apply when you work in this project.
+This is the InvestSkill repository — a collection of 30 professional investment analysis frameworks for US stocks. These rules automatically apply when you work in this project.
 
 ## Installation & Setup
 
@@ -27,7 +27,7 @@ Cursor automatically loads this file when you open the InvestSkill repository. *
 
 3. **Open AI Chat** (usually `Cmd+K`)
    - Cursor automatically loads the investment analysis rules
-   - All 29 frameworks are immediately available
+   - All 30 frameworks are immediately available
 
 ### Verify Setup
 
@@ -40,7 +40,7 @@ If the framework loads, setup is complete!
 
 ---
 
-## Available Analysis Frameworks (29 frameworks + 3 aliases + 1 output tool)
+## Available Analysis Frameworks (30 frameworks + 3 aliases + 1 output tool)
 
 ### Core Stock Analysis (4 frameworks)
 
@@ -93,7 +93,7 @@ If the framework loads, setup is complete!
 |-----------|------|----------|
 | Full Report (HTML) | `@prompts/full-report.md` | Runs all modules and saves a standalone HTML report |
 
-### Meta-Analysis & Visualization (4 frameworks)
+### Meta-Analysis & Visualization (5 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
@@ -101,6 +101,7 @@ If the framework loads, setup is complete!
 | Chart Master | `@prompts/chart-master.md` | Generate Mermaid/ASCII/HTML charts |
 | Report Generator | `@prompts/report-generator.md` | Export analysis as a professional HTML/PDF report |
 | Learning Coach | `@prompts/learning-coach.md` | Explains any InvestSkill output like a mentor — every metric in plain words, why it matters, its good / bad range, and the lesson that teaches it — then asks 3–5 Socratic questions and "what would change your mind?". --level beginner / intermediate, --lang zh-TW, and a --quiz mode that drills a Learning lesson |
+| Fact Check | `@prompts/fact-check.md` | Claim-level verification of any report or data set — extract every figure and factual claim, check each against a primary source (SEC filing, company IR, FRED, exchange data, or the user's own document), recompute derived numbers, mark ✅ verified / ⚠️ mismatch / ❓ unverifiable, and re-issue the report with inline citations and a References section; Verification Score 0–10 |
 
 ### Aliases (3 redirects — installed, not counted as frameworks)
 
@@ -400,7 +401,7 @@ InvestSkill/
 │       └── invest-skill.mdc      # This file (auto-loaded)
 ├── .github/
 │   └── copilot-instructions.md   # GitHub Copilot integration
-├── prompts/                       # 29 frameworks (+ 3 aliases, 1 output tool)
+├── prompts/                       # 30 frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -429,6 +430,7 @@ InvestSkill/
 │   ├── tax-lens.md
 │   ├── risk-stress-test.md
 │   ├── learning-coach.md
+│   ├── fact-check.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/
 │   └── us-stock-analysis/
@@ -562,7 +564,7 @@ Analyze AAPL with:
 - **README.md** — Full setup for Claude Code, Gemini, Copilot, Cursor
 - **GEMINI.md** — Detailed Gemini CLI guide
 - **.github/copilot-instructions.md** — GitHub Copilot integration guide
-- **prompts/** — All 29 framework files (+ 3 aliases, 1 output tool)
+- **prompts/** — All 30 framework files (+ 3 aliases, 1 output tool)
 - **GitHub Issues** — Report problems or request features
 
 ---
