@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# InvestSkill installer — wires the 26 analysis frameworks into your AI coding agent.
+# InvestSkill installer — wires the InvestSkill analysis frameworks into your AI coding agent.
 #
 #   curl -fsSL https://raw.githubusercontent.com/yennanliu/InvestSkill/main/install.sh | bash -s -- -a claude
 #
@@ -46,7 +46,7 @@ ${B}Options${RST}
   -h         Show this help
 
 ${B}What it installs${RST}
-  .investskill/prompts/*.md   the 26 frameworks, as plain markdown
+  .investskill/prompts/*.md   every framework (and alias), as plain markdown
   plus one agent-native entry point (a skill, a rule, or an instructions block)
 EOF
 }
@@ -104,15 +104,22 @@ curl -fsSL "https://codeload.github.com/$REPO/tar.gz/$REF" \
 PROMPTS_REL=".investskill/prompts"
 mkdir -p "$DIR/$PROMPTS_REL"
 cp "$TMP/prompts/"*.md "$DIR/$PROMPTS_REL/"
-# report-generator is an output tool, not an analysis framework — hence the
-# advertised count is one less than the number of files copied.
+# report-generator is an output tool and fundamental-analysis / dcf-valuation /
+# research-bundle are alias stubs that redirect to the skill that absorbed them
+# — all are installed, none is counted as an analysis framework. Keep this list
+# in sync with ALIAS_SKILLS in scripts/lib/skill-registry.js (tests check it).
 COUNT=0
+ALIASES=0
 for f in "$DIR/$PROMPTS_REL"/*.md; do
   # Bash leaves an unmatched glob literal — skip it rather than counting it.
   [ -e "$f" ] || continue
-  [ "$(basename "$f")" = "report-generator.md" ] || COUNT=$((COUNT + 1))
+  case "$(basename "$f" .md)" in
+    report-generator) ;;
+    fundamental-analysis|dcf-valuation|research-bundle) ALIASES=$((ALIASES + 1)) ;;
+    *) COUNT=$((COUNT + 1)) ;;
+  esac
 done
-ok "$COUNT analysis frameworks (+ report-generator) → $PROMPTS_REL/"
+ok "$COUNT analysis frameworks (+ $ALIASES aliases + report-generator) → $PROMPTS_REL/"
 
 skill_names() { ls -1 "$TMP/prompts" | sed 's/\.md$//' | sort; }
 

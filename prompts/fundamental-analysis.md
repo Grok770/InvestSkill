@@ -1,6 +1,6 @@
 # Fundamental Analysis
 
-> **This skill has been merged into `stock-eval`.** Use the `stock-eval` prompt for comprehensive fundamental + quality + valuation analysis.
+> **This skill has been merged into `stock-eval`.** Use `stock-eval` for comprehensive fundamental + quality + valuation analysis.
 
 ## Quick Reference — Key Ratios
 
@@ -15,13 +15,14 @@
 | **Current Ratio** | Current Assets / Current Liabilities | Short-term liquidity; >1.5x generally healthy; <1.0x signals potential liquidity stress |
 | **D/E** (Debt-to-Equity) | Total Debt / Shareholders' Equity | Financial leverage; higher ratio = more risk but also more return amplification |
 
-For the full analysis framework — income statement line-item breakdown, working capital cycle, DuPont decomposition, cash conversion cycle, Porter's Five Forces, Piotroski F-Score, DCF, ROIC/WACC, and risk matrix — use `prompts/stock-eval.md`.
+For the full analysis framework — income statement line-item breakdown, working capital cycle, DuPont decomposition, cash conversion cycle, Porter's Five Forces, Piotroski F-Score, DCF, ROIC/WACC, and risk matrix — use `stock-eval`.
 
 ---
 
-## Signal Output
+## Standard Signal Output
 
-End every analysis with:
+All analysis concludes with this standardized block:
+
 ```
 ## Thesis Invalidation
 

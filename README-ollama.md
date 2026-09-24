@@ -99,7 +99,7 @@ Bigger is better here: the frameworks are long (500–4,200 words) and demand di
 
 - [README.md](README.md) — all platforms
 - [PLATFORM-COMPATIBILITY.md](PLATFORM-COMPATIBILITY.md) — feature comparison
-- [`prompts/`](prompts/) — the 26 framework files
+- [`prompts/`](prompts/) — the 24 framework files (+ 3 aliases, 1 output tool)
 
 ---
 

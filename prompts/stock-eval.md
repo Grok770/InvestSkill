@@ -6,7 +6,7 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
@@ -15,7 +15,25 @@ Never silently substitute training-data estimates for current prices. When in do
 
 ---
 
-You are an expert equity analyst. Perform a comprehensive stock evaluation combining fundamental analysis, valuation modeling, quality scoring, and risk assessment to produce investment-grade conclusions.
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
+
+---
+
+Perform comprehensive stock evaluation combining fundamental analysis, valuation modeling, quality scoring, and risk assessment to produce investment-grade conclusions.
 
 ## Analysis Components
 
@@ -79,7 +97,7 @@ You are an expert equity analyst. Perform a comprehensive stock evaluation combi
 
 ## Deep Financial Statement Analysis
 
-This section provides line-item rigor for deeper statement-level breakdown.
+This section provides line-item rigor absorbed from dedicated fundamental analysis workflows. Use when a deeper statement-level breakdown is required.
 
 ### Income Statement Line-Item Framework
 
@@ -183,7 +201,7 @@ ROE = Tax Burden × Interest Burden × EBIT Margin × Asset Turnover × Equity M
 
 ### Visualization Data Tables
 
-Populate these tables for chart generation when a visual report is needed:
+When a visual or report output is needed, populate these tables for chart generation (compatible with `report-generator`):
 
 **Revenue & Earnings Growth**
 ```
@@ -486,6 +504,8 @@ Intrinsic value per share at various WACC and terminal growth rate combinations:
 
 ### Estimate Revision Trend
 
+Track the direction of earnings estimate changes over time:
+
 | Period       | EPS Estimate (Current FY) | Change vs. 30 Days Ago | Change vs. 90 Days Ago |
 |--------------|--------------------------|------------------------|------------------------|
 | Current FY   |                          |                        |                        |
@@ -577,7 +597,9 @@ Provide clear, actionable insights structured as follows:
 7. **Price Targets**: Bull / Base / Bear case with probability weighting
 8. **Recommended Entry Zone**: Based on margin of safety and technical support levels
 
-## Signal Output
+## Standard Signal Output
+
+All analysis concludes with this standardized block:
 
 ```
 ## Thesis Invalidation

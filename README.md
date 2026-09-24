@@ -20,7 +20,7 @@
 
 ## What is InvestSkill?
 
-InvestSkill is a collection of **26 structured analysis frameworks** that turn any AI assistant into an institutional-quality investment analyst. There is no runtime — every skill is a prompt that works in Claude Code, Cursor, Gemini CLI, GitHub Copilot, ChatGPT, or any other LLM.
+InvestSkill is a collection of **24 structured analysis frameworks** that turn any AI assistant into an institutional-quality investment analyst. There is no runtime — every skill is a prompt that works in Claude Code, Cursor, Gemini CLI, GitHub Copilot, ChatGPT, or any other LLM.
 
 **Nothing to sign up for, nothing to pay for.** No API key, no data-vendor subscription, no billing setup — you bring the AI assistant you already use (a free tier or a local model works too) and InvestSkill is just markdown. See [No API keys, no cost](#no-api-keys-no-cost).
 
@@ -113,16 +113,14 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 
 ---
 
-## The 26 Frameworks
+## The 24 Frameworks
 
 ### Core Stock Analysis
 
 | Skill | What it produces |
 |-------|-----------------|
 | `stock-eval` | Piotroski F-Score, ROIC, quality rating, go/no-go signal |
-| `fundamental-analysis` | Income statement, balance sheet, cash flow deep dive |
 | `technical-analysis` | MA chart (30/60/90/200/365d) with trade entry/target/stop, chart patterns, RSI/MACD, MTF alignment, Ichimoku |
-| `dcf-valuation` | DCF intrinsic value, WACC sensitivity, bear/base/bull scenarios |
 | `stock-valuation` | P/E · P/S · EV/EBITDA · comparable company multiples |
 | `economics-analysis` | Macro indicators, recession probability, rate sensitivity |
 
@@ -156,16 +154,26 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 | `catalyst-calendar` | Forward-looking 90-day event calendar: earnings, macro events, catalysts, impact scoring, event-driven strategies |
 | `bear-case` | Deliberate short-seller red-team: bear thesis, accounting red flags, downside target, thesis-killers (counterevidence for any bull thesis) |
 | `position-ladder` | Staged entry ladder + trim/re-add cycle for a single holding: share-count floor/ceiling, blended cost basis, wash-sale flags, total-return-vs-buy-and-hold check, thesis-break gate |
+| `thesis-tracker` | Write, save, and re-check an investment thesis — KPIs with thresholds, invalidation triggers, catalysts, a pre-mortem, and a decision log; `--update` re-reads the saved file against new data and returns INTACT / WEAKENED / BROKEN |
 
 ### Meta & Output
 
 | Skill | What it produces |
 |-------|-----------------|
-| `research-bundle` | Chains all frameworks into one unified investment thesis |
 | `full-report` | Runs all 15 modules and saves a standalone HTML report |
 | `report-generator` | Converts any analysis into a professional HTML/PDF report |
 | `chart-master` | Mermaid · ASCII · Chart.js visualizations from financial data |
 | `result-validator` | Scores any analysis on data quality, methodology, and signal consistency |
+
+### Aliases (redirects)
+
+Three earlier skills were absorbed into larger ones. They are still installed so old references keep working, but they are aliases, not frameworks, and are not counted above.
+
+| Alias | Redirects to |
+|-------|--------------|
+| `fundamental-analysis` | `stock-eval` (statement-level deep dive is a section of it) |
+| `dcf-valuation` | `stock-valuation` (DCF is Method 1 of its multi-method model) |
+| `research-bundle` | `full-report` (use `--depth quick / standard / comprehensive`) |
 
 ---
 
@@ -181,7 +189,6 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 **Complete due diligence**
 ```
 /stock-eval AAPL
-/fundamental-analysis AAPL
 /stock-valuation AAPL --methods all
 /competitor-analysis AAPL
 /financial-report-analyst AAPL 10-K
@@ -190,7 +197,7 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 
 **Earnings season playbook**
 ```
-/fundamental-analysis TICKER          ← pre-earnings baseline
+/stock-eval TICKER                    ← pre-earnings baseline
 /earnings-call-analysis TICKER        ← post-earnings [paste transcript]
 /options-analysis TICKER --earnings   ← vol expectations + strategy
 → Complete earnings thesis
@@ -231,7 +238,7 @@ HTML reports render this as a styled dark panel with a score progress bar, ghost
 
 | Platform | Setup | How it works |
 |----------|-------|-------------|
-| **Claude Code** | Marketplace install | 23 native slash commands |
+| **Claude Code** | Marketplace install | 28 native slash commands (24 frameworks + 3 aliases + 1 output tool) |
 | **Cursor IDE** | Clone repo, open folder | Auto-loads `.cursor/rules/` |
 | **Gemini CLI** | Clone repo, `cd` into it | Auto-loads `GEMINI.md` |
 | **GitHub Copilot** | Clone repo, open in VS Code | Auto-loads `.github/copilot-instructions.md` |
@@ -261,7 +268,7 @@ New to investing, or unsure which skill to reach for? Start here:
 |----------|-------------|
 | [Live Docs Site](https://yennanliu.github.io/InvestSkill/) | Full documentation with dark-theme UI |
 | [Cookbook](https://yennanliu.github.io/InvestSkill/cookbook.html) | Walkthrough examples and use cases |
-| [Skill Reference](https://yennanliu.github.io/InvestSkill/skills.html) | All 26 frameworks, one browsable page each |
+| [Skill Reference](https://yennanliu.github.io/InvestSkill/skills.html) | All 24 frameworks, one browsable page each |
 | [Claude Code Guide](README-claude-code.md) | Plugin install + all slash commands |
 | [Cursor Guide](README-cursor.md) | Auto-loading rules + `@prompts/` usage |
 | [Gemini CLI Guide](README-gemini.md) | File references + multi-framework chains |
@@ -276,16 +283,15 @@ New to investing, or unsure which skill to reach for? Start here:
 
 See [ADDING-NEW-SKILLS.md](ADDING-NEW-SKILLS.md) for the full process. The short version:
 
-1. Create `plugins/us-stock-analysis/skills/<name>/SKILL.md` with YAML frontmatter
-2. Create `prompts/<name>.md` — same content, no frontmatter, AI-agnostic syntax
-3. Add to `plugin.json` skills array and bump version in both manifest files
-4. Run `npm test` — all 288+ tests must pass
+1. `node scripts/new-skill.js <name> --category <core|reports|monitoring|advanced|meta> --title "…" --desc "…"` — scaffolds `SKILL.md` with the full output contract and wires the skill into the site, READMEs, cross-AI configs, and CHANGELOG
+2. Write the analysis in `plugins/us-stock-analysis/skills/<name>/SKILL.md`, then `node scripts/sync-prompts.js <name>` — `prompts/<name>.md` is generated from it (skills are auto-discovered; no `plugin.json` change)
+3. Run `npm test` — structure, prompt sync, skill contract, counts, and install script must all pass
 
 [Open an issue](https://github.com/yennanliu/InvestSkill/issues) to report bugs · [Start a discussion](https://github.com/yennanliu/InvestSkill/discussions) to propose features.
 
 ---
 
-**Version:** 1.11.0 · **Skills:** 26 · **Platforms:** 7 · **License:** MIT · **Tests:** 294+ passing
+**Version:** 1.11.0 · **Frameworks:** 24 analysis frameworks (+ 3 aliases, 1 output tool) · **Skills:** 28 · **Platforms:** 7 · **License:** MIT · **Tests:** all passing
 
 ---
 

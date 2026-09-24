@@ -61,9 +61,14 @@ const PROMPTS_DIR = path.join(ROOT, 'prompts');
 const PLUGIN_JSON = path.join(ROOT, 'plugins/us-stock-analysis/.claude-plugin/plugin.json');
 const MARKETPLACE_JSON = path.join(ROOT, '.claude-plugin/marketplace.json');
 
+// Skill classification (output tools / aliases / meta) lives in one place so a
+// reclassification cannot drift between the tests, the installer, and the site.
+const registry = require('./lib/skill-registry');
+
 // Skills excluded from specific checks
-const PROMPTS_EXCLUDED = ['report-generator'];  // HTML output tool, not an analysis prompt
-const SIGNAL_EXCLUDED  = ['report-generator'];  // Renders signal blocks in HTML, doesn't produce them
+const PROMPTS_EXCLUDED = [...registry.OUTPUT_TOOLS];  // HTML output tool, not an analysis prompt
+const SIGNAL_EXCLUDED  = [...registry.OUTPUT_TOOLS];  // Renders signal blocks in HTML, doesn't produce them
+const ALIAS_SKILLS     = [...registry.ALIAS_SKILLS];  // Redirect stubs — installed, but not advertised as frameworks
 
 const SIGNAL_BLOCK = '╔══════════════════════════════════════════════╗';
 const FRONTMATTER_START = /^---\s*$/m;
@@ -464,9 +469,9 @@ if (skillCount === promptCount) {
   fail(`Count mismatch: ${skillCount} skill dirs vs ${promptCount} prompt files`);
 }
 
-// Advertised framework count = skills − output-only tools (report-generator)
-const ADVERTISED = skillCount - PROMPTS_EXCLUDED.length;
-pass(`Advertised framework count = ${ADVERTISED} (${skillCount} skills − ${PROMPTS_EXCLUDED.length} output tool)`);
+// Advertised framework count = skills − output-only tools − alias/redirect stubs
+const ADVERTISED = registry.frameworkCount(actualSkillDirs);
+pass(`Advertised framework count = ${ADVERTISED} (${skillCount} skills − ${PROMPTS_EXCLUDED.length} output tool − ${ALIAS_SKILLS.length} aliases)`);
 
 // Version parity across package.json, plugin.json, marketplace (metadata + entry)
 const pkg = readJSON(path.join(ROOT, 'package.json'));
@@ -485,19 +490,22 @@ if (uniqueVersions.length === 1) {
   fail(`Version drift: ${Object.entries(versions).map(([k, v]) => `${k}=${v}`).join(', ')}`);
 }
 
-// Framework-count claims in site-facing docs must all equal ADVERTISED.
-// Numbers < 10 are treated as category sub-counts and ignored; any total
-// (>= 10) stated next to "framework(s)" / "N 個 … 框架" must equal ADVERTISED.
+// Framework-count claims in user-facing docs must all equal ADVERTISED.
+// Numbers < 10 and parenthesised sub-counts like "(10 frameworks)" are category
+// sub-totals and ignored; any other total stated next to "framework(s)" /
+// "N 個 … 框架" must equal ADVERTISED.
 const COUNT_DOCS = [
   'README.md', 'README-zh-TW.md',
   'site/content/CHOOSE-A-SKILL.md', 'site/content/CHOOSE-A-SKILL-zh-TW.md',
   'site/content/COOKBOOK.md', 'site/content/COOKBOOK-zh-TW.md',
+  'FAQ.md', 'PLATFORM-COMPATIBILITY.md', 'CONTRIBUTING.md',
 ];
 const claimPatterns = [
   /\b(\d+)\s+(?:[A-Za-z-]+\s+){0,3}frameworks?\b/gi,   // "23 (structured analysis) frameworks"
   /(\d+)\s*個[^\n。，]{0,8}框架/g,                       // "23 個 … 框架"
   /框架[：:]\s*(\d+)\s*個/g,                             // "技能框架：23 個"
 ];
+const isSubCount = (content, m) => content[m.index - 1] === '(';   // "### Advanced (10 frameworks)"
 let countDrift = 0;
 COUNT_DOCS.forEach(file => {
   const content = readFile(path.join(ROOT, file));
@@ -506,7 +514,7 @@ COUNT_DOCS.forEach(file => {
   claimPatterns.forEach(re => {
     for (const m of content.matchAll(re)) {
       const n = parseInt(m[1], 10);
-      if (n >= 10 && n !== ADVERTISED) bad.push(`"${m[0].trim()}" (${n})`);
+      if (n >= 10 && n !== ADVERTISED && !isSubCount(content, m)) bad.push(`"${m[0].trim()}" (${n})`);
     }
   });
   if (bad.length) {
@@ -607,7 +615,7 @@ CROSS_AI_FILES.forEach(({ label, file }) => {
   const badCounts = [];
   for (const m of content.matchAll(frameworkClaimRe)) {
     const n = parseInt(m[1], 10);
-    if (n >= 10 && n !== ADVERTISED) badCounts.push(`"${m[0].trim()}" (${n})`);
+    if (n >= 10 && n !== ADVERTISED && !isSubCount(content, m)) badCounts.push(`"${m[0].trim()}" (${n})`);
   }
   if (badCounts.length === 0) {
     pass(`${label} — framework counts consistent (${ADVERTISED})`);
@@ -621,6 +629,11 @@ CROSS_AI_FILES.forEach(({ label, file }) => {
 const SKILL_COUNT_DOCS = [
   { file: 'site/content/COOKBOOK.md',       patterns: [/(\d+)\s+available skills/gi, /(\d+)\s+skills total/gi] },
   { file: 'site/content/COOKBOOK-zh-TW.md', patterns: [/(\d+)\s*個可用技能/g, /共\s*(\d+)\s*個技能/g] },
+  // "All N skills" claims in the platform docs (the ones that sat at 18 for a year)
+  { file: 'FAQ.md',                    patterns: [/\b(\d{2,})\s+skills\b/gi] },
+  { file: 'PLATFORM-COMPATIBILITY.md', patterns: [/\b(\d{2,})\s+skills\b/gi] },
+  { file: 'README.md',                 patterns: [/\*\*Skills:\*\*\s*(\d+)/g] },
+  { file: 'README-zh-TW.md',           patterns: [/通用提示詞：\*\*\s*(\d+)/g] },
 ];
 SKILL_COUNT_DOCS.forEach(({ file, patterns }) => {
   const content = readFile(path.join(ROOT, file));
@@ -636,6 +649,32 @@ SKILL_COUNT_DOCS.forEach(({ file, patterns }) => {
     pass(`${file} — plugin-list skill count consistent (${skillCount})`);
   } else {
     fail(`${file} — stale skill count(s), expected ${skillCount}: ${bad.join(', ')}`);
+  }
+});
+
+// ─── Test 14: Alias Skills Are Honest Redirects ──────────────────────────────
+
+section('14. Alias Skills (redirect stubs, not counted as frameworks)');
+
+// The three aliases stay installed for backwards compatibility but are not
+// advertised as frameworks. Each must say where it redirects, the target must
+// exist, and the site must file them under their own category — never under a
+// framework category and never in "Other".
+const buildSite = readFile(path.join(ROOT, 'site/build/build-site.js')) || '';
+ALIAS_SKILLS.forEach(alias => {
+  const content = readFile(path.join(SKILLS_DIR, alias, 'SKILL.md'));
+  if (!content) { fail(`${alias} — SKILL.md missing`); return; }
+  const m = content.match(/has been (?:merged|unified) into `([a-z0-9-]+)`/);
+  if (m && actualSkillDirs.includes(m[1])) {
+    pass(`${alias} — redirects to existing skill "${m[1]}"`);
+  } else {
+    fail(`${alias} — must state "This skill has been merged/unified into \`<existing-skill>\`"`);
+  }
+  const aliasCategoryRe = new RegExp(`title:\\s*'Aliases[^']*'[^\\n]*'${alias}'`);
+  if (aliasCategoryRe.test(buildSite)) {
+    pass(`${alias} — filed under the Aliases category in build-site.js`);
+  } else {
+    fail(`${alias} — not in the Aliases category of SKILL_CATEGORIES (site/build/build-site.js)`);
   }
 });
 

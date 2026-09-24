@@ -70,7 +70,7 @@ claude
 /plugin list
 ```
 
-確認在清單中看到 `us-stock-analysis`，並顯示 27 個可用技能，即表示安裝成功。
+確認在清單中看到 `us-stock-analysis`，並顯示 28 個可用技能（24 個分析框架、3 個別名，以及 `report-generator` 輸出工具），即表示安裝成功。
 
 ### 快速測試
 
@@ -152,7 +152,7 @@ plugins/us-stock-analysis/skills/
 ├── financial-report-analyst/SKILL.md
 ├── chart-master/SKILL.md           ← v1.6.0 新增
 ├── full-report/SKILL.md            ← v1.6.0 新增
-└── ...（共 27 個技能）
+└── ...（共 28 個技能）
 ```
 
 ### 標準訊號區塊
@@ -1963,11 +1963,36 @@ Samsung / Apple 設計案報導，取自 stockanalysis.com 新聞頁，2026/07/2
 **誠實解讀輸出：** 平均成本下降不等於賺錢。務必看總報酬對照——在強勢上漲時，
 賣出高成本批次那一腿其實**讓你少賺**，計畫會直接把金額算給你看。
 
+### 工作流程 H — 把論點寫下來，之後再檢查
+
+**情境：** 你已做完功課（工作流程 E 或 G）並建立部位。三個月後你想知道的是*買進的理由*是否還成立——而不是你對股價的感覺。
+
+```bash
+# 步驟 1：趁分析還新鮮，先開立論點檔
+/us-stock-analysis:thesis-tracker NVDA — 2026-05-30 以 $118 買進；論點：資料中心需求
+再複合成長兩年，而市場只把它當成一次性景氣循環
+# 貼上 stock-eval 與 bear-case 的輸出。回傳：磨尖後的一段式論點、3–5 個附門檻的 KPI、
+# 從 bear-case 論點反證匯入的觸發條件、催化劑清單、事前驗屍，以及狀態為 INTACT、
+# 附下次檢查日期的 output/thesis/NVDA.md
+
+# 步驟 2：下一次財報後，用新數字重新檢查
+/us-stock-analysis:thesis-tracker NVDA --update
+# 貼上 10-Q 重點。第一行就是狀態——
+#   NVDA · WEAKENED · 2026-08-29 — 毛利率 68.1%（原 75.5%）跌破 ≥ 70% 門檻
+# ——接著是 KPI 表（舊 → 新）、哪些觸發條件被觸發，以及新增的一行決策日誌
+
+# 步驟 3：讓狀態驅動部位技能，而不是反過來
+/us-stock-analysis:position-ladder NVDA
+# WEAKENED ＝ 續抱、不加碼、提前檢查。BROKEN ＝ 持有的理由已不存在。
+```
+
+**為什麼值得做：** 這個檔案是對抗兩個經典錯誤的唯一防線——在論點已破損時攤平，以及在論點仍成立時因為一週的壞行情賣出。已結案的檔案會成為交易事後檢討的素材。
+
 ---
 
 ## 5. 跨 AI 工具使用
 
-InvestSkill 適用於任何 AI 助手。`prompts/` 目錄包含所有 26 個分析框架的獨立檔案。
+InvestSkill 適用於任何 AI 助手。`prompts/` 目錄包含所有 24 個分析框架（另含 3 個別名與 report-generator 輸出工具）的獨立檔案。
 
 ### Gemini CLI
 

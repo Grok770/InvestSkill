@@ -6,7 +6,7 @@ This document explains how the automated CI/CD system releases InvestSkill to al
 
 The CI/CD pipeline automatically:
 1. **Validates** code quality and structure
-2. **Tests** all 18 analysis frameworks
+2. **Tests** all 24 analysis frameworks
 3. **Detects** version changes
 4. **Publishes** to multiple platforms
 5. **Records** deployment history
@@ -42,7 +42,7 @@ Checks:
 **Triggers**: Every push and PR
 
 Tests:
-- ✅ All 18 skills are registered
+- ✅ Every skill directory has a SKILL.md and a matching prompt
 - ✅ Prompt files are valid
 - ✅ Output formats match standards
 - ✅ Signal blocks are properly formatted

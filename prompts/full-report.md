@@ -20,31 +20,31 @@ Select how many modules to run with `--depth`:
 
 | # | Module | Focus |
 |---|--------|-------|
-| 1 | stock-eval | Company overview, competitive position, relative valuation |
-| 2 | technical-analysis | MA, RSI, MACD, volume, support/resistance |
-| 3 | dcf-valuation | DCF intrinsic value, bear/base/bull scenarios |
-| 4 | insider-trading | SEC Form 4 patterns, net insider sentiment |
-| 5 | earnings-call-analysis | Management tone, guidance quality, key themes |
+| 1 | `stock-eval` | Company overview, competitive position, relative valuation |
+| 2 | `technical-analysis` | MA, RSI, MACD, volume, support/resistance |
+| 3 | `dcf-valuation` | DCF intrinsic value, bear/base/bull scenarios |
+| 4 | `insider-trading` | SEC Form 4 patterns, net insider sentiment |
+| 5 | `earnings-call-analysis` | Management tone, guidance quality, key themes |
 
 ### Standard (10 modules — Quick + 5 more)
 
 | # | Module | Focus |
 |---|--------|-------|
-| 6 | institutional-ownership | 13F holdings, smart money flows |
-| 7 | competitor-analysis | Moat, market share, Porter's Five Forces |
-| 8 | sector-analysis | Sector rotation, relative strength |
-| 9 | options-analysis | IV, Put/Call ratio, max pain, strategies |
-| 10 | short-interest | Short ratio, squeeze risk, days-to-cover |
+| 6 | `institutional-ownership` | 13F holdings, smart money flows |
+| 7 | `competitor-analysis` | Moat, market share, Porter's Five Forces |
+| 8 | `sector-analysis` | Sector rotation, relative strength |
+| 9 | `options-analysis` | IV, Put/Call ratio, max pain, strategies |
+| 10 | `short-interest` | Short ratio, squeeze risk, days-to-cover |
 
 ### Comprehensive (15 modules — Standard + 5 more)
 
 | # | Module | Focus |
 |---|--------|-------|
-| 11 | fundamental-analysis | Income statement, balance sheet, cash flow |
-| 12 | stock-valuation | P/E, P/S, EV/EBITDA, peer multiples |
-| 13 | economics-analysis | Macro environment, rate sensitivity |
-| 14 | financial-report-analyst | 10-K/10-Q deep dive, risk factors |
-| 15 | dividend-analysis | Yield, payout ratio, sustainability |
+| 11 | `fundamental-analysis` | Income statement, balance sheet, cash flow |
+| 12 | `stock-valuation` | P/E, P/S, EV/EBITDA, peer multiples |
+| 13 | `economics-analysis` | Macro environment, rate sensitivity |
+| 14 | `financial-report-analyst` | 10-K/10-Q deep dive, risk factors |
+| 15 | `dividend-analysis` | Yield, payout ratio, sustainability |
 
 ---
 
@@ -227,7 +227,7 @@ Example: `output/AAPL_report_2025-06-19.html`
 
 ## Data Verification
 
-**Open the report with a `Data & Sources` header** so provenance is explicit:
+**Open the report with a `Data & Sources` header** (see [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html)) so provenance is explicit:
 
 ```
 Data & Sources
@@ -246,6 +246,28 @@ Before rendering the final report, verify:
 - No data older than 90 days used without explicit warning
 
 **Then run `result-validator`** on the composite result and include its confidence score in the report footer — a composite thesis should never ship without this validation pass.
+
+---
+
+## Thesis Invalidation
+
+The composite thesis is only as good as its weakest well-weighted module. After the final synthesis, state what would reverse the composite call:
+
+**If the composite is BULLISH — thesis breaks if:**
+- Any module weighted ≥ 15% flips from BULLISH to BEARISH at the next re-run (name the module and the metric that would flip it)
+- The `bear-case` module's Thesis-Killers are *not* refuted — a bull composite that cannot answer its own red-team is not bullish, it is unexamined
+- Price rises far enough that the valuation modules' fair-value range is exceeded while the fundamental modules are unchanged (multiple expansion doing all the work)
+
+**If the composite is BEARISH — thesis breaks if:**
+- The specific deterioration that drove the low-scoring modules reverses (margins re-expand, guidance is raised, insider selling stops)
+- Valuation falls below the bear-case downside target with fundamentals stable (the bad news is priced)
+- Two or more independent modules (e.g. `insider-trading` + `institutional-ownership`) turn positive together
+
+**Re-run this report when:**
+- [ ] Next earnings release (every module's inputs change)
+- [ ] Price moves ±15% from the level in the `Data & Sources` header
+- [ ] Any single module's signal flips
+- [ ] 90 days have elapsed
 
 ---
 

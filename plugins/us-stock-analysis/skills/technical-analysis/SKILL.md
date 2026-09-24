@@ -10,12 +10,30 @@ Before running any analysis, always retrieve the latest market data for the tick
 
 1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
 2. **Confirm key figures** — recent earnings, revenue, key ratios (P/E, P/S, etc.) as applicable to this skill.
-3. **State your data source** — note where the numbers came from (e.g., "Google Finance, June 19 2026") at the top of the output.
+3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
 4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+
+---
+
+## 📋 Data & Sources Header — Open Every Output With It
+
+The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+
+```
+Data & Sources
+  As of:      <date the figures represent, e.g. 2026-06-30>
+  Source:     <primary docs — SEC EDGAR 10-K/10-Q, company IR, FRED, exchange data …>
+  Retrieval:  <pasted by user | web/tool retrieval | model memory>
+  Confidence: <HIGH | MEDIUM | LOW>
+```
+
+- `Retrieval: model memory` must be paired with `Confidence: LOW` — memory is a placeholder until confirmed against a primary source.
+- Mixed sources: list each with its own as-of date rather than blending them.
+- Data the user pasted is reported as `pasted by user`; do not upgrade its confidence beyond what the user's own source supports.
 
 ---
 
@@ -138,7 +156,7 @@ Legend: ──── Price  · · · MA30  ════ MA60/MA200  - - - MA90
 
 ### MA Crossover Signals
 
-Look for and report these high-significance crossover events:
+Look for and report these high-significance crossover events. The standard data set is MA30 / MA60 / MA90 / MA200 / MA365 (the position table above); **MA50 is computed in addition**, solely because the classic 50/200 cross is what the market watches — state its value when you report it:
 
 | Crossover | Type | Significance |
 |-----------|------|--------------|
@@ -195,7 +213,7 @@ When `--chart` flag is used, include chart specifications and data tables:
 **Chart Type**: Candlestick chart with overlay lines
 **Data Table**:
 ```
-Date        Open      High      Low       Close     Volume      SMA_20    SMA_50    SMA_200
+Date        Open      High      Low       Close     Volume      SMA_30    SMA_60    SMA_200
 2024-01-01  [price]   [price]   [price]   [price]   [volume]    [price]   [price]   [price]
 2024-01-02  [price]   [price]   [price]   [price]   [volume]    [price]   [price]   [price]
 ...
@@ -204,8 +222,8 @@ Date        Open      High      Low       Close     Volume      SMA_20    SMA_50
 
 **Visual Specifications**:
 - Candlesticks: Green for up days, red for down days
-- SMA 20: Blue line (short-term trend)
-- SMA 50: Orange line (intermediate trend)
+- SMA 30: Blue line (short-term trend)
+- SMA 60: Orange line (intermediate trend)
 - SMA 200: Purple line (long-term trend)
 - Support/resistance: Horizontal dashed lines with labels
 
@@ -313,8 +331,8 @@ Price ($)
 170 ┤                        ╭─────╯         ╰──╮
 165 ┤                  ╭─────╯                  ╰─╮  ← Current: $172.50
 160 ┤            ╭─────╯                          ╰──
-155 ┤      ╭─────╯                                      SMA 20: $168.23
-150 ┤──────╯                                            SMA 50: $165.80
+155 ┤      ╭─────╯                                      SMA 30: $168.23
+150 ┤──────╯                                            SMA 60: $165.80
     └──┬─────┬─────┬─────┬─────┬─────┬─────┬──          ══════ Resistance: $178
      1/15  1/22  1/29  2/05  2/12  2/19  2/26          ══════ Support: $155
 
@@ -332,10 +350,10 @@ Volume (M)
     └──┬─────┬─────┬─────┬─────┬─────┬─────┬──
 
 Signals:
-↗ Bullish: Price above SMA 20 & 50
+↗ Bullish: Price above SMA 30 & 60
 ● RSI approaching overbought (68) - potential pullback
 📊 Volume increasing on up days - healthy uptrend
-🎯 Target: $178 (resistance), Stop: $165 (below SMA 50)
+🎯 Target: $178 (resistance), Stop: $165 (below SMA 60)
 ```
 
 ### Integration with Report Generator
@@ -631,3 +649,5 @@ After delivering the analysis signal, specify what would reverse it:
 Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–5.9 Neutral | 2.0–3.9 Moderately Bearish | 0.0–1.9 Strongly Bearish
 Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
+
+**Disclaimer:** Educational analysis only. Not financial advice.

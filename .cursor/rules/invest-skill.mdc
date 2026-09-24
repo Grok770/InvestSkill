@@ -6,7 +6,7 @@ alwaysApply: true
 
 # InvestSkill — Cursor Rules & Setup Guide
 
-This is the InvestSkill repository — a collection of 26 professional investment analysis frameworks for US stocks. These rules automatically apply when you work in this project.
+This is the InvestSkill repository — a collection of 24 professional investment analysis frameworks for US stocks. These rules automatically apply when you work in this project.
 
 ## Installation & Setup
 
@@ -27,7 +27,7 @@ Cursor automatically loads this file when you open the InvestSkill repository. *
 
 3. **Open AI Chat** (usually `Cmd+K`)
    - Cursor automatically loads the investment analysis rules
-   - All 26 frameworks are immediately available
+   - All 24 frameworks are immediately available
 
 ### Verify Setup
 
@@ -40,17 +40,15 @@ If the framework loads, setup is complete!
 
 ---
 
-## Available Analysis Frameworks (26 frameworks + 1 output tool)
+## Available Analysis Frameworks (24 frameworks + 3 aliases + 1 output tool)
 
-### Core Stock Analysis (6 frameworks)
+### Core Stock Analysis (4 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
 | Stock Evaluation | `@prompts/stock-eval.md` | Piotroski scoring, quality metrics |
 | Stock Valuation | `@prompts/stock-valuation.md` | DCF + comparable companies + EV multiples |
-| Fundamental Analysis | `@prompts/fundamental-analysis.md` | Financial statement deep dive |
 | Technical Analysis | `@prompts/technical-analysis.md` | Chart patterns, volume, indicators |
-| DCF Valuation | `@prompts/dcf-valuation.md` | Intrinsic value modeling |
 | Economics Analysis | `@prompts/economics-analysis.md` | Macro indicators, recession probability |
 
 ### Financial Report Analysis (3 frameworks)
@@ -70,7 +68,7 @@ If the framework loads, setup is complete!
 | Dividend Analysis | `@prompts/dividend-analysis.md` | Dividend safety, yield trap detection |
 | Short Interest | `@prompts/short-interest.md` | Short squeeze scoring, thesis evaluation |
 
-### Advanced Analysis (9 frameworks)
+### Advanced Analysis (10 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
@@ -83,12 +81,12 @@ If the framework loads, setup is complete!
 | Catalyst Calendar | `@prompts/catalyst-calendar.md` | Forward-looking 90-day event calendar, impact scoring |
 | Bear Case | `@prompts/bear-case.md` | One-sided short thesis, downside target, counterevidence to a bull thesis |
 | Position Ladder | `@prompts/position-ladder.md` | Staged entry ladder, share-count floor/ceiling, trim/re-add cost-basis cycle, wash-sale flags |
+| Thesis Tracker | `@prompts/thesis-tracker.md` | Write, save, and re-check an investment thesis — KPIs with thresholds, invalidation triggers, catalysts, a pre-mortem, and a decision log; `--update` re-reads the saved file against new data and returns INTACT / WEAKENED / BROKEN |
 
-### Full Research Bundle (2 frameworks)
+### Full Report (1 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
-| Research Bundle | `@prompts/research-bundle.md` | Complete multi-framework analysis |
 | Full Report (HTML) | `@prompts/full-report.md` | Runs all modules and saves a standalone HTML report |
 
 ### Meta-Analysis & Visualization (3 frameworks)
@@ -98,6 +96,17 @@ If the framework loads, setup is complete!
 | Result Validator | `@prompts/result-validator.md` | Validate any analysis + confidence score |
 | Chart Master | `@prompts/chart-master.md` | Generate Mermaid/ASCII/HTML charts |
 | Report Generator | `@prompts/report-generator.md` | Export analysis as a professional HTML/PDF report |
+
+### Aliases (3 redirects — installed, not counted as frameworks)
+
+These stubs remain so old references keep working; each points at the framework that absorbed it.
+
+| Framework | File | Redirects to |
+|-----------|------|--------------|
+| Fundamental Analysis | `@prompts/fundamental-analysis.md` | `@prompts/stock-eval.md` |
+| DCF Valuation | `@prompts/dcf-valuation.md` | `@prompts/stock-valuation.md` |
+| Research Bundle | `@prompts/research-bundle.md` | `@prompts/full-report.md` |
+
 
 ---
 
@@ -136,7 +145,7 @@ Use `@prompts/` references for precise methodology:
 @prompts/stock-valuation.md Analyze AAPL using all valuation methods
 
 # Fundamental analysis
-@prompts/fundamental-analysis.md Deep dive on Microsoft's fundamentals
+@prompts/stock-eval.md Deep dive on Microsoft's fundamentals
 
 # Technical setup
 @prompts/technical-analysis.md What are the key chart levels for NVDA?
@@ -155,7 +164,7 @@ Use `@prompts/` references for precise methodology:
 
 ```
 # Paste balance sheet
-@prompts/fundamental-analysis.md
+@prompts/stock-eval.md
 [paste balance sheet, income statement, cash flow]
 
 # Paste SEC filing for investment analysis
@@ -186,10 +195,10 @@ TSLA: 10%
 @prompts/stock-valuation.md Compare AAPL vs MSFT valuations
 
 # Compare fundamentals
-@prompts/fundamental-analysis.md Compare AAPL and MSFT balance sheets
+@prompts/stock-eval.md Compare AAPL and MSFT balance sheets
 
 # Multi-stock analysis
-@prompts/research-bundle.md Analyze AAPL, MSFT, and GOOGL
+@prompts/full-report.md Analyze AAPL, MSFT, and GOOGL
 ```
 
 ### Specialized Analysis
@@ -227,13 +236,13 @@ TSLA: 10%
 
 ```
 # Complete analysis on one stock
-@prompts/research-bundle.md Provide a comprehensive analysis of Apple (AAPL)
+@prompts/full-report.md Provide a comprehensive analysis of Apple (AAPL)
 
 # Quick version
-@prompts/research-bundle.md Quick analysis of Microsoft
+@prompts/full-report.md Quick analysis of Microsoft
 
 # Multi-stock comparison
-@prompts/research-bundle.md Compare AAPL, MSFT, and GOOGL comprehensively
+@prompts/full-report.md Compare AAPL, MSFT, and GOOGL comprehensively
 ```
 
 ### Follow-Up Questions
@@ -242,7 +251,7 @@ Cursor remembers context for follow-ups:
 
 ```
 # Initial analysis
-@prompts/dcf-valuation.md Build a DCF model for Microsoft
+@prompts/stock-valuation.md Build a DCF model for Microsoft
 
 # Natural follow-ups:
 What if revenue growth slows to 8%?
@@ -386,7 +395,7 @@ InvestSkill/
 │       └── invest-skill.mdc      # This file (auto-loaded)
 ├── .github/
 │   └── copilot-instructions.md   # GitHub Copilot integration
-├── prompts/                       # 26 frameworks
+├── prompts/                       # 24 frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -409,6 +418,7 @@ InvestSkill/
 │   ├── research-bundle.md
 │   ├── result-validator.md
 │   ├── chart-master.md
+│   ├── thesis-tracker.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/
 │   └── us-stock-analysis/
@@ -438,7 +448,7 @@ What's a fair valuation for Apple?
 ### 2. Provide Context Data
 ```
 # Better results with specific info
-@prompts/dcf-valuation.md
+@prompts/stock-valuation.md
 Analyze MSFT assuming:
 - Revenue growth: 10% CAGR
 - WACC: 8.5%
@@ -449,7 +459,7 @@ Analyze MSFT assuming:
 ### 3. Paste Financial Data
 ```
 # Cursor can analyze pasted data directly
-@prompts/fundamental-analysis.md
+@prompts/stock-eval.md
 [paste balance sheet]
 [paste income statement]
 Analyze liquidity and profitability trends
@@ -516,7 +526,7 @@ What's the bull/bear case range?
 ### Want more detailed analysis
 ```
 # Ask Cursor for more depth:
-@prompts/fundamental-analysis.md
+@prompts/stock-eval.md
 Analyze AAPL with:
 - Detailed cash flow quality metrics
 - Working capital trends
@@ -542,7 +552,7 @@ Analyze AAPL with:
 - **README.md** — Full setup for Claude Code, Gemini, Copilot, Cursor
 - **GEMINI.md** — Detailed Gemini CLI guide
 - **.github/copilot-instructions.md** — GitHub Copilot integration guide
-- **prompts/** — All 26 framework files
+- **prompts/** — All 24 framework files (+ 3 aliases, 1 output tool)
 - **GitHub Issues** — Report problems or request features
 
 ---

@@ -182,12 +182,15 @@ const OLD_SITE    = 'https://yennanliu.github.io/InvestSkill';
 
 // Prompt inventory + advertised framework count, derived once so the landing
 // hero, the Skill Reference index, and everything else share a single source
-// of truth (report-generator is an output tool, not an analysis framework).
+// of truth. Which skills are output tools or alias/redirect stubs (and so not
+// counted as frameworks) is defined in scripts/lib/skill-registry.js.
+const skillRegistry = require('../../scripts/lib/skill-registry');
 const PROMPTS_DIR = path.join(__dirname, '..', '..', 'prompts');
 const promptFiles = fs.existsSync(PROMPTS_DIR)
   ? fs.readdirSync(PROMPTS_DIR).filter(f => f.endsWith('.md')).map(f => f.replace(/\.md$/, '')).sort()
   : [];
-const FRAMEWORK_COUNT = promptFiles.filter(n => n !== 'report-generator').length;
+const FRAMEWORK_COUNT = skillRegistry.frameworkCount(promptFiles);
+const ALIAS_COUNT = promptFiles.filter(n => skillRegistry.ALIAS_SKILLS.includes(n)).length;
 
 // .md files that have dedicated HTML pages on the site
 const MD_TO_HTML = {
@@ -1027,28 +1030,50 @@ for (const page of PAGES) {
 // Display categories for the index, mirroring README. Any skill not listed
 // here falls into "Other" so new skills still appear without code changes.
 const SKILL_CATEGORIES = [
-  { title: 'Core Stock Analysis', skills: ['stock-eval','fundamental-analysis','technical-analysis','dcf-valuation','stock-valuation','economics-analysis'] },
+  { title: 'Core Stock Analysis', skills: ['stock-eval','technical-analysis','stock-valuation','economics-analysis'] },
   { title: 'Financial Reports',   skills: ['financial-report-analyst','10k-digest','earnings-call-analysis'] },
   { title: 'Market Monitoring',   skills: ['insider-trading','institutional-ownership','dividend-analysis','short-interest'] },
-  { title: 'Advanced Research',   skills: ['competitor-analysis','industry-map','options-analysis','portfolio-review','sector-analysis','stock-screener','catalyst-calendar','bear-case','position-ladder'] },
-  { title: 'Meta & Output',       skills: ['research-bundle','full-report','report-generator','chart-master','result-validator'] },
+  { title: 'Advanced Research',   skills: ['competitor-analysis','industry-map','options-analysis','portfolio-review','sector-analysis','stock-screener','catalyst-calendar','bear-case','position-ladder','thesis-tracker'] },
+  { title: 'Meta & Output',       skills: ['full-report','report-generator','chart-master','result-validator'] },
+  // Redirect stubs kept for backwards compatibility — installed, but not counted as frameworks.
+  { title: 'Aliases (redirects)', skills: ['fundamental-analysis','dcf-valuation','research-bundle'] },
 ];
 
 // PROMPTS_DIR / promptFiles / FRAMEWORK_COUNT are computed once near the top.
 
 // Extract a page title and a one-line summary from a prompt's markdown.
-function describePrompt(raw) {
+function describePrompt(raw, name) {
   const lines = raw.split('\n');
   const h1 = lines.find(l => /^#\s+/.test(l));
   const title = h1 ? h1.replace(/^#\s+/, '').trim() : '';
-  // First non-empty, non-heading paragraph as the summary.
+  // Prefer the SKILL.md frontmatter description — it is the one-line summary
+  // the author wrote. Fall back to the first prose paragraph of the prompt,
+  // skipping the contract boilerplate (Data Verification / Data & Sources),
+  // tables, lists, fences, and blockquotes.
   let summary = '';
-  for (let i = (h1 ? lines.indexOf(h1) + 1 : 0); i < lines.length; i++) {
-    const t = lines[i].trim();
-    if (!t || t.startsWith('#') || t.startsWith('>')) continue;
-    summary = t.replace(/\*\*/g, '').replace(/`/g, '');
-    break;
+  if (name) {
+    const skillFile = path.join(__dirname, '..', '..', 'plugins', 'us-stock-analysis', 'skills', name, 'SKILL.md');
+    if (fs.existsSync(skillFile)) {
+      const m = fs.readFileSync(skillFile, 'utf8').match(/^---\n[\s\S]*?^description:\s*(.+)$[\s\S]*?^---/m);
+      if (m) summary = m[1].trim().replace(/^(["'])(.*)\1$/, '$2');
+    }
+    // Aliases: the redirect note ("This skill has been merged into …") says it best.
+    if (skillRegistry.ALIAS_SKILLS.includes(name)) {
+      const q = lines.find(l => /^>\s*\*\*This skill has been/.test(l));
+      if (q) summary = q.replace(/^>\s*/, '');
+    }
   }
+  if (!summary) {
+    let inFence = false;
+    for (let i = (h1 ? lines.indexOf(h1) + 1 : 0); i < lines.length; i++) {
+      const t = lines[i].trim();
+      if (t.startsWith('```')) { inFence = !inFence; continue; }
+      if (inFence || !t || /^[#>|\-*\d]/.test(t) || /^(Before running any analysis|The first thing in the output|Never silently)/.test(t)) continue;
+      summary = t;
+      break;
+    }
+  }
+  summary = summary.replace(/\*\*/g, '').replace(/`/g, '');
   if (summary.length > 180) summary = summary.slice(0, 177).trimEnd() + '…';
   return { title, summary };
 }
@@ -1058,7 +1083,7 @@ const skillMeta = {};
 for (const name of promptFiles) {
   SERVED.add(`skill-${name}.html`);
   const raw = fs.readFileSync(path.join(PROMPTS_DIR, `${name}.md`), 'utf8');
-  skillMeta[name] = { raw, ...describePrompt(raw) };
+  skillMeta[name] = { raw, ...describePrompt(raw, name) };
 }
 
 // Generate one page per skill.
@@ -1091,7 +1116,7 @@ const otherSkills = promptFiles.filter(n => !categorized.has(n));
 const indexSections = [...SKILL_CATEGORIES];
 if (otherSkills.length) indexSections.push({ title: 'Other', skills: otherSkills });
 
-let skillsMd = `# Skill Reference\n\nEvery framework as a browsable page. New here? See [Choose a Skill](choose-a-skill.html) to find the right one for your goal, or [Concepts](concepts.html) for the ideas behind them.\n\n`;
+let skillsMd = `# Skill Reference\n\nEvery framework as a browsable page — ${FRAMEWORK_COUNT} analysis frameworks, plus ${ALIAS_COUNT} aliases that redirect to the skill that absorbed them. New here? See [Choose a Skill](choose-a-skill.html) to find the right one for your goal, or [Concepts](concepts.html) for the ideas behind them.\n\n`;
 for (const section of indexSections) {
   const present = section.skills.filter(n => skillMeta[n]);
   if (!present.length) continue;
@@ -1107,7 +1132,7 @@ skillsMd += `\n*Educational frameworks only. Not financial advice.*\n`;
 // FRAMEWORK_COUNT (advertised count) is computed once near the top.
 const skillsPage = {
   key: 'skills', outFile: 'skills.html', srcFile: 'README.md',
-  title: 'Skill Reference', subtitle: `All ${FRAMEWORK_COUNT} frameworks, one page each`,
+  title: 'Skill Reference', subtitle: `All ${FRAMEWORK_COUNT} frameworks (+ ${ALIAS_COUNT} aliases), one page each`,
 };
 fs.writeFileSync(
   path.join(outDir, 'skills.html'),
