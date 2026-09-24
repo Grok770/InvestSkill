@@ -4,6 +4,8 @@
     analyze    score one ticker vs. peers and print a risk-sized trade plan
     signal     buy/sell indicator for one or more tickers (watchlist)
     history    a company's past performance: stock, business, and indicator track record
+    chart      interactive HTML line charts: business vs. share price (+ news sentiment)
+    news       news, SEC 8-K and X posts scored into a short-term outlook
     backtest   walk-forward test of the ranking rule
     research   Claude writes a full research note using an InvestSkill framework
     frameworks list the InvestSkill frameworks the agent can use
@@ -16,12 +18,13 @@ import json
 import sys
 from pathlib import Path
 
-from . import __version__
+from . import DISCLAIMER, __version__
 from .data import get_provider
-from .engine import analyze, backtest, company_history, screen, watchlist
+from .engine import (NewsOptions, analyze, backtest, chart_data, company_history, get_news,
+                     screen, watchlist)
 from .factors import STYLE_WEIGHTS
 from .report import (analysis_markdown, backtest_markdown, history_markdown,
-                     screen_markdown, watchlist_markdown)
+                     news_report_markdown, screen_markdown, watchlist_markdown)
 from .signals import RiskSettings
 from .universe import UNIVERSES, resolve_universe
 
@@ -45,6 +48,33 @@ def _add_risk_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--account", type=float, default=100_000, help="account size in USD")
     p.add_argument("--risk", type=float, default=0.01, help="max loss per trade as a fraction (0.01 = 1%%)")
     p.add_argument("--max-position", type=float, default=0.10, help="max position as a fraction of the account")
+
+
+def _add_news_args(p: argparse.ArgumentParser, default_on: bool = True) -> None:
+    p.add_argument("--news-sources",
+                   help="comma list of yahoo,google,sec,x,file,synthetic (default: yahoo,google "
+                        "+ sec if SEC_USER_AGENT is set + x if X_BEARER_TOKEN is set)")
+    p.add_argument("--news-file", help="JSON list of your own news items / posts (source 'file')")
+    p.add_argument("--scorer", default="auto", choices=["auto", "claude", "lexicon"],
+                   help="how to score news: claude (best, needs API key), lexicon (offline), "
+                        "auto = claude when ANTHROPIC_API_KEY is set")
+    p.add_argument("--news-days", type=int, default=14, help="look-back window in days")
+    if default_on:
+        p.add_argument("--no-news", action="store_true", help="skip news (faster, offline)")
+
+
+def _news_opts(a) -> NewsOptions | None:
+    from .news import default_sources, get_scorer
+
+    if getattr(a, "no_news", False):
+        return None
+    if a.news_sources:
+        sources = [s.strip() for s in a.news_sources.split(",") if s.strip()]
+    else:
+        sources = default_sources(a.provider)
+    if a.news_file and "file" not in sources:
+        sources.append("file")
+    return NewsOptions(sources, get_scorer(a.scorer), a.news_file, a.news_days)
 
 
 def _risk(a) -> RiskSettings:
@@ -78,6 +108,7 @@ def build_parser() -> argparse.ArgumentParser:
     _add_data_args(p)
     _add_universe_args(p)
     _add_risk_args(p)
+    _add_news_args(p)
     p.add_argument("--style", default="balanced", choices=sorted(STYLE_WEIGHTS))
     p.add_argument("--json", action="store_true")
     p.add_argument("--out")
@@ -85,6 +116,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("signal", help="buy/sell indicator for a watchlist")
     p.add_argument("tickers", help="comma-separated, e.g. AAPL,MSFT,NVDA")
     _add_data_args(p)
+    _add_news_args(p)
     p.add_argument("--universe", choices=sorted(UNIVERSES), help="peer universe for ranking")
     p.add_argument("--style", default="balanced", choices=sorted(STYLE_WEIGHTS))
     p.add_argument("--json", action="store_true")
@@ -95,6 +127,21 @@ def build_parser() -> argparse.ArgumentParser:
     _add_data_args(p)
     p.add_argument("--years", type=int, default=10)
     p.add_argument("--benchmark", default="SPY")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--out")
+
+    p = sub.add_parser("chart", help="HTML line charts: business vs. share price")
+    p.add_argument("tickers", help="comma-separated, e.g. AAPL,MSFT")
+    _add_data_args(p)
+    _add_news_args(p)
+    p.add_argument("--years", type=int, default=10)
+    p.add_argument("--benchmark", default="SPY")
+    p.add_argument("--out", default="performance.html", help="output HTML file")
+
+    p = sub.add_parser("news", help="news / 8-K / X outlook for one ticker")
+    p.add_argument("ticker")
+    _add_data_args(p)
+    _add_news_args(p, default_on=False)
     p.add_argument("--json", action="store_true")
     p.add_argument("--out")
 
@@ -178,22 +225,26 @@ def _run(args) -> int:
 
     elif args.cmd == "analyze":
         peers = resolve_universe(args.universe, args.tickers, args.universe_file)
-        a = analyze(provider, args.ticker, peers=peers, style=args.style, risk=_risk(args))
+        a = analyze(provider, args.ticker, peers=peers, style=args.style, risk=_risk(args),
+                    news=_news_opts(args))
         if args.json:
             _emit(json.dumps({"verdict": a.verdict.to_dict() if a.verdict else None,
                               "signal": a.signal.__dict__, "business": a.business,
+                              "news": a.news.to_dict() if a.news else None,
                               "technicals": a.tech, "fundamentals": a.fund.to_dict(),
                               "trade_plan": a.plan.to_dict(), "data_quality": a.data_quality},
                              indent=2, default=str), args.out)
         else:
             _emit(analysis_markdown(a.ticker, a.row, a.signal, a.tech, a.fund, a.plan,
-                                    a.universe_size, a.verdict, a.business, a.data_quality),
+                                    a.universe_size, a.verdict, a.business, a.data_quality,
+                                    a.news),
                   args.out)
 
     elif args.cmd == "signal":
         tickers = resolve_universe(tickers=args.tickers)
         peers = resolve_universe(args.universe) if args.universe else None
-        verdicts = watchlist(provider, tickers, peers=peers, style=args.style)
+        verdicts = watchlist(provider, tickers, peers=peers, style=args.style,
+                             news=_news_opts(args))
         _emit(json.dumps([v.to_dict() for v in verdicts], indent=2, default=str) if args.json
               else watchlist_markdown(verdicts), args.out)
 
@@ -207,6 +258,25 @@ def _run(args) -> int:
                              indent=2, default=str), args.out)
         else:
             _emit(history_markdown(h), args.out)
+
+    elif args.cmd == "chart":
+        from .charts import performance_html
+
+        opts = _news_opts(args)
+        companies = [chart_data(provider, t, years=args.years, benchmark=args.benchmark, news=opts)
+                     for t in resolve_universe(tickers=args.tickers)]
+        Path(args.out).write_text(performance_html(companies, disclaimer=DISCLAIMER))
+        print(f"wrote {args.out} — open it in a browser", file=sys.stderr)
+
+    elif args.cmd == "news":
+        try:
+            company = provider.fundamentals(args.ticker.upper()).name
+        except Exception:  # noqa: BLE001 - a name only sharpens the search
+            company = None
+        signal, items = get_news(provider, args.ticker.upper(), _news_opts(args), company)
+        _emit(json.dumps({"signal": signal.to_dict(), "items": [i.to_dict() for i in items]},
+                         indent=2, default=str) if args.json
+              else news_report_markdown(signal, items), args.out)
 
     elif args.cmd == "backtest":
         tickers = resolve_universe(args.universe, args.tickers, args.universe_file)

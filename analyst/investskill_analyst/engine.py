@@ -12,6 +12,7 @@ from .backtest import BacktestResult, load_closes, run_backtest
 from .data import DataProvider
 from .factors import STYLE_WEIGHTS, Signal, build_universe_table, score_table, to_signal
 from .financials import business_summary, derive, price_performance
+from .news import NewsSignal, news_signal
 from .quality import check_fundamentals, check_prices, cross_check, financials_age
 from .signals import RiskSettings, TradePlan, build_trade_plan
 from .universe import US_LARGE_CAP
@@ -89,6 +90,25 @@ def signal_from_verdict(v: Verdict, coverage: float) -> Signal:
 
 
 @dataclass
+class NewsOptions:
+    """Where to get news and how to score it. ``sources=[]`` turns news off."""
+    sources: list[str] = field(default_factory=list)
+    scorer: object = None          # news.LexiconScorer / news.ClaudeScorer
+    news_file: str | None = None
+    days: int = 14
+
+
+def get_news(provider: DataProvider, ticker: str, opts: NewsOptions | None,
+             company: str | None = None, on_error=_warn):
+    if not opts or not opts.sources:
+        return None, []
+    client = getattr(provider, "client", None)  # reuse the EDGAR client (cache, user agent)
+    return news_signal(ticker, opts.sources, opts.scorer, company, opts.news_file,
+                       sec_client=client, days=opts.days,
+                       on_error=(lambda s, e: on_error(f"{ticker} news/{s}", e)) if on_error else None)
+
+
+@dataclass
 class Analysis:
     ticker: str
     row: pd.Series
@@ -100,11 +120,13 @@ class Analysis:
     verdict: Verdict | None = None
     business: dict | None = None
     data_quality: list[str] = field(default_factory=list)
+    news: NewsSignal | None = None
 
 
 def analyze(provider: DataProvider, ticker: str, peers: list[str] | None = None,
             style: str = "balanced", risk: RiskSettings | None = None,
-            on_error=_warn, today: date | None = None) -> Analysis:
+            on_error=_warn, today: date | None = None,
+            news: NewsOptions | None = None) -> Analysis:
     """Score one ticker vs. peers, add its business trend, and give the verdict + trade plan."""
     ticker = ticker.upper()
     universe = list(dict.fromkeys([ticker, *(peers or US_LARGE_CAP)]))
@@ -117,7 +139,8 @@ def analyze(provider: DataProvider, ticker: str, peers: list[str] | None = None,
 
     fin = load_financials(provider, ticker)
     business = business_summary(fin) if fin is not None else None
-    verdict = make_verdict(ticker, float(row["score"]), tech, business)
+    signal, _ = get_news(provider, ticker, news, fund.name, on_error)
+    verdict = make_verdict(ticker, float(row["score"]), tech, business, signal)
     sig = signal_from_verdict(verdict, float(row.get("coverage", 0) or 0))
     plan = build_trade_plan(ticker, sig, tech, risk)
 
@@ -132,7 +155,7 @@ def analyze(provider: DataProvider, ticker: str, peers: list[str] | None = None,
         except Exception:  # noqa: BLE001 - cross-check is best effort
             pass
     return Analysis(ticker, row, sig, tech, fund, plan, len(res.scored),
-                    verdict, business, quality)
+                    verdict, business, quality, signal)
 
 
 @dataclass
@@ -167,7 +190,8 @@ def company_history(provider: DataProvider, ticker: str, years: int = 10,
 
 
 def watchlist(provider: DataProvider, tickers: list[str], peers: list[str] | None = None,
-              style: str = "balanced", on_error=_warn) -> list[Verdict]:
+              style: str = "balanced", on_error=_warn,
+              news: NewsOptions | None = None) -> list[Verdict]:
     """Buy/sell verdicts for several tickers, ranked against one peer universe."""
     tickers = [t.upper() for t in tickers]
     res = screen(provider, list(dict.fromkeys([*tickers, *(peers or US_LARGE_CAP)])),
@@ -177,8 +201,9 @@ def watchlist(provider: DataProvider, tickers: list[str], peers: list[str] | Non
         if t not in res.scored.index:
             continue
         fin = load_financials(provider, t)
+        signal, _ = get_news(provider, t, news, res.funds[t].name, on_error)
         out.append(make_verdict(t, float(res.scored.loc[t, "score"]), res.techs[t],
-                                business_summary(fin) if fin is not None else None))
+                                business_summary(fin) if fin is not None else None, signal))
     return sorted(out, key=lambda v: v.score, reverse=True)
 
 
@@ -188,3 +213,23 @@ def backtest(provider: DataProvider, tickers: list[str], years: float = 5.0,
     if closes.shape[1] < top_n + 1:
         raise ValueError(f"only {closes.shape[1]} tickers loaded; need more than top_n={top_n}")
     return run_backtest(closes, top_n=top_n, cost_bps=cost_bps)
+
+
+def chart_data(provider: DataProvider, ticker: str, years: int = 10,
+               benchmark: str = BENCHMARK, news: NewsOptions | None = None,
+               on_error=_warn) -> dict:
+    """Data for the business-vs-price charts (see charts.py)."""
+    from .charts import company_chart_data
+
+    ticker = ticker.upper()
+    prices = provider.history(ticker, years=years)["close"]
+    try:
+        bench = provider.history(benchmark, years=years)["close"]
+    except Exception:  # noqa: BLE001 - benchmark is optional
+        bench = None
+    try:
+        name = provider.fundamentals(ticker).name
+    except Exception:  # noqa: BLE001
+        name = None
+    signal, _ = get_news(provider, ticker, news, name, on_error)
+    return company_chart_data(ticker, prices, load_financials(provider, ticker), bench, signal, name)

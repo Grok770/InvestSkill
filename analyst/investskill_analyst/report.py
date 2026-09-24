@@ -87,7 +87,8 @@ def screen_markdown(scored: pd.DataFrame, techs: dict, funds: dict, top: int = 1
 
 def verdict_markdown(v: Verdict) -> list[str]:
     """The buy/sell indicator: label, gauge, pillar scores, and the reasons."""
-    names = {"rank": "Valuation & quality rank", "business": "Business trend", "timing": "Price timing"}
+    names = {"rank": "Valuation & quality rank", "business": "Business trend",
+             "timing": "Price timing", "news": "News outlook"}
     lines = [
         f"## Bottom line: **{v.label}** ({v.score:.1f} / 10)",
         "",
@@ -112,7 +113,7 @@ def verdict_markdown(v: Verdict) -> list[str]:
 def analysis_markdown(ticker: str, row: pd.Series, sig: Signal, tech: dict,
                       fund: Fundamentals, plan: TradePlan, universe_size: int,
                       verdict: Verdict | None = None, business: dict | None = None,
-                      quality: list[str] | None = None) -> str:
+                      quality: list[str] | None = None, news=None) -> str:
     f = fund
     lines = [
         f"# {ticker} — {f.name or ticker}" + (f" · {f.sector}" if f.sector else ""),
@@ -145,6 +146,7 @@ def analysis_markdown(ticker: str, row: pd.Series, sig: Signal, tech: dict,
         f"| Debt/Equity | {_num(f.debt_to_equity)} | Beta | {_num(f.beta)} |",
         "",
         *(business_markdown(business) if business else []),
+        *(news_markdown(news) if news is not None else []),
         "## Technicals",
         "",
         "| Price | SMA50 | SMA200 | RSI(14) | MACD hist | ATR(14) | 52w high | 1y vol | 1y max DD |",
@@ -316,17 +318,19 @@ def history_markdown(h) -> str:
 
 def watchlist_markdown(verdicts: list[Verdict]) -> str:
     lines = ["# Buy / sell indicator", "",
-             "| Ticker | Verdict | Score | Gauge | Rank | Business | Timing | Top reason |",
-             "|--------|---------|------:|-------|-----:|---------:|-------:|------------|"]
+             "| Ticker | Verdict | Score | Gauge | Rank | Business | Timing | News | Top reason |",
+             "|--------|---------|------:|-------|-----:|---------:|-------:|-----:|------------|"]
     for v in verdicts:
         p = v.pillars
         lead = v.reasons_for if v.action == "BUY" else v.reasons_against
         top = (v.rails or lead or v.reasons_for or v.reasons_against or [""])[0]
         lines.append(
             f"| **{v.ticker}** | {v.label} | {v.score:.1f} | `{v.gauge(11)}` | "
-            f"{_num(p['rank'], 1)} | {_num(p['business'], 1)} | {_num(p['timing'], 1)} | {top} |")
+            f"{_num(p['rank'], 1)} | {_num(p['business'], 1)} | {_num(p['timing'], 1)} | "
+            f"{_num(p.get('news'), 1)} | {top} |")
     lines += ["", SCORE_GUIDE,
-              "Pillars: rank 40% · business trend 35% · timing 25%. Run `analyze <TICKER>` "
+              "Pillars: rank 35% · business trend 30% · timing 20% · news 15% (missing pillars "
+              "drop out and the rest are reweighted). Run `analyze <TICKER>` "
               "for the full reasoning and a trade plan.", "", f"**Disclaimer:** {DISCLAIMER}"]
     return "\n".join(lines)
 
@@ -338,3 +342,50 @@ def _money(x) -> str:
         if abs(x) >= div:
             return f"${x / div:,.1f}{suf}"
     return f"${x:,.0f}"
+
+
+def news_markdown(n) -> list[str]:
+    """News outlook section (``n`` is a news.NewsSignal)."""
+    if n.score is None:
+        return ["## News outlook: no data", "",
+                "No news items could be fetched or scored for this ticker.", ""]
+    nouns = {"filing": ("SEC filing", "SEC filings"), "news": ("news story", "news stories"),
+             "social": ("social post", "social posts")}
+    kinds = ", ".join(f"{v} {nouns[k][v != 1]}" for k, v in n.by_kind.items() if v)
+    lines = [
+        f"## News outlook: {n.outlook} ({n.score:.1f} / 10, {n.confidence.lower()} confidence)",
+        "",
+        f"{n.items_used} items ({kinds}) scored by {n.scorer}"
+        + (f" · {n.attention:.0%} of the weight is from the last 3 days" if n.attention is not None else ""),
+        "",
+    ]
+    for f in n.red_flags:
+        lines.append(f"> 🚩 **Red flag:** {f}")
+    if n.red_flags:
+        lines.append("")
+    for label, rows in (("Positive developments", n.key_positive), ("Negative developments", n.key_negative)):
+        if rows:
+            lines += [f"**{label}:**"]
+            for r in rows:
+                link = f" [link]({r['url']})" if r.get("url") else ""
+                lines.append(f"- {r['date']} · {r['source']} · {r['event']}/{r['impact']} · "
+                             f"{r['sentiment']:+.2f} — {r['title']}{link}")
+            lines.append("")
+    lines += ["This is a short-term (days to weeks) read of new developments, not a price forecast. "
+              "It can't be backtested with free data, so it carries 15% of the verdict. "
+              "Social posts are down-weighted.", ""]
+    return lines
+
+
+def news_report_markdown(n, items) -> str:
+    lines = [f"# {n.ticker} — news & social outlook", ""] + news_markdown(n)
+    lines += ["## Every item", "", "| Date | Kind | Source | Event | Sentiment | Headline |",
+              "|------|------|--------|-------|----------:|----------|"]
+    for it in sorted(items, key=lambda i: i.published, reverse=True):
+        if it.sentiment is None:
+            continue
+        title = it.title.replace("|", "/").replace("\n", " ")[:140]
+        lines.append(f"| {it.published:%Y-%m-%d} | {it.kind} | {it.source} | {it.event} | "
+                     f"{it.sentiment:+.2f} | {title} |")
+    lines += ["", f"**Disclaimer:** {DISCLAIMER}"]
+    return "\n".join(lines)

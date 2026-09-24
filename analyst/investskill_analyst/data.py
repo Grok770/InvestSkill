@@ -248,6 +248,7 @@ class SyntheticProvider:
         self.seed = seed
         self.end = pd.Timestamp(end)
         self._market: pd.Series | None = None
+        self._full: dict[str, pd.DataFrame] = {}
 
     def _rng(self, ticker: str) -> np.random.Generator:
         return np.random.default_rng(zlib.crc32(ticker.encode()) ^ self.seed)
@@ -263,16 +264,27 @@ class SyntheticProvider:
             self._market = pd.Series(rng.normal(0.0003, 0.010, len(full)), index=full)
         return self._market.reindex(dates).fillna(0.0)
 
+    FULL_YEARS = 15
+
     def history(self, ticker: str, years: float = 3.0) -> pd.DataFrame:
+        # One fixed 15-year path per ticker, sliced — so every window agrees.
+        full = self._full.get(ticker)
+        if full is None:
+            full = self._full[ticker] = self._generate(ticker)
+        cutoff = self.end - pd.Timedelta(days=int(years * 365))
+        return full[full.index >= cutoff]
+
+    def _generate(self, ticker: str) -> pd.DataFrame:
         rng = self._rng(ticker)
-        dates = self._dates(years)
+        dates = self._dates(self.FULL_YEARS)
         beta = rng.uniform(0.6, 1.6)
         drift = rng.normal(0.0002, 0.0004)
         idio_vol = rng.uniform(0.008, 0.022)
         rets = beta * self._market_returns(dates).to_numpy() + rng.normal(
             drift, idio_vol, len(dates)
         )
-        close = rng.uniform(20, 400) * np.exp(np.cumsum(rets))
+        cum = np.cumsum(rets)
+        close = rng.uniform(20, 400) * np.exp(cum - cum[-1])  # anchor today's price at $20–400
         spread = np.abs(rng.normal(0, idio_vol, len(dates))) * close
         open_ = close * (1 + rng.normal(0, idio_vol / 3, len(dates)))
         high = np.maximum(open_, close) + spread / 2
@@ -317,7 +329,12 @@ class SyntheticProvider:
         revenue = rng.uniform(5e9, 2e11) * np.cumprod(1 + growth)
         op_margin = np.clip((f.operating_margin or 0.15) + np.cumsum(rng.normal(0, 0.01, years)), -0.2, 0.6)
         net_income = revenue * op_margin * 0.8
-        shares = rng.uniform(5e8, 5e9) * np.cumprod(1 - rng.uniform(0, 0.02, years))
+        # Pick the share count so the latest P/E matches this ticker's synthetic trailing P/E,
+        # keeping price and EPS on a believable scale relative to each other.
+        last_price = float(self.history(ticker, years=1)["close"].iloc[-1])
+        target_eps = last_price / (f.trailing_pe or 20.0)
+        drift = np.cumprod(1 - rng.uniform(0, 0.02, years))
+        shares = abs(net_income[-1]) / max(target_eps, 1e-6) * drift / drift[-1]
         equity = revenue * rng.uniform(0.3, 1.0)
         ocf = net_income * rng.uniform(1.0, 1.4, years)
         capex = revenue * rng.uniform(0.02, 0.08, years)

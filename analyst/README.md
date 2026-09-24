@@ -33,6 +33,8 @@ you can backtest, and an agent that combines the two.
 | Data checks | `quality.py` | Stale prices, unadjusted splits, gaps, impossible values, and disagreement between two sources |
 | Track record | `financials.py` | 10-year business history (revenue, EPS, FCF, margins, ROE, CAGRs) and stock history (annual and calendar-year returns vs. SPY) |
 | Buy/sell indicator | `verdict.py` | One verdict from rank + business trend + price timing, with its reasons, safety rails, and a per-stock track record |
+| News & X | `news.py` | Headlines (Yahoo, Google News), SEC 8-K filings and X posts, each scored by Claude or an offline lexicon, weighted by recency, source and impact into a short-term outlook with red-flag detection |
+| Charts | `charts.py` | Interactive HTML line charts: revenue and EPS vs. share price (indexed to 100), P/E over time, daily news sentiment |
 | Backtest | `backtest.py` | Monthly walk-forward test of the ranking rule; trades the next session, charges costs, compares against the equal-weight universe |
 | Agent | `agent.py` | Claude loop: InvestSkill framework as the system prompt, quant engine + web search as tools, output ends in the standard Investment Signal block |
 
@@ -68,6 +70,12 @@ investskill-analyst signal AAPL,MSFT,NVDA,JPM,XOM --provider edgar
 
 # 2c. The company's past performance: stock vs. SPY, 10+ years of financials, and the indicator's track record
 investskill-analyst history AAPL --provider edgar --years 15
+
+# 2d. Line charts: how the business grew vs. how the stock moved (open the HTML in a browser)
+investskill-analyst chart AAPL,MSFT,NVDA --provider edgar --out performance.html
+
+# 2e. What new developments say: news, 8-K filings, X posts -> short-term outlook
+investskill-analyst news TSLA --scorer claude
 
 # 3. Check whether the ranking rule has actually worked
 investskill-analyst backtest --years 8 --top-n 10 --equity-csv equity.csv
@@ -157,9 +165,12 @@ a whole watchlist:
 
 | Pillar | Weight | Measures |
 |--------|-------:|----------|
-| Valuation & quality rank | 40% | Rank vs. peers on value, quality, growth, momentum and low risk |
-| Business trend | 35% | Revenue and EPS growth, margin direction, FCF consistency, ROE (from filings) |
-| Price timing | 25% | 200/50-day averages, golden/death cross, MACD, RSI |
+| Valuation & quality rank | 35% | Rank vs. peers on value, quality, growth, momentum and low risk |
+| Business trend | 30% | Revenue and EPS growth, margin direction, FCF consistency, ROE (from filings) |
+| Price timing | 20% | 200/50-day averages, golden/death cross, MACD, RSI |
+| News outlook | 15% | Recent news, 8-K filings and X posts (see above). Dropped with `--no-news` |
+
+If a pillar has no data, it drops out and the remaining weights are rescaled.
 
 **Score → verdict:** ≥ 8 STRONG BUY · 6–7.9 BUY · 4–5.9 HOLD · 2–3.9 SELL ·
 < 2 STRONG SELL, which is InvestSkill's Score Guide. Each verdict lists its
@@ -168,7 +179,9 @@ reasons **in favour** and **against**.
 **Safety rails can only turn a BUY into a HOLD. They never create one:**
 
 - a clear price downtrend (timing < 3) means "good company, wait for the trend";
-- a deteriorating business (trend < 3) means "cheap for a reason?".
+- a deteriorating business (trend < 3) means "cheap for a reason?";
+- a news red flag (restatement, auditor change, fraud or government
+  investigation, bankruptcy or delisting) means "resolve this first".
 
 HOLD and SELL verdicts never produce a share count in the trade plan.
 
@@ -176,6 +189,73 @@ HOLD and SELL verdicts never produce a share count in the trade plan.
 evidence leans. The `history` track record shows how the timing part has done on
 each stock. `backtest` tests the price-based ranking across a universe. Neither
 guarantees the future.
+
+## Charts: business vs. share price
+
+`investskill-analyst chart AAPL,MSFT --provider edgar --out performance.html`
+writes one self-contained HTML page. It needs no internet connection to view,
+and it works in light and dark mode and on phones. Each company gets:
+
+1. **Business vs. share price, indexed to 100.** The share price, revenue and
+   EPS, with SPY as a grey reference, all start at 100 on the same date.
+   - If the price line climbs faster than revenue and EPS, the stock has become
+     more expensive.
+   - If it lags them, the stock has become cheaper.
+
+   These are shown as one indexed chart, not two y-axes, because two different
+   scales on one chart make any two lines look related.
+2. **P/E over time.** Each month's P/E is the price divided by the latest annual
+   EPS that had been *published* by that month, so there is no hindsight.
+3. **News sentiment by day**, when news is on.
+
+Hover any chart for exact values. Every chart also has a data table.
+
+## News, filings and X posts
+
+This is the predictive part. It asks **which way new developments lean**, and
+then feeds that into the verdict as a fourth pillar.
+
+| Source | What it adds | Setup |
+|--------|--------------|-------|
+| `sec` | The company's own **8-K filings**, classified by item number. A restatement (4.02), auditor change (4.01), bankruptcy (1.03) or delisting notice (3.01) is flagged automatically | `SEC_USER_AGENT` |
+| `yahoo` | Recent headlines | none |
+| `google` | Google News search results for the ticker and company name | none |
+| `x` | Recent X posts mentioning the $cashtag or company, weighted by likes and reposts | `X_BEARER_TOKEN` from an X developer account with search access (paid tier; check developer.x.com) |
+| `file` | Anything you collected yourself (a JSON list) | `--news-file items.json` |
+
+**Scoring.** With `--scorer claude` (the default when `ANTHROPIC_API_KEY` is
+set), Claude reads every headline in a single structured-output call. It scores
+direction, relevance to *this* company, event type and likely impact, and
+gives a one-line reason. For example, "beats estimates but cuts guidance"
+scores as negative. With `--scorer lexicon`, a transparent, offline finance
+word list does the scoring instead.
+
+**Aggregation.**
+
+- **Recency:** each item's weight halves every 3 days.
+- **Source:** 8-K filings count 1.0, news 0.8 and X posts 0.35. A viral post
+  counts more than a quiet one.
+- **Impact:** high-impact items count double.
+- **Thin evidence:** the result is pulled toward neutral when there are only a
+  few items, so a single story can't swing it.
+
+The output is a 0–10 **news outlook** (POSITIVE / NEUTRAL / NEGATIVE) with a
+confidence rating and the key positive and negative developments.
+
+**In the verdict.** The news outlook is 15% of the score. Serious red flags,
+such as an accounting restatement, a fraud or government investigation, or a
+bankruptcy or delisting, cap any BUY at HOLD. Routine lawsuits and social-media
+rumours don't.
+
+**Limits you should know about:**
+
+- News moves prices over days to weeks, and much of it is priced in within
+  minutes.
+- There is no free historical news archive, so this pillar can't be backtested.
+  That's why its weight is small.
+- X posts are the noisiest source, easy to manipulate, and cost money to access.
+- Treat the outlook as "what's changed that I should read about", not as a
+  forecast.
 
 ## How to read the output
 
@@ -237,6 +317,8 @@ fixture in the real EDGAR format, and a scripted fake Claude client. Coverage:
 - data-quality checks
 - business trend scoring, verdict labels and safety rails
 - no look-ahead in the backtest and the track record
+- news parsing for every source (Yahoo in both formats, Google RSS, SEC 8-K, X), the Claude scorer's structured output, and red-flag rules
+- chart indexing, no-hindsight P/E, and HTML escaping
 - tool-input validation and the agent loop
 
 ---

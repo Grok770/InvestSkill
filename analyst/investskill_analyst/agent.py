@@ -25,7 +25,7 @@ from typing import Callable
 
 from . import DISCLAIMER
 from .data import DataProvider
-from .engine import analyze, backtest, company_history, screen
+from .engine import NewsOptions, analyze, backtest, company_history, get_news, screen
 from .factors import STYLE_WEIGHTS
 from .signals import RiskSettings
 from .universe import UNIVERSES, resolve_universe
@@ -51,6 +51,9 @@ How you work:
   estimating it.
 - Report any `data_quality_warnings` to the investor and lower your confidence
   accordingly. Say which figures are audited (SEC EDGAR) and which are not.
+- Use `news_sentiment` for the latest headlines, 8-K filings and X posts, and
+  judge each development yourself. Treat news as a short-term tilt (days to
+  weeks), never as proof; anonymous social posts deserve the least weight.
 - Use web search for what the numbers can't see: recent earnings and
   guidance, filings, news, analyst revisions, upcoming catalysts. Cite the
   source and date of every fact you bring in from the web.
@@ -148,6 +151,16 @@ TOOLS = [
         "this stock historically.",
         {"ticker": {"type": "string"},
          "years": {"type": "integer", "description": "Years of history, 1-20 (default 10)."}},
+        ["ticker"],
+    ),
+    _tool(
+        "news_sentiment",
+        "Recent news headlines, SEC 8-K filings and X posts about one company (last `days` "
+        "days), each pre-scored by an offline finance lexicon, plus the aggregated news "
+        "outlook (0-10) and any red flags. The lexicon is crude: re-read the headlines "
+        "yourself and weigh what actually matters. Social posts are noisy.",
+        {"ticker": {"type": "string"},
+         "days": {"type": "integer", "description": "Look-back window, 1-30 (default 14)."}},
         ["ticker"],
     ),
     _tool(
@@ -255,6 +268,21 @@ class ToolExecutor:
         return {"ticker": h.ticker, "stock_performance": h.stock, "benchmark": h.benchmark,
                 "business_trend": h.business, "annual_financials": fin,
                 "timing_signal_track_record": h.track.to_dict() if h.track else None}
+
+    def _t_news_sentiment(self, inp: dict):
+        from .news import LexiconScorer, default_sources
+
+        tickers = _clean_tickers([inp.get("ticker", "")])
+        if not tickers:
+            raise ValueError("ticker is required")
+        days = int(inp.get("days") or 14)
+        if not 1 <= days <= 30:
+            raise ValueError("days must be 1-30")
+        opts = NewsOptions(default_sources(getattr(self.provider, "name", "")), LexiconScorer(),
+                           days=days)
+        signal, items = get_news(self.provider, tickers[0], opts, on_error=None)
+        return {"outlook": signal.to_dict() if signal else None,
+                "items": [{k: v for k, v in i.to_dict().items() if k != "text"} for i in items[:60]]}
 
     def _t_backtest_strategy(self, inp: dict):
         tickers = resolve_universe(inp.get("universe"), _clean_tickers(inp.get("tickers")))

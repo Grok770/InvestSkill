@@ -1,26 +1,31 @@
 """The buy/sell indicator.
 
-One number and one word per stock, built from three separate, explainable
-parts:
+One number and one word per stock, built from up to four separate,
+explainable parts:
 
     ┌──────────────┬────────┬──────────────────────────────────────────────┐
     │ pillar       │ weight │ question                                     │
     ├──────────────┼────────┼──────────────────────────────────────────────┤
-    │ valuation &  │  40%   │ How does it rank against peers on value,     │
+    │ valuation &  │  35%   │ How does it rank against peers on value,     │
     │ quality rank │        │ quality, growth, momentum and risk right now?│
-    │ business     │  35%   │ Is the company itself getting better or      │
+    │ business     │  30%   │ Is the company itself getting better or      │
     │ trend        │        │ worse? (revenue, EPS, margins, FCF, ROE)     │
-    │ timing       │  25%   │ Is the price trend confirming it?            │
+    │ timing       │  20%   │ Is the price trend confirming it?            │
     │              │        │ (200/50-day averages, MACD, RSI)             │
+    │ news outlook │  15%   │ Which way do new developments lean? (news,   │
+    │              │        │ 8-K filings, X posts — see news.py)          │
     └──────────────┴────────┴──────────────────────────────────────────────┘
 
+Missing pillars drop out and the remaining weights are renormalized.
 The weighted score (0–10) maps onto InvestSkill's Score Guide:
 ≥ 8 STRONG BUY · 6–7.9 BUY · 4–5.9 HOLD · 2–3.9 SELL · < 2 STRONG SELL.
 
-Two safety rails can only *lower* a buy, never raise it:
+Three safety rails can only *lower* a buy, never raise it:
 
 * timing < 3 (a clear downtrend) → at most HOLD: "good company, wait".
 * business trend < 3 (a deteriorating company) → at most HOLD: "cheap for a reason?".
+* a news red flag (restatement, auditor change, bankruptcy/delisting, fraud or
+  government investigation) → at most HOLD until it is understood.
 
 ``track_record`` answers "has this indicator worked on this stock?" for the
 timing pillar, the only one that can be re-computed honestly from price
@@ -35,7 +40,9 @@ import pandas as pd
 
 from .indicators import technical_snapshot
 
-WEIGHTS = {"rank": 0.40, "business": 0.35, "timing": 0.25}
+# News carries a small weight: it is the only pillar that can't be backtested
+# with free data. Missing pillars drop out and the rest are renormalized.
+WEIGHTS = {"rank": 0.35, "business": 0.30, "timing": 0.20, "news": 0.15}
 LABELS = [(8.0, "STRONG BUY"), (6.0, "BUY"), (4.0, "HOLD"), (2.0, "SELL"), (-1.0, "STRONG SELL")]
 
 
@@ -108,11 +115,12 @@ def _label(score: float) -> str:
 
 
 def make_verdict(ticker: str, rank_score: float | None, tech: dict,
-                 business: dict | None = None) -> Verdict:
-    """Combine the three pillars into the buy/sell indicator."""
+                 business: dict | None = None, news=None) -> Verdict:
+    """Combine the pillars into the buy/sell indicator. ``news`` is a news.NewsSignal."""
     t_score, t_pros, t_cons = timing_score(tech)
     b_score = business.get("score") if business else None
-    pillars = {"rank": rank_score, "business": b_score, "timing": t_score}
+    n_score = news.score if news is not None else None
+    pillars = {"rank": rank_score, "business": b_score, "timing": t_score, "news": n_score}
     avail = {k: v for k, v in pillars.items() if v is not None and not pd.isna(v)}
     if not avail:
         raise ValueError("no pillar has data — cannot form a verdict")
@@ -131,7 +139,15 @@ def make_verdict(ticker: str, rank_score: float | None, tech: dict,
         pros += business.get("pros", [])
         cons += business.get("cons", [])
 
+    if news is not None and n_score is not None:
+        pros += [f"News: {n['title']} ({n['date']})" for n in news.key_positive[:2]]
+        cons += [f"News: {n['title']} ({n['date']})" for n in news.key_negative[:2]]
+
     rails = []
+    if news is not None and news.red_flags and label in ("BUY", "STRONG BUY", "HOLD"):
+        if "BUY" in label:
+            label = "HOLD"
+        rails.append("News red flag — resolve this before buying: " + news.red_flags[0])
     if "BUY" in label and t_score is not None and t_score < 3:
         label = "HOLD"
         rails.append("Downtrend rail: the stock scores well but the price trend is down — "

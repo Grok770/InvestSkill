@@ -27,7 +27,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install
-      run: pip install -e '.[llm,dev]'
+      run: pip install -e '.[all,dev]'
 
     - name: Test (synthetic data + fake Claude client — no network, no API key)
       run: python -m pytest -q

@@ -250,6 +250,8 @@ investskill-analyst screen                       # rank 56 US large caps: value 
 investskill-analyst analyze NVDA --provider edgar  # BUY/HOLD/SELL verdict + reasons + audited SEC data + trade plan
 investskill-analyst signal AAPL,MSFT,NVDA          # buy/sell indicator for a watchlist
 investskill-analyst history AAPL --provider edgar  # 10+ years of stock returns vs SPY and company financials
+investskill-analyst chart AAPL,MSFT --provider edgar  # interactive line charts: revenue & EPS vs share price
+investskill-analyst news TSLA                      # news, SEC 8-K filings and X posts -> short-term outlook
 investskill-analyst backtest --years 8           # walk-forward test of the ranking rule
 investskill-analyst research NVDA                # Claude + an InvestSkill framework + the engine as tools + web search
 ```

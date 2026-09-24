@@ -9,7 +9,7 @@ description = "Quantitative factor model + Claude research agent built on the In
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-dependencies = ["numpy>=1.24", "pandas>=2.0"]
+dependencies = ["numpy>=1.24", "pandas>=2.2"]
 
 [project.optional-dependencies]
 yahoo = ["yfinance>=0.2.40"]

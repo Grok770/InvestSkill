@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`analyst/`: performance charts and a news, filings and X outlook.**
+  - **`chart TICKER[,TICKER]`** writes a self-contained, interactive HTML page (light and dark mode, works on phones). Per company:
+    - revenue and EPS vs. share price, all indexed to 100 on a common date, with SPY as a reference (one axis, no dual scales);
+    - P/E over time, using only EPS published by each month (no hindsight);
+    - daily news sentiment.
+    Every chart has hover tooltips and a data table.
+  - **`news TICKER`** gathers Yahoo and Google News headlines, the company's SEC 8-K filings (classified by item number), X posts (`X_BEARER_TOKEN`), and your own JSON items. Claude scores them (structured output) or, offline, a finance lexicon does. The result is a recency-, source- and impact-weighted 0–10 short-term outlook, shrunk toward neutral when evidence is thin, with key developments and red flags.
+  - **Verdict:** news is now a fourth pillar (rank 35% · business 30% · timing 20% · news 15%). Serious red flags (restatement, auditor change, fraud or government investigation, bankruptcy or delisting) cap a BUY at HOLD. Use `--no-news` to skip news.
+  - **Agent:** new `news_sentiment` tool.
+  - **Fix:** the synthetic provider now returns one consistent price path per ticker across look-back windows.
 - **`analyst/`: accurate data, past performance, and a buy/sell indicator.**
   - **`--provider edgar`** reads audited fundamentals straight from SEC EDGAR (XBRL company facts; free, no key; needs `SEC_USER_AGENT`). It handles concept changes and restatements, computes trailing-12-month values from the 10-K plus 10-Q YTD, and keeps each year's first-filed date. Prices still come from Yahoo, and every field records its source.
   - **Automatic data checks** in every report: stale prices, suspected unadjusted splits, gaps, out-of-range values, and SEC-vs-Yahoo disagreement over 15%.
