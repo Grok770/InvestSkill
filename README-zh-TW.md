@@ -4,7 +4,7 @@
 
 ### 美股市場專業投資分析工具
 
-**24 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
+**29 個 AI 驅動分析框架 · 全平台支援 · 完全開源**
 
 **無需 API 金鑰 · 無需訂閱 · 完全免費**
 
@@ -22,7 +22,7 @@
 
 ## 🎯 什麼是 InvestSkill？
 
-InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 24 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
+InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級分析框架。透過 29 個完整框架進行專業股票分析——無需金融執照，無需 API 費用。
 
 **不用註冊，也不用付費。** 沒有 API 金鑰、沒有資料商訂閱、不必設定帳單——你只要用手上已有的 AI 助理（免費方案或本機模型都可以），InvestSkill 本身就只是 markdown 提示詞。詳見 [無需 API 金鑰，完全免費](#-無需-api-金鑰完全免費)。
 
@@ -41,12 +41,12 @@ InvestSkill 是企業級投資分析工具包，為各 AI 平台帶來機構級�
   <tr>
     <td width="50%">
 
-### ✨ 24 個專業框架
+### ✨ 29 個專業框架
 - 4 個核心分析框架
 - 3 個財務報告分析
 - 4 個市場監控工具
-- 10 個進階研究工具
-- 3 個自動化元技能，加上 report-generator 輸出工具
+- 14 個進階研究工具
+- 4 個自動化元技能，加上 report-generator 輸出工具
 - 另有 3 個別名（轉址至吸收它們的技能，不計入框架數）
 
     </td>
@@ -188,20 +188,25 @@ gemini
 
 ---
 
-## 📋 24 個框架總覽
+## 📋 29 個框架總覽
 
 | 類別 | 框架 | 用途 |
 |------|------|------|
 | **核心分析** (4) | stock-eval · technical-analysis · economics-analysis · stock-valuation | 全方位股票評估 |
 | **財務報告** (3) | financial-report-analyst · 10k-digest · earnings-call-analysis | 深度文件分析 |
 | **市場監控** (4) | insider-trading · institutional-ownership · dividend-analysis · short-interest | 活動與情緒追蹤 |
-| **進階分析** (10) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** · **position-ladder** · **thesis-tracker** | 專項研究角度 |
-| **元技能與輸出** (3 + 1 輸出工具) | full-report · chart-master · result-validator · report-generator（輸出工具，不計入框架） | 自動化與綜合輸出 |
+| **進階分析** (14) | competitor-analysis · **industry-map** · options-analysis · portfolio-review · sector-analysis · **stock-screener** · **catalyst-calendar** · **bear-case** · **position-ladder** · **thesis-tracker** · **etf-analysis** · **earnings-preview** · **tax-lens** · **risk-stress-test** | 專項研究角度 |
+| **元技能與輸出** (4 + 1 輸出工具) | full-report · chart-master · result-validator · **learning-coach** · report-generator（輸出工具，不計入框架） | 自動化與綜合輸出 |
 | **別名** (3，不計入框架) | fundamental-analysis → stock-eval · dcf-valuation → stock-valuation · research-bundle → full-report | 舊名稱仍可用，會轉址到吸收它的技能 |
 
 > **Unreleased（下一版）新功能：**
+> - `etf-analysis`（ETF 分析）— ETF／指數基金盡職調查：費用率 vs. 同類、追蹤差異、流動性、持股集中度與傾斜、與你其他持股的重疊 %、配息與資本利得分配紀錄、結構警示（槓桿／反向／合成／ETN），以及「買 ETF vs. 直接買前五大成分股」比較；產出 ETF 適配分數 0–10
+> - `earnings-preview`（財報前瞻）— 財報**前**的技能：共識 vs. 耳語、過去 8 季超預期比率與財報後漲跌、選擇權隱含波動 vs. 實際波動、目前股價已反映什麼、要看的 KPI，以及三情境矩陣（超預期且上修／超預期但下修／未達預期）與每個情境的部位規則
+> - `tax-lens`（稅務視角）— 美國稅務機制：短期 vs. 長期、洗售窗口檢查、合格股息持有期間測試、批次選擇、稅損收割配對、帳戶配置、年度稅務拖累估計；`--non-us` 模組涵蓋 W-8BEN、30% 預扣稅（或協定稅率；台灣無協定）、非居民資本利得的一般處理、6 萬美元以上美國境內資產的遺產稅曝險、愛爾蘭 UCITS 替代方案。僅供教育，非稅務建議
+> - `risk-stress-test`（風險壓力測試）— 貝他加權曝險、歷史情境重演（2008、2020 年 3 月、2022 升息、2025 關稅）、95／99% VaR 與 CVaR、最大回撤估計、相關性飆升情境、利率／美元／油價敏感度、流動性（以 20% 日均量出清所需天數）；風險預算分數 0–10
+> - `learning-coach`（學習教練）— 把任何 InvestSkill 輸出當成教材：每個指標的白話意義、為何重要、好壞區間、對應課程，接著 3–5 個蘇格拉底式問題與「什麼會改變你的看法？」；`--level`、`--lang zh-TW`、`--quiz <課程>` 模式
 > - `thesis-tracker`（論點追蹤）— 把一份分析變成「與未來自己的契約」：一段可被證偽的論點、3–5 個附門檻的 KPI、失效觸發條件（從各技能的「論點失效條件」與 `bear-case` 的論點反證匯入）、催化劑日期、事前驗屍與決策日誌，存成 `output/thesis/<TICKER>.md`；`--update` 以新資料重新檢查並回傳 **INTACT / WEAKENED / BROKEN** 與具體改變的那一行
-> - `fundamental-analysis`、`dcf-valuation`、`research-bundle` 重新歸類為**別名**（轉址存根）：仍可安裝與使用，但不再計入框架數（24 個框架 + 3 個別名 + 1 個輸出工具）
+> - `fundamental-analysis`、`dcf-valuation`、`research-bundle` 重新歸類為**別名**（轉址存根）：仍可安裝與使用，但不再計入框架數（當時的組成：24 框架 + 3 別名 + 1 輸出工具）
 > - 每個分析技能都必須輸出 `Data & Sources` 表頭、資料驗證關卡與論點失效條件，由 `scripts/check-skill-contract.js` 在 `npm test` 中強制執行
 >
 > **v1.11.0 新功能：**
@@ -389,7 +394,7 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 
 | 功能 | InvestSkill | 通用 AI |
 |------|------------|---------|
-| **24 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
+| **29 個精選框架** | ✅ 內建 | ❌ 需手動設定 |
 | **信號區塊** | ✅ 標準化格式 | ❌ 格式不一致 |
 | **全平台支援** | ✅ 原生支援 | ❌ 需要變通方案 |
 | **零 API 費用** | ✅ 免費 | ❌ 需付費 API |
@@ -402,8 +407,8 @@ Copilot 會自動載入 `.github/copilot-instructions.md`
 ## 📊 專案狀態
 
 **目前版本：** 1.11.0
-**技能框架：** 24 個（另有 3 個別名、1 個輸出工具）
-**通用提示詞：** 28 個
+**技能框架：** 29 個（另有 3 個別名、1 個輸出工具）
+**通用提示詞：** 33 個
 **支援平台：** 6 個
 **測試：** 全數通過 ✅（結構、提示詞同步、技能契約、數量一致性、安裝腳本）
 

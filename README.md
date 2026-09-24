@@ -20,7 +20,7 @@
 
 ## What is InvestSkill?
 
-InvestSkill is a collection of **24 structured analysis frameworks** that turn any AI assistant into an institutional-quality investment analyst. There is no runtime — every skill is a prompt that works in Claude Code, Cursor, Gemini CLI, GitHub Copilot, ChatGPT, or any other LLM.
+InvestSkill is a collection of **29 structured analysis frameworks** that turn any AI assistant into an institutional-quality investment analyst. There is no runtime — every skill is a prompt that works in Claude Code, Cursor, Gemini CLI, GitHub Copilot, ChatGPT, or any other LLM.
 
 **Nothing to sign up for, nothing to pay for.** No API key, no data-vendor subscription, no billing setup — you bring the AI assistant you already use (a free tier or a local model works too) and InvestSkill is just markdown. See [No API keys, no cost](#no-api-keys-no-cost).
 
@@ -113,7 +113,7 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 
 ---
 
-## The 24 Frameworks
+## The 29 Frameworks
 
 ### Core Stock Analysis
 
@@ -155,6 +155,10 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 | `bear-case` | Deliberate short-seller red-team: bear thesis, accounting red flags, downside target, thesis-killers (counterevidence for any bull thesis) |
 | `position-ladder` | Staged entry ladder + trim/re-add cycle for a single holding: share-count floor/ceiling, blended cost basis, wash-sale flags, total-return-vs-buy-and-hold check, thesis-break gate |
 | `thesis-tracker` | Write, save, and re-check an investment thesis — KPIs with thresholds, invalidation triggers, catalysts, a pre-mortem, and a decision log; `--update` re-reads the saved file against new data and returns INTACT / WEAKENED / BROKEN |
+| `etf-analysis` | ETF / index-fund due diligence — expense ratio vs. category, tracking difference, liquidity, holdings concentration and tilt, overlap with your other positions, distribution and capital-gains history, structure warnings, and an ETF-vs-top-holdings comparison, scored as an ETF Fitness Score 0–10 |
+| `earnings-preview` | The before-earnings skill — consensus vs. whisper, 8-quarter beat rate and post-print move distribution, options-implied vs. realized move, what the current price already assumes, the KPIs to watch, and a three-scenario grid (beat-and-raise / beat-and-lower / miss) with expected reaction and a position rule for each |
+| `tax-lens` | US tax mechanics for a position or portfolio — short- vs. long-term treatment, wash-sale window check, qualified-dividend holding-period test, lot selection (specific-ID vs. FIFO), tax-loss-harvesting pairs, account placement, estimated annual tax drag — plus a --non-us module (W-8BEN, dividend withholding and treaty rates, capital-gains treatment, US estate-tax exposure, UCITS alternatives). Educational only, never tax advice |
+| `risk-stress-test` | Portfolio and position risk report — beta-weighted exposure, historical scenario replay (2008, March 2020, 2022 rate shock, 2025 tariff shock), parametric VaR / CVaR at 95 / 99 %, max-drawdown estimate, correlation-spike scenario, rate / USD / oil sensitivity, liquidity (days to exit at 20 % of ADV), and a Risk Budget Score 0–10 |
 
 ### Meta & Output
 
@@ -164,6 +168,7 @@ InvestSkill is **completely free to use** — there is nothing to buy, register,
 | `report-generator` | Converts any analysis into a professional HTML/PDF report |
 | `chart-master` | Mermaid · ASCII · Chart.js visualizations from financial data |
 | `result-validator` | Scores any analysis on data quality, methodology, and signal consistency |
+| `learning-coach` | Explains any InvestSkill output like a mentor — every metric in plain words, why it matters, its good / bad range, and the lesson that teaches it — then asks 3–5 Socratic questions and "what would change your mind?". --level beginner / intermediate, --lang zh-TW, and a --quiz mode that drills a Learning lesson |
 
 ### Aliases (redirects)
 
@@ -238,7 +243,7 @@ HTML reports render this as a styled dark panel with a score progress bar, ghost
 
 | Platform | Setup | How it works |
 |----------|-------|-------------|
-| **Claude Code** | Marketplace install | 28 native slash commands (24 frameworks + 3 aliases + 1 output tool) |
+| **Claude Code** | Marketplace install | 33 native slash commands (29 frameworks + 3 aliases + 1 output tool) |
 | **Cursor IDE** | Clone repo, open folder | Auto-loads `.cursor/rules/` |
 | **Gemini CLI** | Clone repo, `cd` into it | Auto-loads `GEMINI.md` |
 | **GitHub Copilot** | Clone repo, open in VS Code | Auto-loads `.github/copilot-instructions.md` |
@@ -268,7 +273,7 @@ New to investing, or unsure which skill to reach for? Start here:
 |----------|-------------|
 | [Live Docs Site](https://yennanliu.github.io/InvestSkill/) | Full documentation with dark-theme UI |
 | [Cookbook](https://yennanliu.github.io/InvestSkill/cookbook.html) | Walkthrough examples and use cases |
-| [Skill Reference](https://yennanliu.github.io/InvestSkill/skills.html) | All 24 frameworks, one browsable page each |
+| [Skill Reference](https://yennanliu.github.io/InvestSkill/skills.html) | All 29 frameworks, one browsable page each |
 | [Claude Code Guide](README-claude-code.md) | Plugin install + all slash commands |
 | [Cursor Guide](README-cursor.md) | Auto-loading rules + `@prompts/` usage |
 | [Gemini CLI Guide](README-gemini.md) | File references + multi-framework chains |
@@ -291,7 +296,7 @@ See [ADDING-NEW-SKILLS.md](ADDING-NEW-SKILLS.md) for the full process. The short
 
 ---
 
-**Version:** 1.11.0 · **Frameworks:** 24 analysis frameworks (+ 3 aliases, 1 output tool) · **Skills:** 28 · **Platforms:** 7 · **License:** MIT · **Tests:** all passing
+**Version:** 1.11.0 · **Frameworks:** 29 analysis frameworks (+ 3 aliases, 1 output tool) · **Skills:** 33 · **Platforms:** 7 · **License:** MIT · **Tests:** all passing
 
 ---
 

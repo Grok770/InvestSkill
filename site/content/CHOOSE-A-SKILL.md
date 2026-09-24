@@ -1,6 +1,6 @@
 # Choose a Skill
 
-> 24 frameworks is a lot. This page maps your *goal* to the right skill — and clears up the overlaps people ask about most. New here? Start with `stock-eval`; it touches quality, value, and risk in one pass.
+> 29 frameworks is a lot. This page maps your *goal* to the right skill — and clears up the overlaps people ask about most. New here? Start with `stock-eval`; it touches quality, value, and risk in one pass.
 
 ---
 
@@ -32,6 +32,11 @@
 | Export a *polished HTML report* | `full-report` | `report-generator` |
 | Make *charts* for a report | `chart-master` | `report-generator` |
 | *Sanity-check* any analysis | `result-validator` | — |
+| Vet an *ETF or index fund* (cost, tracking, what I actually own, overlap) | `etf-analysis` | — |
+| Prepare for an *upcoming earnings print* (what's priced in, what to watch) | `earnings-preview` | — |
+| See the *tax consequences* of a trade or a portfolio (US, or as a non-US investor) | `tax-lens` | — |
+| Know how much my *portfolio could lose* in a bad regime | `risk-stress-test` | — |
+| *Understand* an analysis I just got (and learn the concepts behind it) | `learning-coach` | — |
 
 ---
 
@@ -93,7 +98,7 @@ Use them together: `thesis-tracker` says whether adding is still allowed; `posit
 `catalyst-calendar` lists the dated events that could move a stock over the next 90 days. `thesis-tracker` imports those dates and asks a narrower question after each one: *did the event confirm or weaken the reason I hold this?*
 
 ### Aliases — `fundamental-analysis`, `dcf-valuation`, `research-bundle`
-These three still work but are **redirects**, not separate frameworks, and are not counted in the 24:
+These three still work but are **redirects**, not separate frameworks, and are not counted in the 29:
 
 | Alias | Now lives in | Why it merged |
 |-------|--------------|---------------|

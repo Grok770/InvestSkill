@@ -6,7 +6,7 @@ This document explains how the automated CI/CD system releases InvestSkill to al
 
 The CI/CD pipeline automatically:
 1. **Validates** code quality and structure
-2. **Tests** all 24 analysis frameworks
+2. **Tests** all 29 analysis frameworks
 3. **Detects** version changes
 4. **Publishes** to multiple platforms
 5. **Records** deployment history

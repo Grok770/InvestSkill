@@ -70,7 +70,7 @@ claude
 /plugin list
 ```
 
-確認在清單中看到 `us-stock-analysis`，並顯示 28 個可用技能（24 個分析框架、3 個別名，以及 `report-generator` 輸出工具），即表示安裝成功。
+確認在清單中看到 `us-stock-analysis`，並顯示 33 個可用技能（29 個分析框架、3 個別名，以及 `report-generator` 輸出工具），即表示安裝成功。
 
 ### 快速測試
 
@@ -152,7 +152,7 @@ plugins/us-stock-analysis/skills/
 ├── financial-report-analyst/SKILL.md
 ├── chart-master/SKILL.md           ← v1.6.0 新增
 ├── full-report/SKILL.md            ← v1.6.0 新增
-└── ...（共 28 個技能）
+└── ...（共 33 個技能）
 ```
 
 ### 標準訊號區塊
@@ -1988,11 +1988,39 @@ Samsung / Apple 設計案報導，取自 stockanalysis.com 新聞頁，2026/07/2
 
 **為什麼值得做：** 這個檔案是對抗兩個經典錯誤的唯一防線——在論點已破損時攤平，以及在論點仍成立時因為一週的壞行情賣出。已結案的檔案會成為交易事後檢討的素材。
 
+### 工作流程 I — 以 ETF 為核心，先壓力測試、再看稅
+
+**情境：** 你想要一檔低成本的核心持股，手上已有幾檔個股，想在買進前知道整體最多可能虧多少、稅上要付出什麼。
+
+```bash
+# 步驟 1：評估候選 ETF——成本、追蹤、實際持有什麼、與現有持股的重疊
+/us-stock-analysis:etf-analysis VOO SPLG VTI — 我已持有 AAPL、MSFT、NVDA（貼上權重）
+# 輸出：各基金的 ETF 適配分數、追蹤差異表、前十大權重與傾斜、你的重疊 %
+#      （這三檔已占 S&P 500 基金約 15%），以及「買 ETF vs. 直接買前五大」的比較
+
+# 步驟 2：在持有之前，先讓這個投組經歷一次惡劣環境
+/us-stock-analysis:risk-stress-test — 60% VTI、15% AAPL、15% MSFT、10% NVDA；我能承受的最大回撤：30%
+# 輸出：淨貝他、2008／2020 年 3 月／2022／2025 情境重演、VaR／CVaR、相關性飆升情境、
+#      出清所需天數，以及對照你 30% 門檻的風險預算分數——加上讓它符合預算的最小調整
+
+# 步驟 3：看這個計畫稅後剩多少——非美國投資人另看預扣稅與遺產稅
+/us-stock-analysis:tax-lens --portfolio — 應稅帳戶、24% 稅級（貼上批次）
+/us-stock-analysis:tax-lens --non-us Taiwan — 同樣持股放在美國券商          # 非美國投資人
+# 輸出：帳戶配置表、年度稅務拖累、稅損收割配對；或 30% vs. 協定預扣稅、
+#      6 萬美元以上的遺產稅曝險，以及美國 ETF vs. 愛爾蘭 UCITS 的算術
+
+# 步驟 4：確認你真的看懂了，而不只是收到了
+/us-stock-analysis:learning-coach [貼上 etf-analysis 的輸出] --level beginner --lang zh-TW
+# 輸出：每個指標的解說、對應課程、五個問題、「什麼會改變你的看法？」
+```
+
+**誠實解讀輸出：** 最便宜的基金不一定最好——追蹤差異與你既有持股的重疊，對答案的影響遠大於五個基點的費用率差。另外，個股財報日之前先跑 `earnings-preview`：部位規則要在財報公布前決定，而不是之後。
+
 ---
 
 ## 5. 跨 AI 工具使用
 
-InvestSkill 適用於任何 AI 助手。`prompts/` 目錄包含所有 24 個分析框架（另含 3 個別名與 report-generator 輸出工具）的獨立檔案。
+InvestSkill 適用於任何 AI 助手。`prompts/` 目錄包含所有 29 個分析框架（另含 3 個別名與 report-generator 輸出工具）的獨立檔案。
 
 ### Gemini CLI
 
