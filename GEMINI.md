@@ -106,6 +106,16 @@ These stubs remain so old references keep working; each points at the framework 
 
 ## Usage Examples
 
+### Verify a Report Before You Trust It
+
+```
+# Claim-level fact-check with citations — paste the report and its sources
+> @prompts/fact-check.md [paste the report + the 10-K excerpt / IR release] Verify every number and add sources
+
+# Then score the reasoning
+> @prompts/result-validator.md [paste the corrected report and the fact-check ledger] Score confidence
+```
+
 ### Basic Single Analysis
 
 ```

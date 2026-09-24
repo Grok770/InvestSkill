@@ -2,16 +2,16 @@
 
 ## ⚠️ Data Verification — Do This Before Any Analysis
 
-Before running any analysis, always retrieve the latest market data for the ticker:
+Before verifying anything, establish what data each claim actually needs:
 
-1. **Fetch current price** — use web search or ask the user for the live price, 52-week range, and market cap. Never assume a price from training data.
+1. **Fetch current price only where a claim needs it** — market claims (price, market cap, yield, multiples "today") are checked against a live quote for the report's as-of date and today's; use web search or ask the user. Reported figures, historical comparisons, and `--recompute` runs need **no** live quote — do not request one, and do not let its absence block them. Never assume a price from training data.
 2. **Confirm key figures** — for this skill the "key figures" are the *sources themselves*: the filing (10-K / 10-Q / 8-K / proxy / Form 4 / 13F), the IR release, the FRED series, the exchange or issuer data, or the document the user pasted. Retrieve or request them before judging a single claim. A claim checked against memory is not checked.
 3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
-4. **Flag stale data explicitly** — if live data is unavailable, display this warning before proceeding:
+4. **Flag stale data explicitly** — if a live quote is needed for a market claim and unavailable, display this warning before proceeding, and mark those claims `❓` or `🕒` rather than guessing:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
 
-Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
+The warning describes the *inputs actually used*: when every claim was checked against user-supplied documents, say so instead of implying training-data estimates were involved. Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
 
 ---
 
@@ -125,7 +125,7 @@ Free cash flow      = OCF − capex                          1,240 − 310      
 Gross margin        = gross profit ÷ revenue               3,550 ÷ 6,120          = 58.0% ✓ report 58%
 Revenue growth      = rev / prior rev − 1                  6,120 ÷ 5,100 − 1      = 20.0% ✓
 Net debt            = total debt − cash                    800 − 1,650            = −850  (net cash) ✓
-Market cap          = price × diluted shares               48.20 × 412            = 19,858
+Market cap          = price × shares outstanding           48.20 × 412            = 19,858   (shares outstanding at the price date — not the diluted count used for EPS)
 Enterprise value    = market cap + debt − cash             19,858 + 800 − 1,650   = 19,008
 P/E (trailing)      = price ÷ diluted EPS                  48.20 ÷ 1.99           = 24.2× ✓ report "24× forward" ✗ — trailing, not forward
 FCF yield           = FCF ÷ market cap                     930 ÷ 19,858           = 4.7%
@@ -175,7 +175,7 @@ The headline number measures **how much of the report is demonstrably true**, no
 | Source quality | 15% | All Tier 1, specific locations | Mostly secondary or user-supplied only |
 | Freshness | 10% | Every as-of date matches the report's claim and is < 90 days old for market data | Stale figures presented as current |
 
-**Hard caps** (state any that fires): a signal-driving `⚠️` with delta > 5% → **max 4.0** · more than half the claims `❓` → **max 5.0** · the report's own `Data & Sources` header overstates its retrieval or confidence → **max 6.0** · **any fabricated or unopenable citation found in the report → 0.0**.
+**Hard caps** (state any that fires): a signal-driving `⚠️` **or `🔁 disagrees`** with delta > 5% → **max 4.0** · more than half the claims `❓` → **max 5.0** · the report's own `Data & Sources` header overstates its retrieval or confidence → **max 6.0** · **any fabricated or unopenable citation found in the report → 0.0**.
 
 Map onto the standard bands: **≥ 6.0** the report's inputs are sound (BULLISH on the *report*) · **4.0–5.9** usable with the listed corrections (NEUTRAL) · **< 4.0** do not rely on it — re-run the analysis with verified inputs (BEARISH). Hand the score and the ledger to `result-validator`, whose Data Quality dimension should not exceed what this score supports.
 
@@ -250,7 +250,11 @@ After delivering the analysis signal, specify what would reverse it:
 
 ## Standard Signal Output
 
-This skill does **not** form a view on the stock. The block below **mirrors the verified report's own Signal, Horizon, Action, and Conviction**, and attaches the verification verdict through Confidence and the Score: `Confidence` is capped at the tier the Verification Score supports (≥ 8.0 HIGH · 6.0–7.9 MEDIUM · < 6.0 LOW), and `Score` is the **Verification Score**, not the report's. If a signal-driving claim mismatched by more than 5%, add the line `Signal not supported at stated confidence — re-run the analysis with verified inputs` directly under the box. For a report with no signal block, fill Signal / Action / Conviction with `n/a`.
+This skill does **not** form a view on the stock. `Score` is always the **Verification Score**, and `Confidence` is capped at the tier it supports (≥ 8.0 HIGH · 6.0–7.9 MEDIUM · < 6.0 LOW). The other fields depend on the outcome:
+
+- **Verification passed** (Score ≥ 4.0, no cap-to-zero): Signal, Horizon, Action, and Conviction **mirror the verified report's own**, and a line under the box states `Mirrors the report's signal — quoted, not re-derived`. If a signal-driving claim mismatched by more than 5%, add `Signal not supported at stated confidence — re-run the analysis with verified inputs`.
+- **Verification failed** (Score < 4.0, or a fabricated citation → 0): the box does **not** carry the report's Signal or Action forward — an unsupported BUY must not survive into the verification result. Fill `Signal: NEUTRAL · Action: HOLD · Conviction: WEAK · Confidence: LOW`, and under the box write `Verification failed — the report's own signal (BULLISH / BUY, quoted) is not supported by its inputs; do not act on it`.
+- For a report with no signal block, fill Signal / Action / Conviction with `n/a`.
 
 All analysis concludes with this standardized block:
 
@@ -272,6 +276,6 @@ Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | 4.0–
 Confidence: HIGH (strong data, clear signals) | MEDIUM (mixed signals) | LOW (limited data, conflicting signals)
 Horizon: SHORT-TERM (1 week–3 months) | MEDIUM-TERM (3 months–1 year) | LONG-TERM (1+ years)
 
-**Note:** The Score above is the Verification Score — *how much of the report is demonstrably true* — mapped onto the standard scale for cross-skill comparability. Signal, Horizon, Action, and Conviction are the verified report's own, reproduced unchanged; only Confidence is adjusted to what the verification supports.
+**Note:** The Score above is the Verification Score — *how much of the report is demonstrably true* — mapped onto the standard scale for cross-skill comparability. When verification passes, Signal, Horizon, Action, and Conviction are the verified report's own, quoted unchanged; when it fails, they are replaced by NEUTRAL / HOLD / WEAK so that no unsupported call is carried forward.
 
 **Disclaimer:** Educational analysis only. Not financial advice. Verification is limited to the sources available at run time; an unverifiable claim is neither confirmed nor refuted.

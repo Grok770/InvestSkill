@@ -121,7 +121,7 @@ Choosing the version number and *when* to cut the release both matter — don't 
 
 ## Framework Count Rule
 
-The **advertised framework count** = number of skills in `plugins/us-stock-analysis/skills/` **minus output-only tools** (`report-generator`) **minus alias/redirect stubs** (`fundamental-analysis`, `dcf-valuation`, `research-bundle`). It is currently **30 analysis frameworks** (33 skill directories − 1 output tool − 3 aliases). The classification lives in one place — `scripts/lib/skill-registry.js` (`OUTPUT_TOOLS`, `ALIAS_SKILLS`, `META_SKILLS`) — and is imported by `test-skills.js`, `test-install.js`, `check-skill-contract.js`, and `site/build/build-site.js`. The alias list is mirrored in `install.sh`'s `case` block (the install tests check parity).
+The **advertised framework count** = number of skills in `plugins/us-stock-analysis/skills/` **minus output-only tools** (`report-generator`) **minus alias/redirect stubs** (`fundamental-analysis`, `dcf-valuation`, `research-bundle`). It is currently **30 analysis frameworks** (34 skill directories − 1 output tool − 3 aliases). The classification lives in one place — `scripts/lib/skill-registry.js` (`OUTPUT_TOOLS`, `ALIAS_SKILLS`, `META_SKILLS`) — and is imported by `test-skills.js`, `test-install.js`, `check-skill-contract.js`, and `site/build/build-site.js`. The alias list is mirrored in `install.sh`'s `case` block (the install tests check parity).
 
 - Keep this number consistent across `README.md`, `README-zh-TW.md`, `site/content/CHOOSE-A-SKILL(-zh-TW).md`, `site/content/COOKBOOK(-zh-TW).md`, and `plugin.json`'s description.
 - `site/build/build-site.js` derives it automatically (`FRAMEWORK_COUNT`) — never hardcode a count there.
@@ -133,6 +133,6 @@ The **advertised framework count** = number of skills in `plugins/us-stock-analy
 
 - **Version**: 1.11.0 (plugin.json = marketplace.json = package.json)
 - **Skills**: 34 directories in `plugins/us-stock-analysis/skills/` (auto-discovered)
-- **Advertised frameworks**: 30 analysis frameworks (33 − `report-generator` − 3 aliases)
+- **Advertised frameworks**: 30 analysis frameworks (34 − `report-generator` − 3 aliases)
 - **Prompts**: 34 universal files in `prompts/` — **generated** from SKILL.md by `scripts/sync-prompts.js` (never hand-edit them; `--check` runs in `npm test`)
 - **Node**: ≥18.0.0 required

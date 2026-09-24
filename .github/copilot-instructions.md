@@ -112,6 +112,16 @@ These stubs remain so old references keep working; each points at the framework 
 
 ## Usage Examples
 
+### Verify a Report Before You Trust It
+
+```
+# Claim-level fact-check with citations — paste the report and its sources
+Verify every number in this report against the attached 10-K and add citations, using prompts/fact-check.md
+
+# Then score the reasoning
+Score the confidence of the corrected report using prompts/result-validator.md, with the fact-check ledger as evidence
+```
+
 ### Natural Language Queries
 
 Copilot understands the frameworks context naturally:
