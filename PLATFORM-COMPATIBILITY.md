@@ -6,7 +6,7 @@ Complete platform support, feature comparison, and version requirements for Inve
 
 | Feature | Claude Code | Cursor | Gemini CLI | Copilot | Universal | Ollama |
 |---------|:-----------:|:------:|:----------:|:-------:|:---------:|:------:|
-| **29 Analysis Frameworks** (+ 3 aliases, 1 output tool) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **30 Analysis Frameworks** (+ 3 aliases, 1 output tool) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Native Plugin** | ✅ | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **Rules Integration** | ➖ | ✅ | ➖ | ➖ | ➖ | ➖ |
 | **Slash Commands** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
@@ -45,7 +45,7 @@ Complete platform support, feature comparison, and version requirements for Inve
 - GitHub account (optional, for local dev)
 
 #### Features Supported
-✅ All 33 skills as slash commands (29 analysis frameworks + 3 aliases + 1 output tool)  
+✅ All 34 skills as slash commands (30 analysis frameworks + 3 aliases + 1 output tool)  
 ✅ Marketplace installation  
 ✅ Real-time updates  
 ✅ Version consistency  
@@ -100,7 +100,7 @@ Works with all Claude Code supported models:
 - AI enabled in Cursor settings
 
 #### Features Supported
-✅ All 29 frameworks as @prompts/ references  
+✅ All 30 frameworks as @prompts/ references  
 ✅ Auto-loading from .cursor/rules/  
 ✅ Natural language understanding  
 ✅ File paste/upload support  
@@ -228,7 +228,7 @@ Works with all Gemini models:
 - Internet connection
 
 #### Features Supported
-✅ All 29 frameworks in context  
+✅ All 30 frameworks in context  
 ✅ Auto-loading from .github/copilot-instructions.md  
 ✅ Natural language understanding  
 ✅ File/document paste support  

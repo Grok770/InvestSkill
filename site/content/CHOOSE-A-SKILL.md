@@ -1,6 +1,6 @@
 # Choose a Skill
 
-> 29 frameworks is a lot. This page maps your *goal* to the right skill — and clears up the overlaps people ask about most. New here? Start with `stock-eval`; it touches quality, value, and risk in one pass.
+> 30 frameworks is a lot. This page maps your *goal* to the right skill — and clears up the overlaps people ask about most. New here? Start with `stock-eval`; it touches quality, value, and risk in one pass.
 
 ---
 
@@ -31,7 +31,8 @@
 | Build *one full investment thesis* | `full-report` | `result-validator` |
 | Export a *polished HTML report* | `full-report` | `report-generator` |
 | Make *charts* for a report | `chart-master` | `report-generator` |
-| *Sanity-check* any analysis | `result-validator` | — |
+| *Fact-check* a report's numbers against primary sources and add citations | `fact-check` | `result-validator` |
+| *Sanity-check* any analysis | `result-validator` | `fact-check` |
 | Vet an *ETF or index fund* (cost, tracking, what I actually own, overlap) | `etf-analysis` | — |
 | Prepare for an *upcoming earnings print* (what's priced in, what to watch) | `earnings-preview` | — |
 | See the *tax consequences* of a trade or a portfolio (US, or as a non-US investor) | `tax-lens` | — |
@@ -97,8 +98,14 @@ Use them together: `thesis-tracker` says whether adding is still allowed; `posit
 ### `catalyst-calendar` vs. `thesis-tracker`
 `catalyst-calendar` lists the dated events that could move a stock over the next 90 days. `thesis-tracker` imports those dates and asks a narrower question after each one: *did the event confirm or weaken the reason I hold this?*
 
+### `fact-check` vs. `result-validator`
+- **`fact-check`** — *are the numbers true?* Every figure and claim in a report is checked against a primary source (filing, IR release, FRED, your pasted document), derived figures are recomputed, and the report is re-issued with inline citations and a References section. Verification Score 0–10.
+- **`result-validator`** — *is the analysis well built?* Methodology, signal consistency, risk coverage, and reasoning transparency, scored 0–100.
+
+Run `fact-check` first when the stakes are real — a well-built analysis on wrong inputs is still wrong. The validator's Data Quality score is capped by the fact-check result.
+
 ### Aliases — `fundamental-analysis`, `dcf-valuation`, `research-bundle`
-These three still work but are **redirects**, not separate frameworks, and are not counted in the 29:
+These three still work but are **redirects**, not separate frameworks, and are not counted in the 30:
 
 | Alias | Now lives in | Why it merged |
 |-------|--------------|---------------|

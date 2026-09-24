@@ -245,7 +245,7 @@ Before rendering the final report, verify:
 - Missing modules for quick/standard depth are flagged as "not assessed"
 - No data older than 90 days used without explicit warning
 
-**Then run `result-validator`** on the composite result and include its confidence score in the report footer — a composite thesis should never ship without this validation pass.
+**Then run `fact-check` on the composite** (every figure the modules produced, verified against the filing and market data, with citations), **and hand `result-validator` two separate things**: the *corrected composite* as the analysis to validate (so its "Original Score" is the investment score, not the Verification Score), and the fact-check *ledger and Verification Score* as evidence for its Data Quality dimension. Include both scores in the report footer, labelled — a composite thesis should never ship without this verification-and-validation pass.
 
 ---
 

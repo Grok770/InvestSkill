@@ -70,7 +70,7 @@ claude
 /plugin list
 ```
 
-You should see `us-stock-analysis` in the list with 33 available skills (29 analysis frameworks, 3 aliases, and the `report-generator` output tool).
+You should see `us-stock-analysis` in the list with 34 available skills (30 analysis frameworks, 3 aliases, and the `report-generator` output tool).
 
 ### Quick Test
 
@@ -152,7 +152,7 @@ plugins/us-stock-analysis/skills/
 ├── financial-report-analyst/SKILL.md
 ├── chart-master/SKILL.md           ← v1.6.0
 ├── full-report/SKILL.md            ← v1.6.0
-└── ... (33 skills total)
+└── ... (34 skills total)
 ```
 
 ### The Signal Block
@@ -2000,9 +2000,12 @@ Real-world investor scenarios showing how to combine multiple skills.
 # Includes: all signal blocks, interactive charts, football field valuation,
 #           sector comparison, risk matrix, entry/exit strategy
 
-# After reading, validate the composite output:
+# After reading, verify the inputs, then validate the reasoning:
+/us-stock-analysis:fact-check
+# Paste the report and the 10-K / IR release — every figure checked against the source,
+# derived numbers recomputed, a corrected copy with [n] citations and a References section
 /us-stock-analysis:result-validator
-# Paste the composite signal block — get a confidence score and any gaps flagged
+# Paste the composite signal block (and the fact-check ledger) — confidence score and gaps flagged
 ```
 
 ---
@@ -2122,7 +2125,7 @@ demand compounds for two more years and the market is pricing a one-off cycle
 
 ## 5. Cross-AI Usage
 
-InvestSkill works with any AI assistant. The `prompts/` directory contains all 29 analysis frameworks (plus 3 aliases and the report-generator output tool) as standalone files.
+InvestSkill works with any AI assistant. The `prompts/` directory contains all 30 analysis frameworks (plus 3 aliases and the report-generator output tool) as standalone files.
 
 ### Gemini CLI
 

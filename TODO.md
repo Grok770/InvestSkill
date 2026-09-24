@@ -19,6 +19,7 @@ The previous long-form backlog (last updated 2026-02-24) is archived at [doc/arc
 - The three redirect skills reclassified as aliases; honest count of 24 frameworks (§4.2)
 - `thesis-tracker` (§3.1)
 - The rest of Tier 1 — `etf-analysis`, `earnings-preview`, `tax-lens` (with `--non-us`), `risk-stress-test`, `learning-coach` (§3.1)
+- `fact-check` — claim-level verification against primary sources, recomputation, corrected report with inline citations and References; Verification Score feeds `result-validator` Data Quality (not on the roadmap; added on request)
 - `scripts/sync-prompts.js`, `scripts/new-skill.js`, `scripts/eval-skills.js`, `scripts/lib/signal-block.js` (§6.1, §6.2, §6.4, §6.11)
 
 ## Deliberately not planned

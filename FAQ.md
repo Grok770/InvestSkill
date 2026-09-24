@@ -138,18 +138,18 @@ A: Not directly. Each platform has its own session. However:
 
 ### Do all platforms have the same skills?
 
-**Q: Are all 33 skills available on every platform?**
+**Q: Are all 34 skills available on every platform?**
 
-A: Yes — every platform gets the same 33 skills: 29 analysis frameworks, 3 aliases (`fundamental-analysis`, `dcf-valuation`, `research-bundle`, which redirect to the skill that absorbed them), and the `report-generator` output tool.
-- **Claude Code**: ✅ All 33 skills as `/skill-name` commands
-- **Cursor**: ✅ All 33 skills as `@prompts/skill-name.md` files
-- **Gemini CLI**: ✅ All 33 skills as `@prompts/skill-name.md` files
-- **Copilot**: ✅ All 29 frameworks via `.github/copilot-instructions.md`
-- **Universal**: ✅ 33 prompts in `prompts/`, one per skill
+A: Yes — every platform gets the same 34 skills: 30 analysis frameworks, 3 aliases (`fundamental-analysis`, `dcf-valuation`, `research-bundle`, which redirect to the skill that absorbed them), and the `report-generator` output tool.
+- **Claude Code**: ✅ All 34 skills as `/skill-name` commands
+- **Cursor**: ✅ All 34 skills as `@prompts/skill-name.md` files
+- **Gemini CLI**: ✅ All 34 skills as `@prompts/skill-name.md` files
+- **Copilot**: ✅ All 30 frameworks via `.github/copilot-instructions.md`
+- **Universal**: ✅ 34 prompts in `prompts/`, one per skill
 
 **Why isn't report-generator counted as a framework?**
 
-Report-generator is an output tool (it renders other skills' results as HTML/PDF), not an analysis framework, so the advertised count is 29 even though 33 files ship. The three aliases are likewise installed but not counted.
+Report-generator is an output tool (it renders other skills' results as HTML/PDF), not an analysis framework, so the advertised count is 30 even though 34 files ship. The three aliases are likewise installed but not counted.
 
 ### Version differences between platforms
 

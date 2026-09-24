@@ -83,6 +83,18 @@ If a number fails its own arithmetic, discard the whole section and re-run with 
 
 ## Validating AI Output
 
+Two skills do this job, and they answer different questions:
+
+- **`fact-check` — are the inputs true?** It pulls every figure and factual claim out of a report into a ledger, checks each against a primary source (the SEC filing, the IR release, FRED, the issuer's data, or the document you pasted), recomputes every derived number, and hands back a corrected copy with inline citations `[n]` and a References section — plus a Verification Score. Unverifiable claims stay marked `[?]`; nothing is silently changed and no source is ever invented.
+- **`result-validator` — is the analysis well built?** Methodology, signal consistency, risk coverage, reasoning transparency — a confidence score for the *reasoning*. Its Data Quality dimension should never exceed what the fact-check score supports.
+
+Run them in that order when the stakes are real: `fact-check` first, then `result-validator`.
+
+```
+/fact-check            ← paste the report (and its sources) — get the ledger, the corrected copy, the citations
+/result-validator      ← paste the analysis output (or the composite signal block)
+```
+
 `result-validator` is a first-class step, not a nicety. Promote it from "tip" to "habit":
 
 **When to run it:** after any high-stakes analysis, *always* after a composite (`research-bundle`, `full-report`), and whenever the signal feels too good.

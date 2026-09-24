@@ -27,7 +27,7 @@
 | 9 | `scripts/sync-prompts.js` + `scripts/new-skill.js`（§6.1、§6.2） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | prompts 現在由 SKILL.md **產生**（`--check` 在 `npm test` 中）；腳手架一次把技能接進 11 個檔案。注意：重新產生後，先前手工精簡的 prompts 被 SKILL.md 全文取代 |
 | 10 | `scripts/eval-skills.js`（§6.4） | ✅ 完成 | [PR #26](https://github.com/yennanliu/InvestSkill/pull/26) | 以 `EVAL_CMD` 環境變數選擇啟用；樣本 `data/fixtures/ZEPH.md`（虛構公司）；硬性檢查透過共用解析器 `scripts/lib/signal-block.js`（§6.11），算術檢查為建議性；輸出 `qa/eval_YYYYMMDD.md` |
 
-一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查（PR #26）；`risk-stress-test` — 第一層的第六個技能、不在十大之列 — 於 [PR #27](https://github.com/yennanliu/InvestSkill/pull/27)。**§3.1 第一層六個技能全部出貨。**§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
+一併出貨：§6.9（擴充 `COUNT_DOCS`）、§6.11（`scripts/lib/signal-block.js`）、§4.4 的 `result-validator` 契約檢查（PR #26）；`risk-stress-test` — 第一層的第六個技能、不在十大之列 — 於 [PR #27](https://github.com/yennanliu/InvestSkill/pull/27)。**§3.1 第一層六個技能全部出貨。** 路線圖之外新增：`fact-check`——逐條陳述層級的查核與引用，補上 `result-validator` 旁缺少的另一半信任機制——於 [PR #28](https://github.com/yennanliu/InvestSkill/pull/28)。§8 P0/P1 中仍待辦：§4.3（`full-report` 執行所有框架）、全技能 `--lang zh-TW`、JSON 頁尾、繁中 Skill Reference 索引（§5.6）。
 
 ---
 

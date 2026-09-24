@@ -1,6 +1,6 @@
 # InvestSkill — GitHub Copilot Setup & Usage Guide
 
-This repository contains 29 professional investment analysis frameworks for US stock markets. When working in this workspace, Copilot automatically loads these analysis methodologies to provide institutional-quality investment analysis.
+This repository contains 30 professional investment analysis frameworks for US stock markets. When working in this workspace, Copilot automatically loads these analysis methodologies to provide institutional-quality investment analysis.
 
 ## Installation & Setup
 
@@ -21,7 +21,7 @@ GitHub Copilot automatically loads this file when you work in the InvestSkill re
 
 3. **Open Copilot Chat** (usually `Ctrl+K` or `Cmd+K`)
    - Copilot automatically loads `copilot-instructions.md`
-   - You now have access to all 29 analysis frameworks
+   - You now have access to all 30 analysis frameworks
 
 ### Verify Setup
 
@@ -34,7 +34,7 @@ If Copilot references the frameworks, setup is complete!
 
 ---
 
-## Available Analysis Frameworks (29 frameworks + 3 aliases + 1 output tool)
+## Available Analysis Frameworks (30 frameworks + 3 aliases + 1 output tool)
 
 ### Core Stock Analysis (4 frameworks)
 
@@ -87,7 +87,7 @@ If Copilot references the frameworks, setup is complete!
 |-----------|------|----------|
 | Full Report (HTML) | `prompts/full-report.md` | Runs all modules and saves a standalone HTML report |
 
-### Meta-Analysis & Visualization (4 frameworks)
+### Meta-Analysis & Visualization (5 frameworks)
 
 | Framework | File | Best For |
 |-----------|------|----------|
@@ -95,6 +95,7 @@ If Copilot references the frameworks, setup is complete!
 | Chart Master | `prompts/chart-master.md` | Generate Mermaid/ASCII/HTML charts from financial data |
 | Report Generator | `prompts/report-generator.md` | Export analysis as a professional HTML/PDF report |
 | Learning Coach | `prompts/learning-coach.md` | Explains any InvestSkill output like a mentor — every metric in plain words, why it matters, its good / bad range, and the lesson that teaches it — then asks 3–5 Socratic questions and "what would change your mind?". --level beginner / intermediate, --lang zh-TW, and a --quiz mode that drills a Learning lesson |
+| Fact Check | `prompts/fact-check.md` | Claim-level verification of any report or data set — extract every figure and factual claim, check each against a primary source (SEC filing, company IR, FRED, exchange data, or the user's own document), recompute derived numbers, mark ✅ verified / ⚠️ mismatch / ❓ unverifiable, and re-issue the report with inline citations and a References section; Verification Score 0–10 |
 
 ### Aliases (3 redirects — installed, not counted as frameworks)
 
@@ -110,6 +111,16 @@ These stubs remain so old references keep working; each points at the framework 
 ---
 
 ## Usage Examples
+
+### Verify a Report Before You Trust It
+
+```text
+# Claim-level fact-check with citations — paste the report and its sources
+Verify every number in this report against the attached 10-K and add citations, using prompts/fact-check.md
+
+# Then score the reasoning
+Score the confidence of the corrected report using prompts/result-validator.md, with the fact-check ledger as evidence
+```
 
 ### Natural Language Queries
 
@@ -357,7 +368,7 @@ What's the valuation in the:
 
 ```
 InvestSkill/
-├── prompts/                    # 29 analysis frameworks (+ 3 aliases, 1 output tool)
+├── prompts/                    # 30 analysis frameworks (+ 3 aliases, 1 output tool)
 │   ├── stock-eval.md
 │   ├── stock-valuation.md
 │   ├── fundamental-analysis.md
@@ -386,6 +397,7 @@ InvestSkill/
 │   ├── tax-lens.md
 │   ├── risk-stress-test.md
 │   ├── learning-coach.md
+│   ├── fact-check.md
 │   └── report-generator.md     # HTML/PDF report design system
 ├── plugins/                    # Claude Code plugin (optional)
 ├── .github/copilot-instructions.md  # This file (auto-loaded)
@@ -433,7 +445,7 @@ Use the stock-eval framework for MSFT, but format as:
 
 ## Project Overview
 
-- **29 Institutional-Quality Frameworks** — all tested and validated (plus 3 aliases and 1 output tool)
+- **30 Institutional-Quality Frameworks** — all tested and validated (plus 3 aliases and 1 output tool)
 - **Works with Copilot Chat** — integrated into VS Code and JetBrains IDEs
 - **Universal Prompts** — also work with Gemini CLI, Cursor, and any AI tool
 - **Educational Focus** — for learning institutional analysis methods
@@ -444,7 +456,7 @@ Use the stock-eval framework for MSFT, but format as:
 ## Additional Resources
 
 - **README.md** — Complete setup guide for all platforms (Claude Code, Gemini, Cursor)
-- **prompts/** — All 29 analysis framework files (+ 3 aliases, 1 output tool)
+- **prompts/** — All 30 analysis framework files (+ 3 aliases, 1 output tool)
 - **plugins/** — Claude Code plugin integration (optional)
 - **GitHub Issues** — Report problems or request features
 
