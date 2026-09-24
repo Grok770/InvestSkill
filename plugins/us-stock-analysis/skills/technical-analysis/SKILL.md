@@ -222,8 +222,8 @@ Date        Open      High      Low       Close     Volume      SMA_30    SMA_60
 
 **Visual Specifications**:
 - Candlesticks: Green for up days, red for down days
-- SMA 20: Blue line (short-term trend)
-- SMA 50: Orange line (intermediate trend)
+- SMA 30: Blue line (short-term trend)
+- SMA 60: Orange line (intermediate trend)
 - SMA 200: Purple line (long-term trend)
 - Support/resistance: Horizontal dashed lines with labels
 
@@ -331,8 +331,8 @@ Price ($)
 170 ┤                        ╭─────╯         ╰──╮
 165 ┤                  ╭─────╯                  ╰─╮  ← Current: $172.50
 160 ┤            ╭─────╯                          ╰──
-155 ┤      ╭─────╯                                      SMA 20: $168.23
-150 ┤──────╯                                            SMA 50: $165.80
+155 ┤      ╭─────╯                                      SMA 30: $168.23
+150 ┤──────╯                                            SMA 60: $165.80
     └──┬─────┬─────┬─────┬─────┬─────┬─────┬──          ══════ Resistance: $178
      1/15  1/22  1/29  2/05  2/12  2/19  2/26          ══════ Support: $155
 
@@ -350,10 +350,10 @@ Volume (M)
     └──┬─────┬─────┬─────┬─────┬─────┬─────┬──
 
 Signals:
-↗ Bullish: Price above SMA 20 & 50
+↗ Bullish: Price above SMA 30 & 60
 ● RSI approaching overbought (68) - potential pullback
 📊 Volume increasing on up days - healthy uptrend
-🎯 Target: $178 (resistance), Stop: $165 (below SMA 50)
+🎯 Target: $178 (resistance), Stop: $165 (below SMA 60)
 ```
 
 ### Integration with Report Generator
