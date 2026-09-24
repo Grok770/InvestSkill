@@ -9,7 +9,8 @@
 #
 set -euo pipefail
 
-REPO="yennanliu/InvestSkill"
+# Source repo for the download; forks/CI can override with INVESTSKILL_REPO=owner/name.
+REPO="${INVESTSKILL_REPO:-yennanliu/InvestSkill}"
 REF="main"
 AGENT="claude"
 DIR="$PWD"

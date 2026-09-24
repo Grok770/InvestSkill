@@ -122,6 +122,8 @@ jobs:
         fi
 
     - name: Install via curl | bash (${{ matrix.agent }})
+      env:
+        INVESTSKILL_REPO: ${{ github.repository }}  # download from this repo, so forks test their own commit
       run: |
         SHA="${{ steps.ref.outputs.sha }}"
         mkdir -p "$RUNNER_TEMP/live/${{ matrix.agent }}"
@@ -156,6 +158,8 @@ jobs:
         [ "$ERRORS" -eq 0 ] || exit 1
 
     - name: Re-run must be a no-op (idempotent)
+      env:
+        INVESTSKILL_REPO: ${{ github.repository }}  # download from this repo, so forks test their own commit
       run: |
         SHA="${{ steps.ref.outputs.sha }}"
         cd "$RUNNER_TEMP/live/${{ matrix.agent }}"
