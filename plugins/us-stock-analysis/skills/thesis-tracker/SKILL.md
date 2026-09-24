@@ -166,7 +166,7 @@ The headline number, used for the signal block. It measures **how well the thesi
 | Mechanism progress | 20% | Phase 1 "what has to happen" is visibly happening | Falsified |
 | Evidence freshness | 10% | Every KPI dated within the last quarter | KPIs stale or unverifiable |
 
-Map: **≥ 7.0 → INTACT · 4.0–6.9 → WEAKENED · < 4.0 → BROKEN.** INSUFFICIENT EVIDENCE is not scored from the table above — report the score as `n/a` in the file and use **5.0** in the signal block (NEUTRAL, Confidence LOW) so it stays comparable across skills. If the rule table in Phase 6 and the score disagree, the *rule table wins* and the score is adjusted to match — the score summarizes the rules, it does not override them.
+Map — the same bands as the standard Score Guide: **≥ 6.0 → INTACT · 4.0–5.9 → WEAKENED · < 4.0 → BROKEN.** INSUFFICIENT EVIDENCE is not scored from the table above — report the score as `n/a` in the file and use **5.0** in the signal block (NEUTRAL, Confidence LOW) so it stays comparable across skills. If the rule table in Phase 6 and the score disagree, the *rule table wins* and the score is adjusted to match — the score summarizes the rules, it does not override them.
 
 ---
 

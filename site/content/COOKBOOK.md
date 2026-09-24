@@ -2094,7 +2094,7 @@ demand compounds for two more years and the market is pricing a one-off cycle
 
 ```bash
 # Step 1: Vet the candidates — cost, tracking, what you actually own, overlap with what you hold
-/us-stock-analysis:etf-analysis VOO SPLG VTI — I already hold AAPL, MSFT, NVDA (paste weights)
+/us-stock-analysis:etf-analysis VOO SPYM VTI — I already hold AAPL, MSFT, NVDA (paste weights)
 # Returns: ETF Fitness Score per fund, the tracking-difference table, top-10 weight and tilt,
 #          your overlap % (the three names are already ~15% of an S&P 500 fund), and the
 #          "ETF vs. buying the top 5 directly" comparison
@@ -2107,7 +2107,8 @@ demand compounds for two more years and the market is pricing a one-off cycle
 # Step 3: See what the plan costs after tax — and, if you are not a US person, the withholding and estate angle
 /us-stock-analysis:tax-lens --portfolio — taxable account, 24% bracket (paste lots)
 /us-stock-analysis:tax-lens --non-us Taiwan — same holdings at a US broker          # non-US investors
-# Returns: placement table, annual tax drag, harvest pairs; or the 30% vs. treaty withholding,
+# Returns: placement table, annual tax drag, harvest pairs; or — for Taiwan, which has no US tax
+#          treaty — the 30% statutory withholding (treaty-rate comparisons apply only to treaty countries),
 #          the $60k estate-tax exposure, and the US-ETF vs. Irish-UCITS arithmetic
 
 # Step 4: Make sure you understood it, not just received it

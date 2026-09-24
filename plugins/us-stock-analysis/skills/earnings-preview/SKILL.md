@@ -120,12 +120,12 @@ Add the **positioning read** where data exists: short interest and days-to-cover
 
 | Measure | Value | How |
 |---------|-------|-----|
-| Options-implied move | ±x.x% | ATM straddle price ÷ stock price for the first expiry after the print (or from IV: IV × √(days/365), adjusted for the event) |
+| Options-implied move (event only) | ±x.x% | ATM straddle price ÷ stock price for the **first expiry after the print**. If that expiry is more than one session past the print, strip the non-event days so the horizon matches the next-day realized move: event move² ≈ near-straddle move² − (normal daily move)² × extra sessions, where the normal daily move comes from a longer-dated expiry's IV (IV × √(1/252)). State the horizon used |
 | Realized average move (8 quarters) | ±x.x% | from Phase 2 |
 | Realized median move | ±x.x% | robust to one outlier quarter |
 | Ratio: implied ÷ realized median | x.x | > 1.2 the market is paying up for the event; < 0.8 it is complacent |
 
-Interpretation for a **stockholder** (not an options trader): the implied move is the market's own estimate of the downside on a miss. If it exceeds the distance to the holder's stop or the bottom rung of the `position-ladder`, the position size is too large for the event — that is the finding, and it belongs in the scenario grid's "miss" rule. Options strategy selection goes to `options-analysis`.
+Interpretation for a **stockholder** (not an options trader): the implied move is the market's estimate of the **size** of the reaction, in either direction — it says nothing about direction and is not a downside estimate. Model the miss-side downside separately in the scenario grid (the realized moves on past misses, the distance to the valuation floor from `stock-valuation`, the `bear-case` target). Then compare: if the *larger* of the implied move and the modelled miss-side downside exceeds the distance to the holder's stop or the bottom rung of the `position-ladder`, the position size is too large for the event — that is the finding, and it belongs in the grid's "miss" rule. Options strategy selection goes to `options-analysis`.
 
 ### Phase 5 — The KPIs that will decide the reaction
 

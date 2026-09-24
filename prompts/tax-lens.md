@@ -19,7 +19,7 @@ Never silently substitute training-data estimates for current prices. When in do
 
 ## 📋 Data & Sources Header — Open Every Output With It
 
-The first thing in the output is this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
+Immediately after the not-tax-advice banner (which is always line one), the output carries this provenance block, filled in — never left as placeholders. It is the standard documented on the [Data & Accuracy](https://yennanliu.github.io/InvestSkill/data-and-accuracy.html) page and the first thing `result-validator` looks for:
 
 ```
 Data & Sources
@@ -67,6 +67,7 @@ This skill is that layer. Given a position, a proposed trade, or a whole portfol
 | Filing status and approximate marginal bracket | recommended for US mode | illustrate at the 15% long-term / 24% ordinary bracket **and say so** |
 | Recent sales and purchases in the same or substantially identical security (±30 days, all accounts) | required for the wash-sale check | ask |
 | Country of tax residence, W-8BEN on file (yes/no), broker domicile | required for `--non-us` | ask |
+| Days physically present in the US during the tax year | required for the `--non-us` capital-gains answer | if unknown, report the capital-gains treatment as **indeterminate** rather than assuming under 183 |
 | Tax year | recommended | current calendar year, stated |
 
 **Never assume a bracket silently.** If the user does not give one, run the illustration at a stated default and show how the answer changes one bracket up and down.
@@ -85,7 +86,7 @@ For each lot involved:
 | Long-term rate | Preferential brackets (generally 0% / 15% / 20% by taxable income) | Which bracket the user's stated income lands in |
 | Short-term rate | Taxed as ordinary income at the marginal bracket | The marginal rate the user stated |
 | Net investment income tax | An additional 3.8% on investment income above a modified-AGI threshold (not indexed; higher for joint filers) | Whether the user is plausibly above it; if unknown, show both |
-| Netting | Short-term gains and losses net first, long-term net separately, then the two net against each other; up to $3,000 of net capital loss offsets ordinary income per year, the rest carries forward indefinitely | The user's net position after the proposed trade |
+| Netting | Short-term gains and losses net first, long-term net separately, then the two net against each other; up to $3,000 of net capital loss offsets ordinary income per year (**$1,500 for married filing separately**), the rest carries forward indefinitely | The user's net position after the proposed trade |
 
 **"Wait N days" is the cheapest tax strategy there is.** Always compute it: if a lot turns long-term within ~60 days, show the tax saved at today's price and the price fall that would wipe out that saving — so the reader can weigh a tax deferral against market risk instead of ignoring one of them.
 
@@ -152,6 +153,11 @@ Tax drag (% of portfolio per year) ≈
     Σ weight_i × [ yield_i × ( qualified_i × LTCG rate + (1 − qualified_i) × ordinary rate ) ]
   + realized-gain turnover × blended gain rate
   + non-qualified income (bond interest, REIT) × ordinary rate
+
+Scope — the terms are disjoint: yield_i is the dividend yield of the *equity* holdings only
+(stocks and equity funds), split into its qualified and non-qualified parts; the third line
+covers income that is never a qualified dividend (bond and money-market interest, REIT and
+MLP distributions), so it is not counted in yield_i as well.
 ```
 
 Report the drag in percentage points and dollars, the three largest contributors, and the drag after the Phase 5–6 changes. State the assumed rates in the table, not in prose.
@@ -184,7 +190,7 @@ The mechanics below describe the **US side only**. The investor's country of res
 
 US capital gains on stocks are **generally not taxed by the US** for a non-resident alien. State the general conditions and the exceptions rather than a blanket promise:
 
-- The general exemption applies when the individual is **not present in the US for 183 days or more** in the tax year and the gain is not effectively connected with a US trade or business.
+- The general exemption applies when the individual is **not present in the US for 183 days or more** in the tax year and the gain is not effectively connected with a US trade or business. The day count is an input, not an assumption — if the user has not supplied it, state the treatment as **indeterminate** and show both outcomes.
 - **Exceptions**: gains effectively connected with a US business; gains on **US real property interests** (including certain REITs) under FIRPTA, which are taxed and often withheld; and any home-country tax on the same gain, which is the rule that actually matters for most investors.
 - Losses cannot be used against US tax the investor does not owe — the harvesting logic of US mode is **irrelevant** here except for the home-country return. Say so; do not port Phase 5 across.
 

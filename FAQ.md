@@ -145,7 +145,7 @@ A: Yes — every platform gets the same 33 skills: 29 analysis frameworks, 3 ali
 - **Cursor**: ✅ All 33 skills as `@prompts/skill-name.md` files
 - **Gemini CLI**: ✅ All 33 skills as `@prompts/skill-name.md` files
 - **Copilot**: ✅ All 29 frameworks via `.github/copilot-instructions.md`
-- **Universal**: ✅ 28 prompts in `prompts/`, one per skill
+- **Universal**: ✅ 33 prompts in `prompts/`, one per skill
 
 **Why isn't report-generator counted as a framework?**
 

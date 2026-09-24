@@ -46,7 +46,7 @@ These two files must stay in sync. The `prompts/` version is what Cursor, Gemini
 
 ### Signal Block Requirement
 
-Every SKILL.md and every `prompts/*.md` must end with a standardized Investment Signal Block using box-drawing characters (UTF-8). Tests validate this.
+Every SKILL.md and every `prompts/*.md` must close with the standardized Investment Signal section: the box-drawn block (UTF-8 box-drawing characters), followed only by the Score Guide / Confidence / Horizon lines, an optional one-paragraph mapping note, and the `**Disclaimer:**` line. Nothing else may follow the block. `check-skill-contract.js` and Test 5/7 validate the block's presence; the closing order is a convention every skill follows.
 
 ## Adding a New Skill (12-step process)
 

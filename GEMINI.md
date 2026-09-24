@@ -70,7 +70,7 @@ When you first run `gemini`, you should see context about InvestSkill loaded. Th
 | Bear Case                   | `@prompts/bear-case.md`                | `Build the bear case against TSLA`         |
 | Position Ladder             | `@prompts/position-ladder.md`          | `I hold 20 AVGO at $128, now $122 — plan`  |
 | Thesis Tracker | `@prompts/thesis-tracker.md` | `Open a thesis file for NVDA` |
-| ETF Analysis | `@prompts/etf-analysis.md` | `Is VOO or SPLG the better core holding?` |
+| ETF Analysis | `@prompts/etf-analysis.md` | `Is VOO or SPYM the better core holding?` |
 | Earnings Preview | `@prompts/earnings-preview.md` | `NVDA reports on Aug 27 — what is priced in?` |
 | Tax Lens | `@prompts/tax-lens.md` | `I sold AVGO at a loss and want to rebuy — wash sale?` |
 | Risk Stress Test | `@prompts/risk-stress-test.md` | `Stress-test this portfolio against 2008 and 2022` |

@@ -11,9 +11,11 @@ Before explaining anything, check the material you were handed:
 1. **Do not re-fetch data** — explain the figures as they appear in the pasted analysis, and flag any that look stale (as-of date older than 90 days), unsourced (no `Data & Sources` header), or internally inconsistent (a score that does not match its own signal band). Teaching from bad numbers teaches bad habits.
 2. **Confirm key figures** — where the pasted analysis states a metric without its inputs (a P/E with no price or EPS), say so; do not invent the missing inputs to make the explanation tidier.
 3. **State your data source** — fill in the `Data & Sources` header (next section) so the origin, as-of date, retrieval path, and confidence of every figure are explicit at the top of the output.
-4. **Flag stale data explicitly** — if the pasted analysis carries a live-data warning, or no as-of date at all, display this before proceeding:
+4. **Flag stale data explicitly** — if the pasted analysis carries a live-data warning or says `Retrieval: model memory`, display this before proceeding:
 
 > ⚠️ **Live data unavailable.** The following analysis uses training-data estimates which may be significantly out of date. Verify all prices and metrics before making any decisions.
+
+If the pasted analysis simply has **no as-of date**, do not assume it came from memory: write `As of: unknown` in the reproduced header, set Confidence to LOW, and warn that freshness cannot be verified — the figures may be current or stale, and the reader should find out which before acting.
 
 Never silently substitute training-data estimates for current prices. When in doubt, ask the user to paste the latest quote.
 

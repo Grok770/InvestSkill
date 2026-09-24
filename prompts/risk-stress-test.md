@@ -84,7 +84,7 @@ Say plainly what the book is: "this is a 1.3-beta, 62 %-technology portfolio" is
 
 ### Phase 2 — Historical scenario replay
 
-Replay four regimes. Where a holding existed through the episode, use its actual drawdown; where it did not (or the data is not available), use **β_i × index move** or the sector ETF's drawdown, and mark the row `proxy`. Index magnitudes below are approximate peak-to-trough figures for orientation — the user confirms any that drive the conclusion.
+Replay four regimes. **Measure every holding over the scenario's common date window** (the dates in the first column, index peak to index trough) — not each holding's own peak-to-trough, which would combine losses that never happened at the same time. Where a holding existed through the episode, use its actual return over that window; where it did not (or the data is not available), use **β_i × index move** or the sector ETF's return over the same window, and mark the row `proxy`. For the 2025 tariff shock, **write down the window you are using before computing** (the pre-announcement close to the trough) and confirm it with the user — it is recent enough that the dates are not yet a convention. Index magnitudes below are approximate figures for orientation — the user confirms any that drive the conclusion.
 
 | Scenario | Market move (approx.) | Portfolio est. move | Worst position | Note |
 |----------|-----------------------|---------------------|----------------|------|
@@ -183,7 +183,7 @@ The headline number. It measures **how far inside the stated drawdown budget the
 Risk Budget Score = Σ component score × weight        (each component scored 0–10, linearly between the anchors)
 ```
 
-Map: **≥ 7.0 → risk within budget** (signal BULLISH) · **4.0–6.9 → at the edge** (NEUTRAL) · **< 4.0 → over budget** (BEARISH). If no budget was supplied, state the one you assumed and show how the score changes at the other two tolerance levels.
+Map — the same bands as the standard Score Guide: **≥ 6.0 → risk within budget** (signal BULLISH; 8.0+ comfortably so) · **4.0–5.9 → at the edge** (NEUTRAL) · **< 4.0 → over budget** (BEARISH). If no budget was supplied, state the one you assumed and show how the score changes at the other two tolerance levels.
 
 ---
 

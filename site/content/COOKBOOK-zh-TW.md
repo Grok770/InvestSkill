@@ -1994,7 +1994,7 @@ Samsung / Apple 設計案報導，取自 stockanalysis.com 新聞頁，2026/07/2
 
 ```bash
 # 步驟 1：評估候選 ETF——成本、追蹤、實際持有什麼、與現有持股的重疊
-/us-stock-analysis:etf-analysis VOO SPLG VTI — 我已持有 AAPL、MSFT、NVDA（貼上權重）
+/us-stock-analysis:etf-analysis VOO SPYM VTI — 我已持有 AAPL、MSFT、NVDA（貼上權重）
 # 輸出：各基金的 ETF 適配分數、追蹤差異表、前十大權重與傾斜、你的重疊 %
 #      （這三檔已占 S&P 500 基金約 15%），以及「買 ETF vs. 直接買前五大」的比較
 
@@ -2006,8 +2006,8 @@ Samsung / Apple 設計案報導，取自 stockanalysis.com 新聞頁，2026/07/2
 # 步驟 3：看這個計畫稅後剩多少——非美國投資人另看預扣稅與遺產稅
 /us-stock-analysis:tax-lens --portfolio — 應稅帳戶、24% 稅級（貼上批次）
 /us-stock-analysis:tax-lens --non-us Taiwan — 同樣持股放在美國券商          # 非美國投資人
-# 輸出：帳戶配置表、年度稅務拖累、稅損收割配對；或 30% vs. 協定預扣稅、
-#      6 萬美元以上的遺產稅曝險，以及美國 ETF vs. 愛爾蘭 UCITS 的算術
+# 輸出：帳戶配置表、年度稅務拖累、稅損收割配對；或——台灣與美國無租稅協定——30% 法定預扣稅
+#      （協定稅率比較只適用於有協定的國家）、6 萬美元以上的遺產稅曝險，以及美國 ETF vs. 愛爾蘭 UCITS 的算術
 
 # 步驟 4：確認你真的看懂了，而不只是收到了
 /us-stock-analysis:learning-coach [貼上 etf-analysis 的輸出] --level beginner --lang zh-TW

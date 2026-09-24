@@ -53,7 +53,8 @@ Most portfolios are built on an ETF core, yet every other framework in this cata
 |-------|----------|---------------------|
 | ETF ticker(s) — one fund, or several to compare | ✅ | — |
 | The exposure the user *thinks* they are buying ("US large cap", "global ex-US", "dividend growth") | recommended | infer from the fund name and index, and say so |
-| Current holdings with weights (tickers, other funds) | optional — required for the overlap section | overlap reported as "not assessed" |
+| Current holdings with weights (tickers, other funds) | optional — required for the overlap section | overlap reported as "not assessed" and its 15% weight redistributed (Phase 9) |
+| Intended purchase size (as % of the post-purchase portfolio) | optional — required for post-purchase exposure | 10% of the portfolio, stated |
 | Account type (taxable / IRA / non-US) | optional | taxable US assumed; state it |
 | Holding horizon | optional | 5+ years |
 
@@ -114,10 +115,17 @@ Note the caveat that matters: ETF liquidity comes from the underlying basket, no
 
 ### Phase 5 — Overlap with the user's other holdings
 
-With the holdings the user supplied, compute **overlap by weight**: for each security held in both the candidate ETF and the existing portfolio, take min(weight in ETF, weight in existing portfolio) and sum. Report:
+With the holdings the user supplied, compute **overlap by weight**:
 
-- Overlap % (by weight) and the duplicated names, largest first.
-- The *effective* exposure to the top duplicated names after the purchase (e.g. "you would own the largest holding through three vehicles at a combined 11% of the portfolio").
+1. **Look through** every existing fund position to its underlying securities (top holdings from the issuer's factsheet; label the coverage — "top 10 = 34% of the fund" — so the reader knows the rest is unassessed). Existing single stocks are their own exposure.
+2. Express both sides as weights of the **same denominator**: the candidate ETF's holdings as % of the ETF; the existing portfolio's look-through exposures as % of the existing portfolio.
+3. **Overlap % = Σ over shared securities of min(weight in ETF, weight in existing portfolio).** This is the share of the ETF that duplicates what the user already owns, on a like-for-like basis.
+4. With the **intended purchase size** *p* (as % of the post-purchase portfolio; default 10%, stated), compute the post-purchase exposure to each shared name: (1 − p) × existing weight + p × ETF weight.
+
+Report:
+
+- Overlap % (by weight) and the duplicated names, largest first; the look-through coverage used.
+- The *effective* post-purchase exposure to the top duplicated names (e.g. "at a 10% purchase you would own the largest holding through three vehicles at a combined 11% of the portfolio").
 - A plain verdict: **redundant** (> 60% overlap — this is the same bet in a second wrapper), **partially overlapping** (25–60% — fine if intentional), **complementary** (< 25%).
 
 Without a holdings file, report the top-10-only overlap as a lower bound and say so.
@@ -164,6 +172,8 @@ The headline number. It measures **fitness of the vehicle for the stated exposur
 
 **Hard caps**: a leveraged/inverse/single-stock fund evaluated for a horizon longer than a few weeks caps at **3.0**; an ETN caps at **5.0**; > 60% overlap caps at **5.0**. State any cap that fired.
 
+**When overlap is not assessed** (no holdings supplied): drop the component and **renormalize the remaining five weights to 100%** (Cost & tracking 29.4% · Liquidity 17.6% · What you own 23.5% · Distribution 11.8% · Structure 17.6%), print `Overlap: not assessed — supply holdings for the full score` under the score, and cap Confidence at MEDIUM. Never score an unassessed component as 10 or as 0.
+
 ---
 
 ## 3. Output Format
@@ -188,7 +198,7 @@ When several tickers are given, produce sections 1–6 per fund compactly, then 
 ## Example
 
 ```
-User: Is VOO or SPLG the better core holding? I already hold VTI at 40% of my portfolio.
+User: Is VOO or SPYM the better core holding? I already hold VTI at 40% of my portfolio.
 
 The assistant builds the fund card for both (same index family — S&P 500 — so the
 comparison collapses to cost, tracking, liquidity and share price), pulls the issuer
