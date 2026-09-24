@@ -8,8 +8,8 @@ The previous long-form backlog (last updated 2026-02-24) is archived at [doc/arc
 
 1. **`full-report --depth comprehensive` runs every framework** — add the frameworks missing since v1.8 (`bear-case` above all) plus the new Tier 1 skills where they fit, swap the alias modules for their targets, add `--skip <skill>`. → roadmap §4.3
 2. **`--lang zh-TW` on every skill + a machine-readable JSON footer** — the remaining two items of the skill contract (§4.1); the footer is what lets `eval-skills.js` and `result-validator` parse results without regex on box-drawing characters.
-3. **Learning lessons 9–11** — ETFs & Index Investing, Taxes & Account Types (with the non-US section), Earnings Season Explained — the lessons that now have skills behind them (`etf-analysis`, `tax-lens`, `earnings-preview`). → roadmap §5.1
-4. **Non-US Investor Guide + a losing / "pass" case study** — the two site pages the zh-TW audience needs most (§5.2, §5.4); the PFE and UPST Cookbook runs are ready-made material.
+3. **Learning lessons: Macro & the Fed Cycle, Options for Stock Investors** — the two §5.1 lessons still open (Lesson 5 has the material); plus self-check quizzes for Lessons 1–8 and the printable cheat sheet (§5.4). → roadmap §5.1, §5.4
+4. **Non-US Investor Guide page** — Lesson 11's non-US section is the core; the page adds brokers, FX, and account opening (§5.4). Glossary: the ~16 filing / technical terms still missing (§5.3).
 5. **Tier 2 skills as demand shows** — `forensic-accounting`, `proxy-governance`, `trade-postmortem` (closed `thesis-tracker` files are its input), `investment-policy`. → roadmap §3.2
 
 ## Recently shipped from the roadmap
@@ -19,6 +19,7 @@ The previous long-form backlog (last updated 2026-02-24) is archived at [doc/arc
 - The three redirect skills reclassified as aliases; honest count of 24 frameworks (§4.2)
 - `thesis-tracker` (§3.1)
 - The rest of Tier 1 — `etf-analysis`, `earnings-preview`, `tax-lens` (with `--non-us`), `risk-stress-test`, `learning-coach` (§3.1)
+- Learning track Part II — Lessons 9–13 (Before Your First Trade · ETFs · Taxes & Accounts incl. non-US · Earnings Season · Psychology & Process), the "When the Answer Is No" case study, self-check quizzes, glossary 44 → 76 (§5.1–5.3; see `doc/LEARNING-GAP-REVIEW.md`)
 - `fact-check` — claim-level verification against primary sources, recomputation, corrected report with inline citations and References; Verification Score feeds `result-validator` Data Quality (not on the roadmap; added on request)
 - `scripts/sync-prompts.js`, `scripts/new-skill.js`, `scripts/eval-skills.js`, `scripts/lib/signal-block.js` (§6.1, §6.2, §6.4, §6.11)
 

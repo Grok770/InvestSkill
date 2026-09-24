@@ -33,7 +33,7 @@ Get back:     Piotroski score · ROIC · moat rating · buy/hold/sell signal
   <span class="home-card-icon">🎓</span>
   <div class="home-card-body">
     <div class="home-card-title">New to investing? Start with the Learning guide</div>
-    <p>A six-lesson field guide to the concepts behind every skill — from reading a balance sheet to valuing a business to holding a portfolio — in plain English and Traditional Chinese. No finance degree required.</p>
+    <p>A thirteen-lesson field guide, in plain English and Traditional Chinese: Part I teaches the concepts behind every skill — reading a balance sheet, valuing a business, holding a portfolio — and Part II the practical foundations: accounts and orders, an ETF core, taxes (including for non-US investors), earnings season, and the psychology that protects the plan. No finance degree required.</p>
     <p><a class="home-card-cta" href="https://yennanliu.github.io/InvestSkill/learning.html">Start learning →</a></p>
   </div>
 </div>
