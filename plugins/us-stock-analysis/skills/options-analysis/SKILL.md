@@ -283,7 +283,8 @@ Market implying 68% probability stock stays within +/-$7 of current price
 
 **Position Sizing**
 - Long options premium risk: limit to 2-5% of portfolio per trade (entire premium can be lost)
-- Short premium (credit) strategies: risk defined by spread width; size to risk 1-3% of portfolio
+- Short premium, **defined-risk** (credit spreads, iron condors, iron butterflies): max loss = spread width − credit; size so that max loss is 1-3% of portfolio
+- Short premium, **undefined-risk** (short straddles, short strangles, naked puts/calls): loss is not capped by a spread width — size on a stress loss instead: assume a 2-standard-deviation move (or the stock's worst historical earnings gap, whichever is larger) and keep that loss to 1-3% of portfolio; keep buying-power reduction under 20% of the account; and never carry an undefined-risk position through earnings without a pre-set exit level
 - Never let a single options position represent more than 10% of total portfolio market value
 - For speculative OTM long options: size even smaller (0.5-1%) given low probability of profit
 

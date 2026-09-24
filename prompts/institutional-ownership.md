@@ -283,7 +283,7 @@ Outperformance: +10.3%
 Reference the following sources for institutional ownership data:
 
 **Primary Source - SEC 13F Filings**
-- **What**: Quarterly reports of equity holdings >$100M AUM
+- **What**: Quarterly holdings reports required of institutional investment managers exercising investment discretion over **≥ $100 million in Section 13(f) securities** (the test is 13(f) securities under management, not the firm's total AUM)
 - **Who**: Institutional investment managers
 - **When**: Filed within 45 days of quarter-end
 - **Where**: https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&type=13F
@@ -303,12 +303,13 @@ Reference the following sources for institutional ownership data:
 
 **Schedule 13D/G Filings** (>5% ownership)
 - **13D**: Activist investors with intent to influence
-  - Filed within 10 days of crossing 5%
-  - Amendments for >1% changes
+  - Initial filing within **5 business days** of crossing 5% (SEC rule effective 2024-02-05; previously 10 calendar days)
+  - Amendments for material changes (≥ 1%) within **2 business days**
   - Includes plans and intentions
 
 - **13G**: Passive investors, no control intent
-  - Filed within 45 days (or 10 days if >20%)
+  - Deadlines depend on filer type (revised schedule in force since 2024-09-30): qualified institutional investors — 45 days after the quarter-end in which they cross 5%, or 5 business days after month-end once above 10%; passive investors — 5 business days after crossing 5%; exempt investors — 45 days after quarter-end
+  - Verify the current deadline on sec.gov before dating a filing as late
   - Simplified reporting for passive positions
 
 **Aggregator Services**

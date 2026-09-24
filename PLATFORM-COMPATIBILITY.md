@@ -6,7 +6,7 @@ Complete platform support, feature comparison, and version requirements for Inve
 
 | Feature | Claude Code | Cursor | Gemini CLI | Copilot | Universal | Ollama |
 |---------|:-----------:|:------:|:----------:|:-------:|:---------:|:------:|
-| **25 Analysis Skills** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **24 Analysis Frameworks** (+ 3 aliases, 1 output tool) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Native Plugin** | ✅ | ➖ | ➖ | ➖ | ➖ | ➖ |
 | **Rules Integration** | ➖ | ✅ | ➖ | ➖ | ➖ | ➖ |
 | **Slash Commands** | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |

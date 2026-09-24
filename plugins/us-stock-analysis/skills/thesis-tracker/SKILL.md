@@ -41,7 +41,7 @@ Data & Sources
 
 Every other framework in the catalog answers a question *today*: is it cheap, is the moat real, is the chart constructive, what does the bear say. None of them remembers the answer. Three months later the investor is left with a position, a vague feeling, and no record of what they expected to happen — which is exactly the state in which people average down on a broken story or sell a working one on a bad week.
 
-**This skill turns an analysis into a contract with your future self.** It produces a single saved file per ticker that states, in falsifiable terms, *why* the position exists, *which numbers* have to keep being true, *what* would prove the idea wrong, and *when* the next check is due. Then, on `--update`, it re-reads that file against current data and hands back one word — **INTACT**, **WEAKENED**, or **BROKEN** — together with the specific line that changed.
+**This skill turns an analysis into a contract with your future self.** It produces a single saved file per ticker that states, in falsifiable terms, *why* the position exists, *which numbers* have to keep being true, *what* would prove the idea wrong, and *when* the next check is due. Then, on `--update`, it re-reads that file against current data and hands back one word — **INTACT**, **WEAKENED**, or **BROKEN** (or **INSUFFICIENT EVIDENCE** when the data to decide is not there) — together with the specific line that changed.
 
 It fills the gap between Playbook steps 1 (write the thesis), 9 (monitor), and 10 (know when to sell) in the Learning track, which today have no skill behind them.
 
@@ -54,8 +54,8 @@ It fills the gap between Playbook steps 1 (write the thesis), 9 (monitor), and 1
 | Mode | Invocation | What it does |
 |------|------------|--------------|
 | **Open** | `thesis-tracker NVDA` (+ pasted analyses, or none) | Interview the user, draft the thesis file, save it to `output/thesis/NVDA.md` |
-| **Update** | `thesis-tracker NVDA --update` (+ current data or a fresh analysis) | Re-read the saved file, refresh every KPI, re-test every trigger, return INTACT / WEAKENED / BROKEN, append to the decision log |
-| **Review** | `thesis-tracker --review` (no ticker) | Read every file in `output/thesis/`, list status and next-check date per ticker, flag anything overdue |
+| **Update** | `thesis-tracker NVDA --update` (+ current data or a fresh analysis) | Re-read the saved file, refresh every KPI, re-test every trigger, return INTACT / WEAKENED / BROKEN (or INSUFFICIENT EVIDENCE), append to the decision log |
+| **Review** | `thesis-tracker --review` (no ticker) | Read every file in `output/thesis/`, list status and next-check date per ticker, flag anything overdue or sitting at INSUFFICIENT EVIDENCE |
 | **Close** | `thesis-tracker NVDA --close "sold — trigger 2 fired"` | Mark the thesis closed with the exit reason and final P&L; keep the file for `trade-postmortem` |
 
 If the environment cannot write files, output the complete thesis file as a fenced block and tell the user to save it at the stated path — the *contract* matters, not the storage.
@@ -66,7 +66,7 @@ If the environment cannot write files, output the complete thesis file as a fenc
 
 | Input | Required | Default if unstated |
 |-------|----------|---------------------|
-| Ticker | ✅ | — |
+| Ticker | ✅ for Open, Update, Close · not used by Review (it reads every file) | — |
 | The thesis in the user's own words | ✅ for Open | ask — never invent a thesis for the user |
 | Entry price and date, position size | recommended | record as "not stated" |
 | Prior analyses (`stock-eval`, `bear-case`, `stock-valuation`, …) | optional | derive KPIs from the thesis text |
@@ -139,18 +139,21 @@ On every update:
 1. Refresh the **Current / Date** columns of every KPI from the newest data the user supplies or the assistant can retrieve. Never carry a stale value forward silently — mark it `stale` with its date.
 2. Re-test every **trigger**: fired / not fired / cannot assess (say why).
 3. Re-read the **thesis paragraph** against what actually happened. Did the mechanism play out, stall, or go the other way?
-4. Return exactly one **status**:
+4. Return exactly one **status**. Apply the rules top-down; the first that matches wins:
 
 | Status | Rule |
 |--------|------|
-| **INTACT** | Every KPI within threshold; no trigger fired; mechanism on track |
+| **BROKEN** | Two or more KPIs breached on *current* data, *or* any exit-trigger fired, *or* the core mechanism has been falsified (the thing that had to happen did not, and the reason is structural) |
 | **WEAKENED** | One KPI breached *or* one review-trigger fired *or* the mechanism is behind schedule — the thesis is still possible but the evidence has moved against it |
-| **BROKEN** | Two or more KPIs breached, *or* any exit-trigger fired, *or* the core mechanism has been falsified (the thing that had to happen did not, and the reason is structural) |
+| **INSUFFICIENT EVIDENCE** | Fewer than half the KPIs could be refreshed with data dated after the last check, and no trigger could be assessed. Nothing is known to have broken — but nothing has been confirmed either. Name the KPIs that need data, and do **not** carry the previous status forward |
+| **INTACT** | Every KPI is within threshold **on data dated after the last check**; no trigger fired; mechanism on track. A stale KPI cannot support INTACT — at best it leaves the status at INSUFFICIENT EVIDENCE |
+
+An INSUFFICIENT EVIDENCE status does not change the file's last confirmed status line; it is recorded in the decision log (`checked — insufficient evidence — <KPIs missing>`) and the next-check date is moved to when the data will exist (usually the next filing).
 
 5. Name **the specific line that changed** — the KPI, its old value, its new value, and the threshold. A status without a line is an opinion.
 6. Append a **decision log** row. The log records what the user *did* and *why*, priced and dated, and names the skill that informed it. It is the raw material for `trade-postmortem`.
 
-**Status is not a signal.** WEAKENED does not mean sell; it means the next check moves up and the position should not be added to. BROKEN means the reason for owning it is gone — what to do about that is a `position-ladder` / tax question, but *adding* is off the table.
+**Status is not a signal.** WEAKENED does not mean sell; it means the next check moves up and the position should not be added to. BROKEN means the reason for owning it is gone — what to do about that is a `position-ladder` / tax question, but *adding* is off the table. INSUFFICIENT EVIDENCE means the honest answer is "I don't know yet" — treat it like WEAKENED for position management (no adding) until the data arrives.
 
 ### Phase 7 — Thesis Health Score (0–10)
 
@@ -163,7 +166,7 @@ The headline number, used for the signal block. It measures **how well the thesi
 | Mechanism progress | 20% | Phase 1 "what has to happen" is visibly happening | Falsified |
 | Evidence freshness | 10% | Every KPI dated within the last quarter | KPIs stale or unverifiable |
 
-Map: **≥ 7.0 → INTACT · 4.0–6.9 → WEAKENED · < 4.0 → BROKEN.** If the rule table in Phase 6 and the score disagree, the *rule table wins* and the score is adjusted to match — the score summarizes the rules, it does not override them.
+Map: **≥ 7.0 → INTACT · 4.0–6.9 → WEAKENED · < 4.0 → BROKEN.** INSUFFICIENT EVIDENCE is not scored from the table above — report the score as `n/a` in the file and use **5.0** in the signal block (NEUTRAL, Confidence LOW) so it stays comparable across skills. If the rule table in Phase 6 and the score disagree, the *rule table wins* and the score is adjusted to match — the score summarizes the rules, it does not override them.
 
 ---
 
@@ -172,7 +175,7 @@ Map: **≥ 7.0 → INTACT · 4.0–6.9 → WEAKENED · < 4.0 → BROKEN.** If th
 `output/thesis/<TICKER>.md`. Keep the section order and the pipe tables exactly; `--update` and `--review` parse them.
 
 ```
-# Thesis · <TICKER> · opened YYYY-MM-DD · status INTACT | WEAKENED | BROKEN | CLOSED
+# Thesis · <TICKER> · opened YYYY-MM-DD · status INTACT | WEAKENED | BROKEN | INSUFFICIENT EVIDENCE | CLOSED
 Data & Sources · as of YYYY-MM-DD · <sources> · <retrieval> · <confidence>
 
 ## Thesis
@@ -286,7 +289,7 @@ After delivering the analysis signal, specify what would reverse it:
 
 ## Standard Signal Output
 
-This skill measures **thesis health, not stock direction**, so state the mapping: `Signal: BULLISH` means the thesis is INTACT (the reason for owning it holds); `NEUTRAL` means WEAKENED (hold, do not add, check sooner); `BEARISH` means BROKEN (the reason for owning it is gone). `Action: BUY` here means "the thesis supports continuing to hold or ladder within the stated ceiling" — never "buy without limit." Read the direction of the stock from `stock-eval` or `bear-case`, not from this block.
+This skill measures **thesis health, not stock direction**, so state the mapping: `Signal: BULLISH` means the thesis is INTACT (the reason for owning it holds); `NEUTRAL` means WEAKENED (hold, do not add, check sooner) — or INSUFFICIENT EVIDENCE, in which case `Confidence: LOW` and `Action: HOLD` are mandatory; `BEARISH` means BROKEN (the reason for owning it is gone). `Action: BUY` here means "the thesis supports continuing to hold or ladder within the stated ceiling" — never "buy without limit." Read the direction of the stock from `stock-eval` or `bear-case`, not from this block.
 
 All analysis concludes with this standardized block:
 

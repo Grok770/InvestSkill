@@ -192,12 +192,15 @@ Apply peer median multiples to the target's metrics:
 
 ```
 CCA Valuation:
-Metric          Target Value    Peer Median Multiple    Implied EV/Share    Weight
-EV/Revenue      $___M Rev       ___x                    $___                25%
-EV/EBITDA       $___M EBITDA    ___x                    $___                25%
-P/E (Forward)   $___  EPS       ___x                    $___                25%
-EV/FCF          $___M FCF       ___x                    $___                25%
-────────────────────────────────────────────────────────────────────────────────────
+Metric          Target Value    Peer Median Multiple    Implied EV ($M)    Implied Price    Weight
+EV/Revenue      $___M Rev       ___x                    $___               $___             25%
+EV/EBITDA       $___M EBITDA    ___x                    $___               $___             25%
+P/E (Forward)   $___  EPS       ___x                    n/a (equity)       $___             25%
+EV/FCF          $___M FCF       ___x                    $___               $___             25%
+──────────────────────────────────────────────────────────────────────────────────────────────────
+EV-based rows: Implied Price = (Implied EV − Net Debt − Minority Interest + Non-operating Assets) ÷ Diluted Shares
+P/E row:       Implied Price = Peer Median P/E × Target EPS   (already a per-share equity value — no EV bridge)
+The weighted average below is taken over the Implied Price column only.
 CCA Weighted Average Implied Price:                      $___
 Premium/Discount Applied (for size, quality):            ±___%
 CCA Adjusted Implied Price:                              $___

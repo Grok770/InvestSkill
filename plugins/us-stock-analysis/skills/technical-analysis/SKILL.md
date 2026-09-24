@@ -156,7 +156,7 @@ Legend: ──── Price  · · · MA30  ════ MA60/MA200  - - - MA90
 
 ### MA Crossover Signals
 
-Look for and report these high-significance crossover events:
+Look for and report these high-significance crossover events. The standard data set is MA30 / MA60 / MA90 / MA200 / MA365 (the position table above); **MA50 is computed in addition**, solely because the classic 50/200 cross is what the market watches — state its value when you report it:
 
 | Crossover | Type | Significance |
 |-----------|------|--------------|
@@ -213,7 +213,7 @@ When `--chart` flag is used, include chart specifications and data tables:
 **Chart Type**: Candlestick chart with overlay lines
 **Data Table**:
 ```
-Date        Open      High      Low       Close     Volume      SMA_20    SMA_50    SMA_200
+Date        Open      High      Low       Close     Volume      SMA_30    SMA_60    SMA_200
 2024-01-01  [price]   [price]   [price]   [price]   [volume]    [price]   [price]   [price]
 2024-01-02  [price]   [price]   [price]   [price]   [volume]    [price]   [price]   [price]
 ...
