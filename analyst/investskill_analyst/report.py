@@ -9,6 +9,7 @@ from .backtest import BacktestResult
 from .data import Fundamentals
 from .factors import FACTORS, Signal, to_signal
 from .signals import TradePlan
+from .verdict import WEIGHTS, TrackRecord, Verdict
 
 SCORE_GUIDE = (
     "Score Guide: 8.0–10.0 Strongly Bullish | 6.0–7.9 Moderately Bullish | "
@@ -84,8 +85,34 @@ def screen_markdown(scored: pd.DataFrame, techs: dict, funds: dict, top: int = 1
     return "\n".join(lines)
 
 
+def verdict_markdown(v: Verdict) -> list[str]:
+    """The buy/sell indicator: label, gauge, pillar scores, and the reasons."""
+    names = {"rank": "Valuation & quality rank", "business": "Business trend", "timing": "Price timing"}
+    lines = [
+        f"## Bottom line: **{v.label}** ({v.score:.1f} / 10)",
+        "",
+        f"`{v.gauge()}`",
+        "",
+        "| Pillar | Weight | Score |",
+        "|--------|-------:|------:|",
+    ]
+    for k, label in names.items():
+        val = v.pillars.get(k)
+        lines.append(f"| {label} | {WEIGHTS[k]:.0%} | "
+                     f"{'n/a' if val is None or pd.isna(val) else f'{val:.1f}'} |")
+    if v.reasons_for:
+        lines += ["", "**In favour:**"] + [f"- ✅ {r}" for r in v.reasons_for]
+    if v.reasons_against:
+        lines += ["", "**Against:**"] + [f"- ⚠️ {r}" for r in v.reasons_against]
+    if v.rails:
+        lines += [""] + [f"> {r}" for r in v.rails]
+    return lines + [""]
+
+
 def analysis_markdown(ticker: str, row: pd.Series, sig: Signal, tech: dict,
-                      fund: Fundamentals, plan: TradePlan, universe_size: int) -> str:
+                      fund: Fundamentals, plan: TradePlan, universe_size: int,
+                      verdict: Verdict | None = None, business: dict | None = None,
+                      quality: list[str] | None = None) -> str:
     f = fund
     lines = [
         f"# {ticker} — {f.name or ticker}" + (f" · {f.sector}" if f.sector else ""),
@@ -93,6 +120,7 @@ def analysis_markdown(ticker: str, row: pd.Series, sig: Signal, tech: dict,
         f"Data as of {tech['as_of']} · ranked #{int(row['rank'])} of {universe_size} "
         f"in the peer universe · input coverage {row['coverage']:.0%}",
         "",
+        *(verdict_markdown(verdict) if verdict else []),
         "## Factor profile",
         "",
         "| Factor | z-score | Read |",
@@ -116,6 +144,7 @@ def analysis_markdown(ticker: str, row: pd.Series, sig: Signal, tech: dict,
         f"| FCF yield | {_pct(f.fcf_yield)} | Earnings growth | {_pct(f.earnings_growth)} |",
         f"| Debt/Equity | {_num(f.debt_to_equity)} | Beta | {_num(f.beta)} |",
         "",
+        *(business_markdown(business) if business else []),
         "## Technicals",
         "",
         "| Price | SMA50 | SMA200 | RSI(14) | MACD hist | ATR(14) | 52w high | 1y vol | 1y max DD |",
@@ -149,6 +178,13 @@ def analysis_markdown(ticker: str, row: pd.Series, sig: Signal, tech: dict,
     if plan.notes:
         lines += [""] + [f"- {n}" for n in plan.notes]
 
+    lines += ["", "## Data quality & sources", ""]
+    lines += [f"- ⚠️ {w}" for w in (quality or [])] or ["- No data-quality issues detected."]
+    if f.sources:
+        by_source: dict[str, list[str]] = {}
+        for k, src in f.sources.items():
+            by_source.setdefault(src, []).append(k)
+        lines += [f"- {src}: {', '.join(sorted(ks))}" for src, ks in sorted(by_source.items())]
     lines += [
         "",
         "## Thesis invalidation",
@@ -193,3 +229,112 @@ def backtest_markdown(r: BacktestResult, cost_bps: float) -> str:
         "",
         f"**Disclaimer:** {DISCLAIMER}",
     ])
+
+
+def business_markdown(b: dict) -> list[str]:
+    def cagr(d: dict) -> str:
+        return " · ".join(f"{y}y {_pct(v)}" for y, v in d.items())
+
+    return [
+        f"## Business trend: {b['trend'] or 'n/a'} ({_num(b['score'], 1)} / 10)",
+        "",
+        f"{b['years_of_data']} fiscal years ({b['first_year']} → {b['latest_year']}) · "
+        f"revenue grew in {b['revenue_growth_years']} years",
+        "",
+        f"- Revenue CAGR: {cagr(b['revenue_cagr'])}",
+        f"- EPS CAGR: {cagr(b['eps_cagr'])}",
+        f"- Free-cash-flow CAGR: {cagr(b['fcf_cagr'])}",
+        "",
+    ]
+
+
+def track_record_markdown(t: TrackRecord | None) -> list[str]:
+    if t is None:
+        return ["Not enough price history to test the timing signal (needs ~18 months)."]
+    months = t.horizon_days // 21
+    return [
+        f"Over {t.months} month-ends, what happened {months} months after each timing reading:",
+        "",
+        "| Timing reading | Times | Avg next-{m}m return | Right direction |".format(m=months),
+        "|----------------|------:|--------------------:|----------------:|",
+        f"| BUY zone (≥ 6) | {t.buy_signals} | {_pct(t.buy_avg_return)} | {_pct(t.buy_hit_rate, 0)} rose |",
+        f"| SELL zone (< 4) | {t.sell_signals} | {_pct(t.sell_avg_return)} | {_pct(t.sell_hit_rate, 0)} fell |",
+        f"| Every month (baseline) | {t.months} | {_pct(t.all_avg_return)} | |",
+        "",
+        "The signal has added value on this stock only if the BUY-zone average beats the "
+        "baseline and the SELL-zone average trails it. A few dozen readings on one stock is "
+        "a small sample, so treat this as a sanity check, not proof.",
+    ]
+
+
+def history_markdown(h) -> str:
+    s = h.stock
+    lines = [f"# {h.ticker} — past performance", "",
+             f"Price history {s['start']} → {s['end']}", "", "## The stock", "",
+             "| Period | " + h.ticker + (" | " + h.benchmark if h.benchmark else "") + " |",
+             "|--------|------:" + ("|------:" if h.benchmark else "") + "|"]
+    for k, v in s["annualized"].items():
+        b = s.get("benchmark_annualized", {}).get(k)
+        lines.append(f"| {k} annualized | {_pct(v)}" + (f" | {_pct(b)}" if h.benchmark else "") + " |")
+    lines += ["", "| Year | Stock" + (f" | {h.benchmark} | Excess" if h.benchmark else "") + " |",
+              "|------|------:" + ("|------:|------:" if h.benchmark else "") + "|"]
+    for yr, row in s["calendar_years"].items():
+        extra = f" | {_pct(row.get('benchmark'))} | {_pct(row.get('excess'))}" if h.benchmark else ""
+        lines.append(f"| {yr} | {_pct(row['stock'])}{extra} |")
+    best, worst = s.get("best_year"), s.get("worst_year")
+    lines += [
+        "",
+        f"Up in {s['positive_years']} full years" +
+        (f" · best {best[0]} ({_pct(best[1])}) · worst {worst[0]} ({_pct(worst[1])})" if best else "") +
+        f" · volatility {_pct(s['volatility'])} · max drawdown {_pct(s['max_drawdown'])} · "
+        f"{_pct(-s['from_all_time_high'])} below its high",
+        "",
+    ]
+    if h.financials is not None:
+        fin = h.financials
+        lines += ["## The business", "",
+                  "| Fiscal year | Revenue | Net income | EPS | Free cash flow | Op. margin | ROE |",
+                  "|-------------|--------:|-----------:|----:|---------------:|-----------:|----:|"]
+        for d, r in fin.iterrows():
+            lines.append(
+                f"| {d.date()} | {_money(r['revenue'])} | {_money(r['net_income'])} | "
+                f"{_num(r['eps_diluted'])} | {_money(r['free_cash_flow'])} | "
+                f"{_pct(r['operating_margin'])} | {_pct(r['roe'])} |")
+        lines += [""] + business_markdown(h.business)
+        lines += [f"- ✅ {p}" for p in h.business["pros"]] + [f"- ⚠️ {c}" for c in h.business["cons"]]
+        lines.append("")
+    else:
+        lines += ["## The business", "",
+                  "No multi-year financials from this data provider. Use `--provider edgar` "
+                  "for audited SEC figures.", ""]
+    lines += ["## Has the timing signal worked on this stock?", ""]
+    lines += track_record_markdown(h.track)
+    lines += ["", "Past performance does not guarantee future results.", "",
+              f"**Disclaimer:** {DISCLAIMER}"]
+    return "\n".join(lines)
+
+
+def watchlist_markdown(verdicts: list[Verdict]) -> str:
+    lines = ["# Buy / sell indicator", "",
+             "| Ticker | Verdict | Score | Gauge | Rank | Business | Timing | Top reason |",
+             "|--------|---------|------:|-------|-----:|---------:|-------:|------------|"]
+    for v in verdicts:
+        p = v.pillars
+        lead = v.reasons_for if v.action == "BUY" else v.reasons_against
+        top = (v.rails or lead or v.reasons_for or v.reasons_against or [""])[0]
+        lines.append(
+            f"| **{v.ticker}** | {v.label} | {v.score:.1f} | `{v.gauge(11)}` | "
+            f"{_num(p['rank'], 1)} | {_num(p['business'], 1)} | {_num(p['timing'], 1)} | {top} |")
+    lines += ["", SCORE_GUIDE,
+              "Pillars: rank 40% · business trend 35% · timing 25%. Run `analyze <TICKER>` "
+              "for the full reasoning and a trade plan.", "", f"**Disclaimer:** {DISCLAIMER}"]
+    return "\n".join(lines)
+
+
+def _money(x) -> str:
+    if x is None or pd.isna(x):
+        return "n/a"
+    for div, suf in ((1e12, "T"), (1e9, "B"), (1e6, "M")):
+        if abs(x) >= div:
+            return f"${x / div:,.1f}{suf}"
+    return f"${x:,.0f}"

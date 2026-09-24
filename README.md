@@ -247,7 +247,9 @@ The frameworks are prompts, and they run anywhere. [`analyst/`](analyst/README.m
 ```bash
 cd analyst && pip install -e '.[all]'
 investskill-analyst screen                       # rank 56 US large caps: value · quality · growth · momentum · low risk
-investskill-analyst analyze NVDA --account 50000 # factor profile + technicals + risk-sized trade plan + signal block
+investskill-analyst analyze NVDA --provider edgar  # BUY/HOLD/SELL verdict + reasons + audited SEC data + trade plan
+investskill-analyst signal AAPL,MSFT,NVDA          # buy/sell indicator for a watchlist
+investskill-analyst history AAPL --provider edgar  # 10+ years of stock returns vs SPY and company financials
 investskill-analyst backtest --years 8           # walk-forward test of the ranking rule
 investskill-analyst research NVDA                # Claude + an InvestSkill framework + the engine as tools + web search
 ```

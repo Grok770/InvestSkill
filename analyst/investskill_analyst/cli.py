@@ -2,6 +2,8 @@
 
     screen     rank a universe and print the leaderboard
     analyze    score one ticker vs. peers and print a risk-sized trade plan
+    signal     buy/sell indicator for one or more tickers (watchlist)
+    history    a company's past performance: stock, business, and indicator track record
     backtest   walk-forward test of the ranking rule
     research   Claude writes a full research note using an InvestSkill framework
     frameworks list the InvestSkill frameworks the agent can use
@@ -16,17 +18,21 @@ from pathlib import Path
 
 from . import __version__
 from .data import get_provider
-from .engine import analyze, backtest, screen
+from .engine import analyze, backtest, company_history, screen, watchlist
 from .factors import STYLE_WEIGHTS
-from .report import analysis_markdown, backtest_markdown, screen_markdown
+from .report import (analysis_markdown, backtest_markdown, history_markdown,
+                     screen_markdown, watchlist_markdown)
 from .signals import RiskSettings
 from .universe import UNIVERSES, resolve_universe
 
 
 def _add_data_args(p: argparse.ArgumentParser) -> None:
-    p.add_argument("--provider", default="yfinance", choices=["yfinance", "csv", "synthetic"],
-                   help="data source (synthetic = offline fake data for demos)")
+    p.add_argument("--provider", default="yfinance",
+                   choices=["edgar", "yfinance", "csv", "synthetic"],
+                   help="edgar = audited SEC fundamentals + Yahoo prices (most accurate); "
+                        "synthetic = offline fake data for demos")
     p.add_argument("--data-dir", help="directory for the csv provider")
+    p.add_argument("--sec-user-agent", help="'Name email' for SEC EDGAR (or set SEC_USER_AGENT)")
 
 
 def _add_universe_args(p: argparse.ArgumentParser) -> None:
@@ -76,6 +82,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--json", action="store_true")
     p.add_argument("--out")
 
+    p = sub.add_parser("signal", help="buy/sell indicator for a watchlist")
+    p.add_argument("tickers", help="comma-separated, e.g. AAPL,MSFT,NVDA")
+    _add_data_args(p)
+    p.add_argument("--universe", choices=sorted(UNIVERSES), help="peer universe for ranking")
+    p.add_argument("--style", default="balanced", choices=sorted(STYLE_WEIGHTS))
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--out")
+
+    p = sub.add_parser("history", help="a company's past performance")
+    p.add_argument("ticker")
+    _add_data_args(p)
+    p.add_argument("--years", type=int, default=10)
+    p.add_argument("--benchmark", default="SPY")
+    p.add_argument("--json", action="store_true")
+    p.add_argument("--out")
+
     p = sub.add_parser("backtest", help="walk-forward test of the ranking rule")
     _add_data_args(p)
     _add_universe_args(p)
@@ -119,8 +141,9 @@ def _research(args, provider) -> str:
     request = " ".join(args.request)
     if len(args.request) == 1 and len(request) <= 6 and \
             request.replace("-", "").replace(".", "").isalnum():
-        request = (f"Research {request.upper()} for me. Start with analyze_stock, then "
-                   f"check recent news and filings, and give me a clear view and trade plan.")
+        request = (f"Research {request.upper()} for me. Start with analyze_stock and "
+                   f"company_history, then check recent news and filings, and give me a "
+                   f"clear buy/hold/sell view and trade plan.")
     try:
         return run_research(request, provider, framework=args.framework,
                             model=args.model or DEFAULT_MODEL, effort=args.effort,
@@ -143,8 +166,7 @@ def _run(args) -> int:
         print("\n".join(list_frameworks()))
         return 0
 
-    provider = get_provider(args.provider, root=args.data_dir) if args.provider == "csv" \
-        else get_provider(args.provider)
+    provider = get_provider(args.provider, root=args.data_dir, user_agent=args.sec_user_agent)
 
     if args.cmd == "screen":
         tickers = resolve_universe(args.universe, args.tickers, args.universe_file)
@@ -158,12 +180,33 @@ def _run(args) -> int:
         peers = resolve_universe(args.universe, args.tickers, args.universe_file)
         a = analyze(provider, args.ticker, peers=peers, style=args.style, risk=_risk(args))
         if args.json:
-            _emit(json.dumps({"signal": a.signal.__dict__, "technicals": a.tech,
-                              "fundamentals": a.fund.to_dict(), "trade_plan": a.plan.to_dict()},
+            _emit(json.dumps({"verdict": a.verdict.to_dict() if a.verdict else None,
+                              "signal": a.signal.__dict__, "business": a.business,
+                              "technicals": a.tech, "fundamentals": a.fund.to_dict(),
+                              "trade_plan": a.plan.to_dict(), "data_quality": a.data_quality},
                              indent=2, default=str), args.out)
         else:
             _emit(analysis_markdown(a.ticker, a.row, a.signal, a.tech, a.fund, a.plan,
-                                    a.universe_size), args.out)
+                                    a.universe_size, a.verdict, a.business, a.data_quality),
+                  args.out)
+
+    elif args.cmd == "signal":
+        tickers = resolve_universe(tickers=args.tickers)
+        peers = resolve_universe(args.universe) if args.universe else None
+        verdicts = watchlist(provider, tickers, peers=peers, style=args.style)
+        _emit(json.dumps([v.to_dict() for v in verdicts], indent=2, default=str) if args.json
+              else watchlist_markdown(verdicts), args.out)
+
+    elif args.cmd == "history":
+        h = company_history(provider, args.ticker, years=args.years, benchmark=args.benchmark)
+        if args.json:
+            _emit(json.dumps({"stock": h.stock, "business": h.business,
+                              "track_record": h.track.to_dict() if h.track else None,
+                              "financials": None if h.financials is None else
+                              json.loads(h.financials.to_json(orient="index", date_format="iso"))},
+                             indent=2, default=str), args.out)
+        else:
+            _emit(history_markdown(h), args.out)
 
     elif args.cmd == "backtest":
         tickers = resolve_universe(args.universe, args.tickers, args.universe_file)

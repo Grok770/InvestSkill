@@ -20,7 +20,7 @@ from __future__ import annotations
 import json
 import math
 import zlib
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Protocol
 
@@ -53,6 +53,8 @@ class Fundamentals:
     revenue_growth: float | None = None     # YoY, decimal
     earnings_growth: float | None = None    # YoY, decimal
     beta: float | None = None
+    # field name -> where the value came from (filled by providers that know)
+    sources: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -69,6 +71,9 @@ class DataProvider(Protocol):
     def history(self, ticker: str, years: float = 3.0) -> pd.DataFrame: ...
 
     def fundamentals(self, ticker: str) -> Fundamentals: ...
+
+    # Optional: providers that can supply multi-year financial statements also
+    # implement ``annual_financials(ticker) -> DataFrame`` (see financials.py).
 
 
 def _normalize_history(df: pd.DataFrame) -> pd.DataFrame:
@@ -152,7 +157,49 @@ class YFinanceProvider:
                 earnings_growth=_num(info.get("earningsGrowth")),
                 beta=_num(info.get("beta")),
             )
+            f = self._cache[key]
+            f.sources = {k: "Yahoo Finance (unofficial)" for k, v in f.to_dict().items()
+                         if v is not None and k not in ("ticker", "name", "sources")}
         return self._cache[key]  # type: ignore[return-value]
+
+    # Yahoo statement rows -> financials.ANNUAL_COLUMNS (about 4 fiscal years).
+    _ROWS = {
+        "income_stmt": {"Total Revenue": "revenue", "Gross Profit": "gross_profit",
+                        "Operating Income": "operating_income", "Net Income": "net_income",
+                        "Diluted EPS": "eps_diluted", "Diluted Average Shares": "shares_diluted"},
+        "cashflow": {"Operating Cash Flow": "operating_cash_flow",
+                     "Capital Expenditure": "capex", "Free Cash Flow": "free_cash_flow",
+                     "Cash Dividends Paid": "dividends_paid",
+                     "Depreciation And Amortization": "dna"},
+        "balance_sheet": {"Total Assets": "total_assets",
+                          "Total Liabilities Net Minority Interest": "total_liabilities",
+                          "Current Assets": "current_assets",
+                          "Current Liabilities": "current_liabilities",
+                          "Stockholders Equity": "equity",
+                          "Cash And Cash Equivalents": "cash", "Long Term Debt": "long_term_debt"},
+    }
+
+    def annual_financials(self, ticker: str) -> pd.DataFrame:
+        import yfinance as yf
+
+        tk = yf.Ticker(ticker)
+        cols = {}
+        for attr, mapping in self._ROWS.items():
+            stmt = getattr(tk, attr)
+            if stmt is None or stmt.empty:
+                continue
+            for row, col in mapping.items():
+                if row in stmt.index:
+                    cols[col] = stmt.loc[row]
+        if not cols:
+            raise LookupError(f"no annual financial statements for {ticker}")
+        df = pd.DataFrame(cols)
+        df.index = pd.to_datetime(df.index)
+        if "capex" in df:
+            df["capex"] = df["capex"].abs()
+        if "dividends_paid" in df:
+            df["dividends_paid"] = df["dividends_paid"].abs()
+        return df.sort_index().astype(float)
 
 
 class CSVProvider:
@@ -177,6 +224,13 @@ class CSVProvider:
 
     def fundamentals(self, ticker: str) -> Fundamentals:
         return Fundamentals.from_dict({"ticker": ticker, **self._fund.get(ticker, {})})
+
+    def annual_financials(self, ticker: str) -> pd.DataFrame:
+        """``<root>/<TICKER>_financials.csv``: fiscal-year-end date + ANNUAL_COLUMNS."""
+        path = self.root / f"{ticker}_financials.csv"
+        if not path.exists():
+            raise LookupError(f"no financials CSV for {ticker} at {path}")
+        return pd.read_csv(path, index_col=0, parse_dates=True).sort_index()
 
 
 class SyntheticProvider:
@@ -255,16 +309,44 @@ class SyntheticProvider:
             beta=float(rng.uniform(0.6, 1.6)),
         )
 
+    def annual_financials(self, ticker: str, years: int = 10) -> pd.DataFrame:
+        rng = self._rng(ticker + ":fin")
+        f = self.fundamentals(ticker)
+        ends = pd.date_range(end=self.end - pd.offsets.YearEnd(1), periods=years, freq="YE")
+        growth = rng.normal(f.revenue_growth or 0.06, 0.06, years)
+        revenue = rng.uniform(5e9, 2e11) * np.cumprod(1 + growth)
+        op_margin = np.clip((f.operating_margin or 0.15) + np.cumsum(rng.normal(0, 0.01, years)), -0.2, 0.6)
+        net_income = revenue * op_margin * 0.8
+        shares = rng.uniform(5e8, 5e9) * np.cumprod(1 - rng.uniform(0, 0.02, years))
+        equity = revenue * rng.uniform(0.3, 1.0)
+        ocf = net_income * rng.uniform(1.0, 1.4, years)
+        capex = revenue * rng.uniform(0.02, 0.08, years)
+        return pd.DataFrame({
+            "revenue": revenue, "gross_profit": revenue * (f.gross_margin or 0.4),
+            "operating_income": revenue * op_margin, "net_income": net_income,
+            "eps_diluted": net_income / shares, "operating_cash_flow": ocf, "capex": capex,
+            "total_assets": equity * 2.2, "total_liabilities": equity * 1.2, "equity": equity,
+            "cash": revenue * 0.1, "long_term_debt": equity * (f.debt_to_equity or 0.5),
+            "shares_diluted": shares,
+        }, index=ends)
+
 
 def get_provider(name: str = "yfinance", **kwargs) -> DataProvider:
-    """Factory used by the CLI and the agent: ``yfinance`` | ``csv`` | ``synthetic``."""
+    """Factory used by the CLI and the agent: ``edgar`` | ``yfinance`` | ``csv`` | ``synthetic``."""
     name = name.lower()
     if name in ("yfinance", "yahoo"):
         return YFinanceProvider()
     if name == "csv":
-        if "root" not in kwargs:
+        if not kwargs.get("root"):
             raise ValueError("the csv provider needs a data directory (--data-dir)")
         return CSVProvider(kwargs["root"])
     if name in ("synthetic", "demo"):
         return SyntheticProvider()
+    if name in ("edgar", "sec"):
+        # Audited SEC fundamentals, Yahoo prices; Yahoo also fills forward P/E + beta
+        # and acts as the second source for data cross-checks.
+        from .edgar import EdgarClient, EdgarProvider
+
+        yahoo = YFinanceProvider()
+        return EdgarProvider(yahoo, EdgarClient(kwargs.get("user_agent")), fill=yahoo)
     raise ValueError(f"unknown data provider: {name!r}")

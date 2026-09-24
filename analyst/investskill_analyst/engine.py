@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import date
 
 import pandas as pd
 
 from .backtest import BacktestResult, load_closes, run_backtest
 from .data import DataProvider
 from .factors import STYLE_WEIGHTS, Signal, build_universe_table, score_table, to_signal
+from .financials import business_summary, derive, price_performance
+from .quality import check_fundamentals, check_prices, cross_check, financials_age
 from .signals import RiskSettings, TradePlan, build_trade_plan
 from .universe import US_LARGE_CAP
+from .verdict import TrackRecord, Verdict, make_verdict, track_record
+
+BENCHMARK = "SPY"
 
 
 def _warn(ticker: str, exc: Exception) -> None:
@@ -54,6 +60,34 @@ def screen(provider: DataProvider, tickers: list[str], style: str = "balanced",
     return ScreenResult(score_table(metrics, STYLE_WEIGHTS[style]), techs, funds, style)
 
 
+def load_financials(provider: DataProvider, ticker: str) -> pd.DataFrame | None:
+    """Multi-year financials if the provider supports them, else None."""
+    getter = getattr(provider, "annual_financials", None)
+    if getter is None:
+        return None
+    try:
+        fin = getter(ticker)
+    except Exception:  # noqa: BLE001 - history is an enhancement, not a requirement
+        return None
+    return fin if fin is not None and len(fin) >= 2 else None
+
+
+def signal_from_verdict(v: Verdict, coverage: float) -> Signal:
+    """Express the combined verdict as an InvestSkill signal block."""
+    signal = {"BUY": "BULLISH", "SELL": "BEARISH"}.get(v.action, "NEUTRAL")
+    conviction = "STRONG" if v.label.startswith("STRONG") else "WEAK" if v.rails and \
+        v.action == "HOLD" and v.score >= 6 else "MODERATE"
+    vals = [x for x in v.pillars.values() if x is not None and not pd.isna(x)]
+    spread = max(vals) - min(vals) if vals else 10
+    if len(vals) == 3 and spread <= 3.5 and coverage >= 0.7:
+        confidence = "HIGH"
+    elif len(vals) >= 2 and spread <= 5.5 and coverage >= 0.5:
+        confidence = "MEDIUM"
+    else:
+        confidence = "LOW"
+    return Signal(signal, v.action, conviction, confidence, "MEDIUM-TERM", v.score, list(v.rails))
+
+
 @dataclass
 class Analysis:
     ticker: str
@@ -63,12 +97,15 @@ class Analysis:
     fund: object
     plan: TradePlan
     universe_size: int
+    verdict: Verdict | None = None
+    business: dict | None = None
+    data_quality: list[str] = field(default_factory=list)
 
 
 def analyze(provider: DataProvider, ticker: str, peers: list[str] | None = None,
             style: str = "balanced", risk: RiskSettings | None = None,
-            on_error=_warn) -> Analysis:
-    """Score one ticker *relative to a peer universe* and build its trade plan."""
+            on_error=_warn, today: date | None = None) -> Analysis:
+    """Score one ticker vs. peers, add its business trend, and give the verdict + trade plan."""
     ticker = ticker.upper()
     universe = list(dict.fromkeys([ticker, *(peers or US_LARGE_CAP)]))
     res = screen(provider, universe, style=style, on_error=on_error)
@@ -76,9 +113,73 @@ def analyze(provider: DataProvider, ticker: str, peers: list[str] | None = None,
         raise LookupError(f"could not load data for {ticker}")
     row = res.scored.loc[ticker]
     tech = res.techs[ticker]
-    sig = to_signal(row, tech)
+    fund = res.funds[ticker]
+
+    fin = load_financials(provider, ticker)
+    business = business_summary(fin) if fin is not None else None
+    verdict = make_verdict(ticker, float(row["score"]), tech, business)
+    sig = signal_from_verdict(verdict, float(row.get("coverage", 0) or 0))
     plan = build_trade_plan(ticker, sig, tech, risk)
-    return Analysis(ticker, row, sig, tech, res.funds[ticker], plan, len(res.scored))
+
+    quality = check_prices(provider.history(ticker, 1), today=today or date.today())
+    quality += check_fundamentals(fund)
+    if fin is not None:
+        quality += financials_age(fin, today)
+    secondary = getattr(provider, "secondary", None)
+    if secondary is not None:
+        try:
+            quality += cross_check(fund, secondary.fundamentals(ticker))
+        except Exception:  # noqa: BLE001 - cross-check is best effort
+            pass
+    return Analysis(ticker, row, sig, tech, fund, plan, len(res.scored),
+                    verdict, business, quality)
+
+
+@dataclass
+class CompanyHistory:
+    ticker: str
+    stock: dict
+    financials: pd.DataFrame | None
+    business: dict | None
+    track: TrackRecord | None
+    benchmark: str
+
+
+def company_history(provider: DataProvider, ticker: str, years: int = 10,
+                    benchmark: str = BENCHMARK) -> CompanyHistory:
+    """The company's past performance: the stock, the business, and the indicator."""
+    ticker = ticker.upper()
+    df = provider.history(ticker, years=years)
+    bench = None
+    try:
+        bench = provider.history(benchmark, years=years)["close"]
+    except Exception:  # noqa: BLE001 - benchmark is optional
+        benchmark = ""
+    fin = load_financials(provider, ticker)
+    return CompanyHistory(
+        ticker=ticker,
+        stock=price_performance(df["close"], bench),
+        financials=derive(fin) if fin is not None else None,
+        business=business_summary(fin) if fin is not None else None,
+        track=track_record(df),
+        benchmark=benchmark,
+    )
+
+
+def watchlist(provider: DataProvider, tickers: list[str], peers: list[str] | None = None,
+              style: str = "balanced", on_error=_warn) -> list[Verdict]:
+    """Buy/sell verdicts for several tickers, ranked against one peer universe."""
+    tickers = [t.upper() for t in tickers]
+    res = screen(provider, list(dict.fromkeys([*tickers, *(peers or US_LARGE_CAP)])),
+                 style=style, on_error=on_error)
+    out = []
+    for t in tickers:
+        if t not in res.scored.index:
+            continue
+        fin = load_financials(provider, t)
+        out.append(make_verdict(t, float(res.scored.loc[t, "score"]), res.techs[t],
+                                business_summary(fin) if fin is not None else None))
+    return sorted(out, key=lambda v: v.score, reverse=True)
 
 
 def backtest(provider: DataProvider, tickers: list[str], years: float = 5.0,

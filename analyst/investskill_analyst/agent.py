@@ -25,7 +25,7 @@ from typing import Callable
 
 from . import DISCLAIMER
 from .data import DataProvider
-from .engine import analyze, backtest, screen
+from .engine import analyze, backtest, company_history, screen
 from .factors import STYLE_WEIGHTS
 from .signals import RiskSettings
 from .universe import UNIVERSES, resolve_universe
@@ -44,10 +44,13 @@ individual investor. You combine a quantitative engine (exposed as tools) with
 the InvestSkill analysis framework included below.
 
 How you work:
-- Get numbers from the tools, never from memory. Price, factor scores, trade
-  levels and backtest statistics come from `analyze_stock`, `screen_stocks`
-  and `backtest_strategy`. If a tool fails, say what is missing rather than
+- Get numbers from the tools, never from memory. Price, factor scores, the
+  buy/sell verdict, trade levels, past performance and backtest statistics come
+  from `analyze_stock`, `company_history`, `screen_stocks` and
+  `backtest_strategy`. If a tool fails, say what is missing rather than
   estimating it.
+- Report any `data_quality_warnings` to the investor and lower your confidence
+  accordingly. Say which figures are audited (SEC EDGAR) and which are not.
 - Use web search for what the numbers can't see: recent earnings and
   guidance, filings, news, analyst revisions, upcoming catalysts. Cite the
   source and date of every fact you bring in from the web.
@@ -129,11 +132,22 @@ TOOLS = [
     ),
     _tool(
         "analyze_stock",
-        "Full quantitative workup of one stock against a peer universe: factor z-scores, "
-        "fundamentals, technicals (SMA/RSI/MACD/ATR, returns, volatility, drawdown), the "
-        "mapped Investment Signal, and a risk-sized trade plan (entry, stop, targets, shares).",
+        "Full quantitative workup of one stock against a peer universe: the buy/sell verdict "
+        "(rank + business trend + timing, with reasons), factor z-scores, fundamentals with "
+        "their sources, data-quality warnings, technicals (SMA/RSI/MACD/ATR, returns, "
+        "volatility, drawdown), and a risk-sized trade plan (entry, stop, targets, shares).",
         {"ticker": {"type": "string"}, "peers": _TICKERS,
          "style": {"type": "string", "enum": sorted(STYLE_WEIGHTS)}},
+        ["ticker"],
+    ),
+    _tool(
+        "company_history",
+        "A company's past performance: annualized and calendar-year stock returns vs. SPY, "
+        "drawdowns, up to 15 years of annual financials (revenue, EPS, FCF, margins, ROE), "
+        "growth rates, a 0-10 business trend score, and how the timing signal has done on "
+        "this stock historically.",
+        {"ticker": {"type": "string"},
+         "years": {"type": "integer", "description": "Years of history, 1-20 (default 10)."}},
         ["ticker"],
     ),
     _tool(
@@ -214,12 +228,33 @@ class ToolExecutor:
             "ticker": a.ticker,
             "peer_universe_size": a.universe_size,
             "model_row": row,
+            "verdict": a.verdict.to_dict() if a.verdict else None,
             "signal": a.signal.__dict__,
+            "business_trend": a.business,
             "technicals": a.tech,
             "fundamentals": a.fund.to_dict(),
+            "data_quality_warnings": a.data_quality,
             "trade_plan": a.plan.to_dict(),
             "risk_settings": self.risk.__dict__,
         }
+
+    def _t_company_history(self, inp: dict):
+        tickers = _clean_tickers([inp.get("ticker", "")])
+        if not tickers:
+            raise ValueError("ticker is required")
+        years = int(inp.get("years") or 10)
+        if not 1 <= years <= 20:
+            raise ValueError("years must be 1-20")
+        h = company_history(self.provider, tickers[0], years=years)
+        fin = None
+        if h.financials is not None:
+            cols = ["revenue", "net_income", "eps_diluted", "free_cash_flow",
+                    "gross_margin", "operating_margin", "roe", "debt_to_equity", "revenue_growth"]
+            fin = json.loads(h.financials[[c for c in cols if c in h.financials]]
+                             .to_json(orient="index", date_format="iso"))
+        return {"ticker": h.ticker, "stock_performance": h.stock, "benchmark": h.benchmark,
+                "business_trend": h.business, "annual_financials": fin,
+                "timing_signal_track_record": h.track.to_dict() if h.track else None}
 
     def _t_backtest_strategy(self, inp: dict):
         tickers = resolve_universe(inp.get("universe"), _clean_tickers(inp.get("tickers")))
