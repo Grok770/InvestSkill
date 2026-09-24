@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "investskill-analyst"
+version = "0.1.0"
+description = "Quantitative factor model + Claude research agent built on the InvestSkill frameworks"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24", "pandas>=2.2"]
+
+[project.optional-dependencies]
+yahoo = ["yfinance>=0.2.40"]
+llm = ["anthropic>=1.0"]
+all = ["yfinance>=0.2.40", "anthropic>=1.0"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+investskill-analyst = "investskill_analyst.cli:main"
+
+[tool.setuptools]
+packages = ["investskill_analyst"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

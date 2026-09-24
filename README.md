@@ -240,6 +240,26 @@ HTML reports render this as a styled dark panel with a score progress bar, ghost
 
 ---
 
+## Quant Engine & Research Agent (optional, Python)
+
+The frameworks are prompts, and they run anywhere. [`analyst/`](analyst/README.md) adds an optional Python engine for people who want the numbers computed by code rather than recalled by a model:
+
+```bash
+cd analyst && pip install -e '.[all]'
+investskill-analyst screen                       # rank 56 US large caps: value · quality · growth · momentum · low risk
+investskill-analyst analyze NVDA --provider edgar  # BUY/HOLD/SELL verdict + reasons + audited SEC data + trade plan
+investskill-analyst signal AAPL,MSFT,NVDA          # buy/sell indicator for a watchlist
+investskill-analyst history AAPL --provider edgar  # 10+ years of stock returns vs SPY and company financials
+investskill-analyst chart AAPL,MSFT --provider edgar  # interactive line charts: revenue & EPS vs share price
+investskill-analyst news TSLA                      # news, SEC 8-K filings and X posts -> short-term outlook
+investskill-analyst backtest --years 8           # walk-forward test of the ranking rule
+investskill-analyst research NVDA                # Claude + an InvestSkill framework + the engine as tools + web search
+```
+
+The core frameworks stay key-free. Only `research` needs an Anthropic API key. See the [analyst README](analyst/README.md) for the model, its limitations, and how to extend it.
+
+---
+
 ## Platform Support
 
 | Platform | Setup | How it works |
